@@ -143,8 +143,6 @@ def plot_histograms(constants_dict):
     # Show the figure
     fig.show()
 
-"""Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values, with a separate color for each top-k setting"""
-
 # Plotting the constants against their respective sequence lengths
 def plot_constants_vs_length(constants_dict, lengths_dict):
     data = []
@@ -191,5 +189,8 @@ sequence_count = 100
 # Generate sequences and compute constants
 constants, sequence_lengths = generate_and_compute_constants(tokenizer, text, top_k_values, sequence_count)
 
+# Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values, with a separate color for each top-k setting
 plot_histograms(constants)
+
+# Each point represents a sequence, with the x-coordinate representing the sequence length and the y-coordinate representing the `c_alpha` value
 plot_constants_vs_length(constants, sequence_lengths)
