@@ -1,6 +1,7 @@
 torch
 torchvision
-matplotlib
 notebook
 plotly
 transformers
+transformers[torch]
+pandas
