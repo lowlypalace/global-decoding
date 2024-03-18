@@ -72,19 +72,26 @@ def generate_and_compute_constants(
             while True:
                 # Retrieve the logits for the last token from the output
                 last_token_logits = predict_logits(curr_input_ids)
+
                 # Get top-k values
                 _, top_indices = torch.topk(last_token_logits, top_k)
+
                 # Calculate local constant
                 local_const = normalization_constant(last_token_logits, top_indices)
                 local_constants.append(local_const.item())
+
                 # Apply top-k filtering to logits
                 filtered_logits = top_k_filtering(last_token_logits, top_indices)
+
                 # Normalize the filtered logits to probabilities
                 probs = torch.nn.functional.softmax(filtered_logits, dim=-1)
+
                 # Sample from the filtered distribution
                 next_token = torch.multinomial(probs, num_samples=1).to(device)
+
                 # Concatenate the sampled next_token to the original input_ids to form the extended sequence
                 curr_input_ids = torch.cat([curr_input_ids, next_token], dim=-1)
+
                 # Increment sequence length
                 sequence_length += 1
 
