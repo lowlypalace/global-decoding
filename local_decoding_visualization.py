@@ -41,6 +41,49 @@ def predict_logits(curr_input_ids):
 
     return last_token_logits
 
+def generate_sequence(tokenizer, input_ids, top_k, device):
+    # Initialize list to store local constants for the sequence
+    local_constants = []
+    # Clone the initial input_ids tensor to avoid modifying the original
+    curr_input_ids = input_ids.clone()
+    # Initialize sequence length
+    sequence_length = 0
+
+    # Loop to generate a single sequence until we reach the end of sequence token
+    while True:
+        # Retrieve the logits for the last token from the output
+        last_token_logits = predict_logits(curr_input_ids)
+
+        # Get top-k values
+        _, top_indices = torch.topk(last_token_logits, top_k)
+
+        # Calculate local constant
+        local_const = normalization_constant(last_token_logits, top_indices)
+        local_constants.append(local_const.item())
+
+        # Apply top-k filtering to logits
+        filtered_logits = top_k_filtering(last_token_logits, top_indices)
+
+        # Normalize the filtered logits to probabilities
+        probs = torch.nn.functional.softmax(filtered_logits, dim=-1)
+
+        # Sample from the filtered distribution
+        next_token = torch.multinomial(probs, num_samples=1).to(device)
+
+        # Concatenate the sampled next_token to the original input_ids to form the extended sequence
+        curr_input_ids = torch.cat([curr_input_ids, next_token], dim=-1)
+
+        # Increment sequence length
+        sequence_length += 1
+
+        # Check for end of sequence token
+        if next_token.item() == tokenizer.eos_token_id:
+            break
+
+    # # Calculate the product of constants for the sequence
+    c_alpha = np.prod(local_constants)
+
+    return curr_input_ids, c_alpha, sequence_length
 
 # Main function to generate text and compute local decoding constants
 def generate_and_compute_constants(
@@ -61,53 +104,17 @@ def generate_and_compute_constants(
 
         # This is a top-level loop to generate multiple sequences
         for _ in range(sequence_count):
-            # Initialize list to store local constants for the sequence
-            local_constants = []
-            # Clone the input_ids tensor to avoid modifying the original
-            curr_input_ids = input_ids.clone()
-            # Initialize sequence length
-            sequence_length = 0
+            # Generate a single sequence
+            generated_sequence, c_alpha, seq_length = generate_sequence(tokenizer, input_ids, top_k, device)
 
-            # This is a loop to generate a single sequence
-            while True:
-                # Retrieve the logits for the last token from the output
-                last_token_logits = predict_logits(curr_input_ids)
-
-                # Get top-k values
-                _, top_indices = torch.topk(last_token_logits, top_k)
-
-                # Calculate local constant
-                local_const = normalization_constant(last_token_logits, top_indices)
-                local_constants.append(local_const.item())
-
-                # Apply top-k filtering to logits
-                filtered_logits = top_k_filtering(last_token_logits, top_indices)
-
-                # Normalize the filtered logits to probabilities
-                probs = torch.nn.functional.softmax(filtered_logits, dim=-1)
-
-                # Sample from the filtered distribution
-                next_token = torch.multinomial(probs, num_samples=1).to(device)
-
-                # Concatenate the sampled next_token to the original input_ids to form the extended sequence
-                curr_input_ids = torch.cat([curr_input_ids, next_token], dim=-1)
-
-                # Increment sequence length
-                sequence_length += 1
-
-                if next_token.item() == tokenizer.eos_token_id:
-                    break
-
-            # # Calculate the product of constants for the sequence
-            c_alpha = np.prod(local_constants)
+             # Store the product of constants and sequence length for each sequence
             constants[top_k].append(c_alpha)
-            # Append the sequence length
-            sequence_lengths[top_k].append(sequence_length)
+            sequence_lengths[top_k].append(seq_length)
 
             # Print sequences for debugging
             if verbose:
                 generated_text = tokenizer.decode(
-                    curr_input_ids[0], skip_special_tokens=True
+                    generated_sequence[0], skip_special_tokens=True
                 )
                 print(generated_text)
 
@@ -138,10 +145,8 @@ def plot_histograms(constants_dict):
 
     # Create a figure with the data and layout
     fig = go.Figure(data=data, layout=layout)
-
     # Save graph
-    fig.write_html("histogram.html")
-
+    fig.write_html("histogram1000.html")
     # Show the figure
     fig.show()
 
@@ -165,11 +170,11 @@ def plot_constants_vs_length(constants_dict, lengths_dict):
         yaxis=dict(title="Local Decoding Constant c_alpha"),
         hovermode="closest",
     )
-
+    # Create a figure with the data and layout
     fig = go.Figure(data=data, layout=layout)
-
-    fig.write_html("scatter.html")
-
+    # Save graph
+    fig.write_html("scatter1000.html")
+    # Show the figure
     fig.show()
 
 
@@ -199,6 +204,7 @@ constants, sequence_lengths = generate_and_compute_constants(
     text=text,
     top_k_values=top_k_values,
     sequence_count=sequence_count,
+    verbose=True,
 )
 
 # Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values, with a separate color for each top-k setting
