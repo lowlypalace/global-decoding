@@ -3,6 +3,7 @@ import numpy as np
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import plotly.graph_objects as go
 
+
 def normalization_constant(logits, top_indices):
     # Normalize probabilities of all of the logits (not filtered)
     probs = torch.nn.functional.softmax(logits, dim=-1)
@@ -13,38 +14,42 @@ def normalization_constant(logits, top_indices):
 
     return normalization_const
 
+
 def top_k_filtering(logits, top_indices):
     # Create a mask of the same shape as logits, initialized to True
     mask = torch.ones_like(logits, dtype=torch.bool)
     # Set the mask to False for the top_k indices
     mask[0][top_indices] = False
     # Set all elements of logits that are not in the top_k to -inf
-    logits[mask] =  -float('inf')
+    logits[mask] = -float("inf")
 
     return logits
+
 
 def predict_logits(curr_input_ids):
     # Check if the current input exceeds the maximum model length
     if curr_input_ids.size(1) >= max_model_length:
         # If it does, truncate the input to the maximum model length
         curr_input_ids = curr_input_ids[:, -max_model_length:]
-
     with torch.no_grad():
-         # We pass our input_ids to the model to get the output.
+        # We pass our input_ids to the model to get the output.
         outputs = model(curr_input_ids)
-
     # The output of the model is a tuple, where the first element contains the logits (raw, unnormalized scores for each possible next token).
     predictions = outputs[0]
-
     # Retrieve the logits for the last token from the output
     last_token_logits = predictions[:, -1, :]
 
     return last_token_logits
 
+
 # Main function to generate text and compute local decoding constants
-def generate_and_compute_constants(tokenizer, text, top_k_values, sequence_count):
+def generate_and_compute_constants(
+    tokenizer, text, top_k_values, sequence_count, verbose=False
+):
     # Encode the input text to tensor
-    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors='pt').to(device)
+    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
+        device
+    )
     # Define dictionary that will hold the product of local constants for each sequence and map them to the top k value
     constants = {top_k: [] for top_k in top_k_values}
     # Store sequence lengths
@@ -67,26 +72,19 @@ def generate_and_compute_constants(tokenizer, text, top_k_values, sequence_count
             while True:
                 # Retrieve the logits for the last token from the output
                 last_token_logits = predict_logits(curr_input_ids)
-
                 # Get top-k values
                 _, top_indices = torch.topk(last_token_logits, top_k)
-
                 # Calculate local constant
                 local_const = normalization_constant(last_token_logits, top_indices)
                 local_constants.append(local_const.item())
-
                 # Apply top-k filtering to logits
                 filtered_logits = top_k_filtering(last_token_logits, top_indices)
-
                 # Normalize the filtered logits to probabilities
                 probs = torch.nn.functional.softmax(filtered_logits, dim=-1)
-
                 # Sample from the filtered distribution
                 next_token = torch.multinomial(probs, num_samples=1).to(device)
-
                 # Concatenate the sampled next_token to the original input_ids to form the extended sequence
                 curr_input_ids = torch.cat([curr_input_ids, next_token], dim=-1)
-
                 # Increment sequence length
                 sequence_length += 1
 
@@ -100,10 +98,14 @@ def generate_and_compute_constants(tokenizer, text, top_k_values, sequence_count
             sequence_lengths[top_k].append(sequence_length)
 
             # Print sequences for debugging
-            generated_text = tokenizer.decode(curr_input_ids[0], skip_special_tokens=True)
-            print(generated_text)
+            if verbose:
+                generated_text = tokenizer.decode(
+                    curr_input_ids[0], skip_special_tokens=True
+                )
+                print(generated_text)
 
     return constants, sequence_lengths
+
 
 # Function to plot histograms of constants using Plotly
 def plot_histograms(constants_dict):
@@ -114,20 +116,17 @@ def plot_histograms(constants_dict):
     for top_k, constants in constants_dict.items():
         # Create a histogram for the current set of constants
         histogram = go.Histogram(
-            x=constants,
-            nbinsx=30,
-            name=f"Top K = {top_k}",
-            opacity=0.5
+            x=constants, nbinsx=30, name=f"Top K = {top_k}", opacity=0.5
         )
         # Append the histogram to our data list
         data.append(histogram)
 
     # Create a layout for the plot
     layout = go.Layout(
-        title='Histogram of Local Decoding Constants',
-        xaxis=dict(title='Local Decoding Constant c_alpha'),
-        yaxis=dict(title='Frequency'),
-        barmode='overlay'
+        title="Histogram of Local Decoding Constants",
+        xaxis=dict(title="Local Decoding Constant c_alpha"),
+        yaxis=dict(title="Frequency"),
+        barmode="overlay",
     )
 
     # Create a figure with the data and layout
@@ -139,6 +138,7 @@ def plot_histograms(constants_dict):
     # Show the figure
     fig.show()
 
+
 # Plotting the constants against their respective sequence lengths
 def plot_constants_vs_length(constants_dict, lengths_dict):
     data = []
@@ -147,16 +147,16 @@ def plot_constants_vs_length(constants_dict, lengths_dict):
         scatter = go.Scatter(
             x=lengths_dict[top_k],
             y=constants_dict[top_k],
-            mode='markers',
-            name=f"Top K = {top_k}"
+            mode="markers",
+            name=f"Top K = {top_k}",
         )
         data.append(scatter)
 
     layout = go.Layout(
-        title='Local Decoding Constants vs. Sequence Length',
-        xaxis=dict(title='Sequence Length'),
-        yaxis=dict(title='Local Decoding Constant c_alpha'),
-        hovermode='closest'
+        title="Local Decoding Constants vs. Sequence Length",
+        xaxis=dict(title="Sequence Length"),
+        yaxis=dict(title="Local Decoding Constant c_alpha"),
+        hovermode="closest",
     )
 
     fig = go.Figure(data=data, layout=layout)
@@ -165,14 +165,15 @@ def plot_constants_vs_length(constants_dict, lengths_dict):
 
     fig.show()
 
+
 # Set the device to GPU if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load pre-trained model tokenizer
-tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 
 # Load pre-trained model
-model = GPT2LMHeadModel.from_pretrained('gpt2').to(device)
+model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
 
 # Set the model to evaluation mode
 model.eval()
@@ -186,10 +187,17 @@ top_k_values = [5, 10, 50, 100, 500, 1000]
 sequence_count = 100
 
 # Generate sequences and compute constants
-constants, sequence_lengths = generate_and_compute_constants(tokenizer, text, top_k_values, sequence_count)
+constants, sequence_lengths = generate_and_compute_constants(
+    tokenizer=tokenizer,
+    text=text,
+    top_k_values=top_k_values,
+    sequence_count=sequence_count,
+)
 
 # Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values, with a separate color for each top-k setting
-plot_histograms(constants)
+plot_histograms(constants_dict=constants)
 
 # Each point represents a sequence, with the x-coordinate representing the sequence length and the y-coordinate representing the `c_alpha` value
-plot_constants_vs_length(constants, sequence_lengths)
+plot_constants_vs_length(
+    constants_dict=constants, sequence_lengths_dict=sequence_lengths
+)
