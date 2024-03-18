@@ -41,6 +41,7 @@ def predict_logits(curr_input_ids):
 
     return last_token_logits
 
+
 def generate_sequence(tokenizer, input_ids, top_k, device):
     # Initialize list to store local constants for the sequence
     local_constants = []
@@ -75,13 +76,14 @@ def generate_sequence(tokenizer, input_ids, top_k, device):
         if next_token.item() == tokenizer.eos_token_id:
             break
 
-    # # Calculate the product of constants for the sequence
+    # Calculate the product of constants for the sequence
     c_alpha = np.prod(local_constants)
 
     # The sequence length is the length of the local_constants list
     sequence_length = len(local_constants)
 
     return curr_input_ids, c_alpha, sequence_length
+
 
 # Main function to generate text and compute local decoding constants
 def generate_and_compute_constants(
@@ -103,9 +105,11 @@ def generate_and_compute_constants(
         # This is a top-level loop to generate multiple sequences
         for _ in range(sequence_count):
             # Generate a single sequence
-            generated_sequence, c_alpha, seq_length = generate_sequence(tokenizer, input_ids, top_k, device)
+            generated_sequence, c_alpha, seq_length = generate_sequence(
+                tokenizer, input_ids, top_k, device
+            )
 
-             # Store the product of constants and sequence length for each sequence
+            # Store the product of constants and sequence length for each sequence
             constants[top_k].append(c_alpha)
             sequence_lengths[top_k].append(seq_length)
 
