@@ -46,8 +46,6 @@ def generate_sequence(tokenizer, input_ids, top_k, device):
     local_constants = []
     # Clone the initial input_ids tensor to avoid modifying the original
     curr_input_ids = input_ids.clone()
-    # Initialize sequence length
-    sequence_length = 0
 
     # Loop to generate a single sequence until we reach the end of sequence token
     while True:
@@ -73,15 +71,15 @@ def generate_sequence(tokenizer, input_ids, top_k, device):
         # Concatenate the sampled next_token to the original input_ids to form the extended sequence
         curr_input_ids = torch.cat([curr_input_ids, next_token], dim=-1)
 
-        # Increment sequence length
-        sequence_length += 1
-
         # Check for end of sequence token
         if next_token.item() == tokenizer.eos_token_id:
             break
 
     # # Calculate the product of constants for the sequence
     c_alpha = np.prod(local_constants)
+
+    # The sequence length is the length of the local_constants list
+    sequence_length = len(local_constants)
 
     return curr_input_ids, c_alpha, sequence_length
 
@@ -204,7 +202,7 @@ constants, sequence_lengths = generate_and_compute_constants(
     text=text,
     top_k_values=top_k_values,
     sequence_count=sequence_count,
-    verbose=True,
+    verbose=False,
 )
 
 # Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values, with a separate color for each top-k setting
