@@ -43,11 +43,13 @@ def predict_logits(curr_input_ids):
     return last_token_logits
 
 
-def generate_sequence(tokenizer, input_ids, top_k, device):
+def generate_sequence(tokenizer, input_ids, max_length, top_k, device):
     # Initialize list to store local constants for the sequence
     local_constants = []
     # Clone the initial input_ids tensor to avoid modifying the original
     curr_input_ids = input_ids.clone()
+    # Initialize sequence length
+    sequence_length = 0
 
     # Loop to generate a single sequence until we reach the end of sequence token
     while True:
@@ -77,18 +79,21 @@ def generate_sequence(tokenizer, input_ids, top_k, device):
         if next_token.item() == tokenizer.eos_token_id:
             break
 
+        if max_length is not None and sequence_length >= max_length:
+            break
+
+        # Increment sequence length
+        sequence_length += 1
+
     # Calculate the product of constants for the sequence
     c_alpha = np.prod(local_constants)
-
-    # The sequence length is the length of the local_constants list
-    sequence_length = len(local_constants)
 
     return curr_input_ids, c_alpha, sequence_length
 
 
 # Main function to generate text and compute local decoding constants
 def generate_and_compute_constants(
-    tokenizer, text, top_k_values, sequence_count, verbose=False
+    tokenizer, text, top_k_values, sequence_count, max_length, verbose=False
 ):
     # Encode the input text to tensor
     input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
@@ -107,7 +112,7 @@ def generate_and_compute_constants(
         for _ in range(sequence_count):
             # Generate a single sequence
             generated_sequence, c_alpha, seq_length = generate_sequence(
-                tokenizer, input_ids, top_k, device
+                tokenizer, input_ids, max_length, top_k, device
             )
 
             # Store the product of constants and sequence length for each sequence
@@ -210,9 +215,10 @@ model.eval()
 max_model_length = model.config.max_position_embeddings
 
 # Define text, top_k_values, sequence_count, and max_length
-text = "Hi, this is"
+text = "This"
 top_k_values = [5, 10, 50, 100, 500, 1000]
 sequence_count = 100
+max_length = 10 # This can be set to None to disable the maximum length constraint
 
 # Generate sequences and compute constants
 constants, sequence_lengths = generate_and_compute_constants(
@@ -220,6 +226,7 @@ constants, sequence_lengths = generate_and_compute_constants(
     text=text,
     top_k_values=top_k_values,
     sequence_count=sequence_count,
+    max_length=max_length,
     verbose=False,
 )
 
