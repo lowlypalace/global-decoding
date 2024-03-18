@@ -214,10 +214,13 @@ model.eval()
 # Assume max_model_length is the maximum sequence length the model can handle
 max_model_length = model.config.max_position_embeddings
 
-# Define text, top_k_values, sequence_count, and max_length
+# Text to use as a prompt
 text = "This"
+# Top-k values to use
 top_k_values = [5, 10, 50, 100, 500, 1000]
-sequence_count = 100
+# Number of sequences to generate for each top-k setting
+sequence_count = 1000
+# Maximum length of a sequence
 max_length = 10 # This can be set to None to disable the maximum length constraint
 
 # Generate sequences and compute constants
