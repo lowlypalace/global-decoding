@@ -79,6 +79,7 @@ def generate_sequence(tokenizer, input_ids, max_length, top_k, device):
         if next_token.item() == tokenizer.eos_token_id:
             break
 
+        # If a maximum length is set and we have reached it, break the loop
         if max_length is not None and sequence_length >= max_length:
             break
 
