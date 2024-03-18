@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import datetime
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import plotly.graph_objects as go
 
@@ -122,6 +123,16 @@ def generate_and_compute_constants(
 
     return constants, sequence_lengths
 
+def create_filename(name):
+    # Get the current time
+    current_time = datetime.now()
+    # Format the time in a user-friendly format
+    time_str = current_time.strftime("%d-%m-%Y_%H-%M-%S")
+    # Create the filename with the current time
+    filename = f"{name}_{time_str}.html"
+
+    return filename
+
 
 # Function to plot histograms of constants using Plotly
 def plot_histograms(constants_dict):
@@ -148,7 +159,7 @@ def plot_histograms(constants_dict):
     # Create a figure with the data and layout
     fig = go.Figure(data=data, layout=layout)
     # Save graph
-    fig.write_html("histogram1000.html")
+    fig.write_html(create_filename("histogram"))
     # Show the figure
     fig.show()
 
@@ -175,7 +186,7 @@ def plot_constants_vs_length(constants_dict, lengths_dict):
     # Create a figure with the data and layout
     fig = go.Figure(data=data, layout=layout)
     # Save graph
-    fig.write_html("scatter1000.html")
+    fig.write_html(create_filename("scatterplot"))
     # Show the figure
     fig.show()
 
