@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-import datetime
+from datetime import datetime
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import plotly.graph_objects as go
 
@@ -136,7 +136,7 @@ def create_filename(name):
 
 
 # Function to plot histograms of constants using Plotly
-def plot_histograms(constants_dict):
+def plot_histograms(constants_dict, show=True):
     # Create an empty list to hold the histogram data
     data = []
 
@@ -162,11 +162,12 @@ def plot_histograms(constants_dict):
     # Save graph
     fig.write_html(create_filename("histogram"))
     # Show the figure
-    fig.show()
+    if show:
+        fig.show()
 
 
 # Plotting the constants against their respective sequence lengths
-def plot_constants_vs_length(constants_dict, lengths_dict):
+def plot_constants_vs_length(constants_dict, lengths_dict, show=True):
     data = []
 
     for top_k in constants_dict:
@@ -189,7 +190,8 @@ def plot_constants_vs_length(constants_dict, lengths_dict):
     # Save graph
     fig.write_html(create_filename("scatterplot"))
     # Show the figure
-    fig.show()
+    if show:
+        fig.show()
 
 
 # Set the device to GPU if available
@@ -222,9 +224,9 @@ constants, sequence_lengths = generate_and_compute_constants(
 )
 
 # Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values, with a separate color for each top-k setting
-plot_histograms(constants_dict=constants)
+plot_histograms(constants_dict=constants, show=False)
 
 # Each point represents a sequence, with the x-coordinate representing the sequence length and the y-coordinate representing the `c_alpha` value
 plot_constants_vs_length(
-    constants_dict=constants, sequence_lengths_dict=sequence_lengths
+    constants_dict=constants, lengths_dict=sequence_lengths, show=False
 )
