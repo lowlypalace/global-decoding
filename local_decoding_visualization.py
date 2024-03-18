@@ -6,36 +6,32 @@ import plotly.graph_objects as go
 def normalization_constant(logits, top_indices):
     # Normalize probabilities of all of the logits (not filtered)
     probs = torch.nn.functional.softmax(logits, dim=-1)
-
     # Get only top-k probabilities
     top_k_probs = probs[0][top_indices]
-
     # Calculate the inverse sum of the top-k (unnormalized) probabilities
-    normalization_const = 1 / torch.sum(top_k_probs, dim=-1)
+    normalization_const = 1.0 / torch.sum(top_k_probs, dim=-1)
 
-    return normalization_const.item()
+    return normalization_const
 
 def top_k_filtering(logits, top_indices):
     # Create a mask of the same shape as logits, initialized to True
     mask = torch.ones_like(logits, dtype=torch.bool)
-
     # Set the mask to False for the top_k indices
     mask[0][top_indices] = False
-
     # Set all elements of logits that are not in the top_k to -inf
-    logits[mask] = -float('inf')
+    logits[mask] =  -float('inf')
 
     return logits
 
 def predict_logits(curr_input_ids):
     # Check if the current input exceeds the maximum model length
     if curr_input_ids.size(1) >= max_model_length:
-
         # If it does, truncate the input to the maximum model length
         curr_input_ids = curr_input_ids[:, -max_model_length:]
 
-    # We pass our input_ids to the model to get the output.
-    outputs = model(curr_input_ids)
+    with torch.no_grad():
+         # We pass our input_ids to the model to get the output.
+        outputs = model(curr_input_ids)
 
     # The output of the model is a tuple, where the first element contains the logits (raw, unnormalized scores for each possible next token).
     predictions = outputs[0]
@@ -47,28 +43,28 @@ def predict_logits(curr_input_ids):
 
 # Main function to generate text and compute local decoding constants
 def generate_and_compute_constants(tokenizer, text, top_k_values, sequence_count):
+    # Encode the input text to tensor
     input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors='pt').to(device)
-
     # Define dictionary that will hold the product of local constants for each sequence and map them to the top k value
     constants = {top_k: [] for top_k in top_k_values}
-
     # Store sequence lengths
     sequence_lengths = {top_k: [] for top_k in top_k_values}
 
-    # Iterate over different top k values
+    # Iterate over provided top k values
     for top_k in top_k_values:
         print(f"Generating sequences for top k = {top_k}")
 
-        # Now go over whatever number of sequence we need to generate
+        # This is a top-level loop to generate multiple sequences
         for _ in range(sequence_count):
-
+            # Initialize list to store local constants for the sequence
             local_constants = []
+            # Clone the input_ids tensor to avoid modifying the original
             curr_input_ids = input_ids.clone()
-            sequence_length = 0  # Initialize sequence length
+            # Initialize sequence length
+            sequence_length = 0
 
             # This is a loop to generate a single sequence
             while True:
-
                 # Retrieve the logits for the last token from the output
                 last_token_logits = predict_logits(curr_input_ids)
 
@@ -77,9 +73,9 @@ def generate_and_compute_constants(tokenizer, text, top_k_values, sequence_count
 
                 # Calculate local constant
                 local_const = normalization_constant(last_token_logits, top_indices)
-                local_constants.append(local_const)
+                local_constants.append(local_const.item())
 
-                # Apply top-k filtering to logits (inplace)
+                # Apply top-k filtering to logits
                 filtered_logits = top_k_filtering(last_token_logits, top_indices)
 
                 # Normalize the filtered logits to probabilities
@@ -88,7 +84,7 @@ def generate_and_compute_constants(tokenizer, text, top_k_values, sequence_count
                 # Sample from the filtered distribution
                 next_token = torch.multinomial(probs, num_samples=1).to(device)
 
-                # We concatenate the sampled next_token to the original input_ids to form the extended sequence.
+                # Concatenate the sampled next_token to the original input_ids to form the extended sequence
                 curr_input_ids = torch.cat([curr_input_ids, next_token], dim=-1)
 
                 # Increment sequence length
@@ -97,15 +93,15 @@ def generate_and_compute_constants(tokenizer, text, top_k_values, sequence_count
                 if next_token.item() == tokenizer.eos_token_id:
                     break
 
-            # # Calculate c_alpha for the sequence
+            # # Calculate the product of constants for the sequence
             c_alpha = np.prod(local_constants)
             constants[top_k].append(c_alpha)
             # Append the sequence length
-            sequence_lengths[top_k].append(sequence_length)  # Append the sequence length
+            sequence_lengths[top_k].append(sequence_length)
 
             # Print sequences for debugging
-            # generated_text = tokenizer.decode(curr_input_ids[0], skip_special_tokens=True)
-            # print(generated_text)
+            generated_text = tokenizer.decode(curr_input_ids[0], skip_special_tokens=True)
+            print(generated_text)
 
     return constants, sequence_lengths
 
@@ -177,6 +173,9 @@ tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 
 # Load pre-trained model
 model = GPT2LMHeadModel.from_pretrained('gpt2').to(device)
+
+# Set the model to evaluation mode
+model.eval()
 
 # Assume max_model_length is the maximum sequence length the model can handle
 max_model_length = model.config.max_position_embeddings
