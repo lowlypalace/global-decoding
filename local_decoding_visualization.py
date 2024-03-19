@@ -221,7 +221,7 @@ model.eval()
 max_model_length = model.config.max_position_embeddings
 
 # Text to use as a prompt
-text = "This"
+text = tokenizer.eos_token
 # Top-k values to use
 top_k_values = [5, 10, 50, 100, 500, 1000]
 # Number of sequences to generate for each top-k setting
