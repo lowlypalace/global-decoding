@@ -262,13 +262,12 @@ def main():
     # Text to use as a prompt
     text = tokenizer.eos_token
     # Top-k values to use
-    # top_k_values = [5, 10, 50, 100, 500, 1000]
-    top_k_values = [5, 50, 500]
+    top_k_values = [5, 10, 50, 100, 500, 1000]
     # Number of sequences to generate for each top-k setting
-    sequence_count = 3
+    sequence_count = 1000
     # Maximum length of a sequence
     # This can be set to None to disable the maximum length constraint
-    max_length = 100
+    max_length = None
 
     # Generate sequences and compute constants
     constants, sequence_lengths = generate_and_compute_constants(
