@@ -101,7 +101,6 @@ def generate_sequence(
 
     # Calculate the product of constants for the sequence
     constants_product = np.prod(local_constants)
-
     # Decode the generated sequence
     decoded_sequence = tokenizer.decode(curr_input_ids[0], skip_special_tokens=True)
 
@@ -178,19 +177,29 @@ def create_filename(name, extension):
 
 
 # Function to plot histograms of constants using Plotly
-def plot_histograms(constants_dict, show=True):
-    # Create an empty list to hold the histogram data
+def plot_histograms(constants_dict, decoded_sequences_dict, show=True):
     data = []
 
     # Loop through the constants_dict to create a histogram for each set of constants
     for top_k, constants in constants_dict.items():
         # Convert constants to log scale
         log_constants = np.log(constants)
+        # Retrieve the decoded sequences for the tooltips
+        decoded_sequences = decoded_sequences_dict[top_k]
+        # Generate hover text
+        hover_text = [
+            'Constant: {:.2f}<br>Sample Sequence: {}'.format(const, seq)
+            for const, seq in zip(constants, decoded_sequences)
+        ]
         # Create a histogram for the current set of constants
         histogram = go.Histogram(
-            x=log_constants, nbinsx=30, name=f"Top K = {top_k}", opacity=0.5
+            x=log_constants,
+            nbinsx=30,
+            name=f"Top K = {top_k}",
+            opacity=0.5,
+            hoverinfo='text',
+            hover_text=hover_text
         )
-        # Append the histogram to our data list
         data.append(histogram)
 
     # Create a layout for the plot
@@ -211,18 +220,27 @@ def plot_histograms(constants_dict, show=True):
 
 
 # Plotting the constants against their respective sequence lengths
-def plot_constants_vs_length(constants_dict, lengths_dict, show=True):
+def plot_constants_vs_length(constants_dict, lengths_dict, decoded_sequences_dict, show=True):
     data = []
 
     for top_k in constants_dict:
         # Convert constants to log scale
         log_constants = np.log(constants_dict[top_k])
+        # Retrieve the decoded sequences for the tooltips
+        decoded_sequences = decoded_sequences_dict[top_k]
+        # Generate hover text
+        hover_text = [
+            'Length: {}<br>Decoded Sequence: {}<br>c_alpha: {:.2f}'.format(length, seq, const)
+            for length, seq, const in zip(lengths_dict[top_k], decoded_sequences, constants_dict[top_k])]
+
         # Create a scatter plot for the current set of constants
         scatter = go.Scatter(
             x=lengths_dict[top_k],
             y=log_constants,
             mode="markers",
             name=f"Top K = {top_k}",
+            hoverinfo='text',
+            text=hover_text
         )
         data.append(scatter)
 
@@ -301,14 +319,15 @@ def main():
         verbose=False,
     )
 
-    # Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values,
-    # with a separate color for each top-k setting
-    plot_histograms(constants_dict=constants, show=False)
+    # Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values
+    # Separate color is used for each top-k setting
+    plot_histograms(constants_dict=constants, decoded_sequences_dict=decoded_sequences,show=False)
 
-    # Each point represents a sequence, with the x-coordinate representing the sequence length
-    # and the y-coordinate representing the `c_alpha` value
+    # Each point represents a sequence
+    # The x-coordinate representing the sequence length
+    # The y-coordinate representing the `c_alpha` value
     plot_constants_vs_length(
-        constants_dict=constants, lengths_dict=sequence_lengths, show=False
+        constants_dict=constants, decoded_sequences_dict=decoded_sequences, lengths_dict=sequence_lengths, show=False
     )
 
     # Save the data to a CSV file
