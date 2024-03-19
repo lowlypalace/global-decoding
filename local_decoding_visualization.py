@@ -17,7 +17,7 @@ def normalization_constant(logits, top_indices):
     return normalization_const
 
 
-def top_k_filtering(logits, top_indices): # TODO: More genral name
+def top_k_filtering(logits, top_indices):  # TODO: More genral name
     # Create a mask of the same shape as logits, initialized to True
     mask = torch.ones_like(logits, dtype=torch.bool)
     # Set the mask to False for the top_k indices
@@ -28,7 +28,7 @@ def top_k_filtering(logits, top_indices): # TODO: More genral name
     return logits
 
 
-def predict_logits(curr_input_ids):
+def predict_logits(curr_input_ids, model):
     with torch.no_grad():
         # We pass our input_ids to the model to get the output.
         outputs = model(curr_input_ids)
@@ -39,14 +39,22 @@ def predict_logits(curr_input_ids):
 
     return last_token_logits
 
+
 def calculate_context_length(input_ids, max_length, max_model_length):
     # Get the length of the input_ids tensor
     input_length = input_ids.size(1)
     # Calculate the max_length based on the input length and model's max position embeddings
-    max_length = max_model_length - input_length if max_length is None else min(max_length, max_model_length - input_length)
+    max_length = (
+        max_model_length - input_length
+        if max_length is None
+        else min(max_length, max_model_length - input_length)
+    )
     return max_length
 
-def generate_sequence(tokenizer, input_ids, max_length, top_k, device):
+
+def generate_sequence(
+    tokenizer, model, input_ids, max_length, top_k, max_model_length, device
+):
     # Initialize list to store local constants for the sequence
     local_constants = []
     # Clone the initial input_ids tensor to avoid modifying the original
@@ -59,7 +67,7 @@ def generate_sequence(tokenizer, input_ids, max_length, top_k, device):
     # Loop to generate a single sequence until we reach the end of sequence token
     while True:
         # Retrieve the logits for the last token from the output
-        last_token_logits = predict_logits(curr_input_ids)
+        last_token_logits = predict_logits(curr_input_ids, model)
 
         # Get top-k values
         _, top_indices = torch.topk(last_token_logits, top_k)
@@ -92,14 +100,24 @@ def generate_sequence(tokenizer, input_ids, max_length, top_k, device):
         sequence_length += 1
 
     # Calculate the product of constants for the sequence
+    print(local_constants)
     c_alpha = np.prod(local_constants)
+    print(c_alpha)
 
     return curr_input_ids, c_alpha, sequence_length
 
 
 # Main function to generate text and compute local decoding constants
 def generate_and_compute_constants(
-    tokenizer, text, top_k_values, sequence_count, max_length, max_model_length, verbose
+    tokenizer,
+    model,
+    text,
+    top_k_values,
+    sequence_count,
+    max_length,
+    max_model_length,
+    device,
+    verbose,
 ):
     # Encode the input text to tensor
     input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
@@ -118,7 +136,7 @@ def generate_and_compute_constants(
         for _ in range(sequence_count):
             # Generate a single sequence
             generated_sequence, c_alpha, seq_length = generate_sequence(
-                tokenizer, input_ids, max_length, top_k, device
+                tokenizer, model, input_ids, max_length, max_model_length, top_k, device
             )
 
             # Store the product of constants and sequence length for each sequence
@@ -135,13 +153,13 @@ def generate_and_compute_constants(
     return constants, sequence_lengths
 
 
-def create_filename(name):
+def create_filename(name, extension):
     # Get the current time
     current_time = datetime.now()
     # Format the time in a user-friendly format
     time_str = current_time.strftime("%d-%m-%Y_%H-%M-%S")
     # Create the filename with the current time
-    filename = f"{name}_{time_str}.html"
+    filename = f"{name}_{time_str}.{extension}"
 
     return filename
 
@@ -171,7 +189,7 @@ def plot_histograms(constants_dict, show=True):
     # Create a figure with the data and layout
     fig = go.Figure(data=data, layout=layout)
     # Save graph
-    fig.write_html(create_filename("histogram"))
+    fig.write_html(create_filename("histogram", "html"))
     # Show the figure
     if show:
         fig.show()
@@ -199,52 +217,80 @@ def plot_constants_vs_length(constants_dict, lengths_dict, show=True):
     # Create a figure with the data and layout
     fig = go.Figure(data=data, layout=layout)
     # Save graph
-    fig.write_html(create_filename("scatterplot"))
+    fig.write_html(create_filename("scatterplot", "html"))
     # Show the figure
     if show:
         fig.show()
 
 
-# Set the device to GPU if available
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+import csv
 
-# Load pre-trained model tokenizer
-tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 
-# Load pre-trained model
-model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
+def save_data(constants, sequence_lengths, filename="output.csv"):
+    # Open the file in write mode
+    with open(filename, mode="w", newline="") as file:
+        # Create a CSV writer object
+        csv_writer = csv.writer(file)
 
-# Set the model to evaluation mode
-model.eval()
+        # Write the header
+        csv_writer.writerow(["top_k", "c_alpha", "sequence_length"])
 
-# Assume max_model_length is the maximum sequence length the model can handle
-max_model_length = model.config.max_position_embeddings
+        # Write data rows
+        for top_k in constants:
+            for c_alpha, seq_length in zip(constants[top_k], sequence_lengths[top_k]):
+                csv_writer.writerow([top_k, c_alpha, seq_length])
 
-# Text to use as a prompt
-text = tokenizer.eos_token
-# Top-k values to use
-top_k_values = [5, 10, 50, 100, 500, 1000]
-# Number of sequences to generate for each top-k setting
-sequence_count = 1000
-# Maximum length of a sequence
-# This can be set to None to disable the maximum length constraint
-max_length = None
 
-# Generate sequences and compute constants
-constants, sequence_lengths = generate_and_compute_constants(
-    tokenizer=tokenizer,
-    text=text,
-    top_k_values=top_k_values,
-    sequence_count=sequence_count,
-    max_length=max_length,
-    max_model_length=max_model_length,
-    verbose=False,
-)
+def main():
+    # Set the device to GPU if available
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values, with a separate color for each top-k setting
-plot_histograms(constants_dict=constants, show=False)
+    # Load pre-trained model tokenizer
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 
-# Each point represents a sequence, with the x-coordinate representing the sequence length and the y-coordinate representing the `c_alpha` value
-plot_constants_vs_length(
-    constants_dict=constants, lengths_dict=sequence_lengths, show=False
-)
+    # Load pre-trained model
+    model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
+
+    # Set the model to evaluation mode
+    model.eval()
+
+    # Assume max_model_length is the maximum sequence length the model can handle
+    max_model_length = model.config.max_position_embeddings
+
+    # Text to use as a prompt
+    text = tokenizer.eos_token
+    # Top-k values to use
+    # top_k_values = [5, 10, 50, 100, 500, 1000]
+    top_k_values = [5, 50, 500]
+    # Number of sequences to generate for each top-k setting
+    sequence_count = 3
+    # Maximum length of a sequence
+    # This can be set to None to disable the maximum length constraint
+    max_length = 100
+
+    # Generate sequences and compute constants
+    constants, sequence_lengths = generate_and_compute_constants(
+        tokenizer=tokenizer,
+        model=model,
+        text=text,
+        top_k_values=top_k_values,
+        sequence_count=sequence_count,
+        max_length=max_length,
+        max_model_length=max_model_length,
+        device=device,
+        verbose=False,
+    )
+
+    # Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values, with a separate color for each top-k setting
+    plot_histograms(constants_dict=constants, show=False)
+
+    # Each point represents a sequence, with the x-coordinate representing the sequence length and the y-coordinate representing the `c_alpha` value
+    plot_constants_vs_length(
+        constants_dict=constants, lengths_dict=sequence_lengths, show=False
+    )
+
+    save_data(constants, sequence_lengths, filename=create_filename("output", "csv"))
+
+
+if __name__ == "__main__":
+    main()
