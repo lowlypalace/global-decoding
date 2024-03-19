@@ -62,10 +62,10 @@ def generate_sequence(
     curr_input_ids = input_ids.clone()
     # Initialize sequence length
     sequence_length = 0
-    # Calculate the max_length based on the input length and model's max position embeddings
+    # Calculate the max_length so it is bound by the model context length
     max_length = calculate_context_length(input_ids, max_length, max_model_length)
 
-    # Loop to generate a single sequence until we reach the end of sequence token
+    # Loop to generate a single sequence
     while True:
         # Retrieve the logits for the last token from the output
         last_token_logits = predict_logits(curr_input_ids, model)
@@ -116,7 +116,7 @@ def generate_and_compute_constants(
     max_length,
     max_model_length,
     device,
-    verbose,
+    verbose=False,
 ):
     # Encode the input text to tensor
     input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
@@ -228,7 +228,8 @@ def plot_constants_vs_length(constants_dict, lengths_dict, show=True):
         fig.show()
 
 
-def save_data(constants, sequence_lengths, filename="output.csv"):
+# Save the data to a CSV file
+def save_data(constants, sequence_lengths, filename):
     # Open the file in write mode
     with open(filename, mode="w", newline="") as file:
         # Create a CSV writer object
@@ -282,14 +283,17 @@ def main():
         verbose=False,
     )
 
-    # Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values, with a separate color for each top-k setting
+    # Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values,
+    # with a separate color for each top-k setting
     plot_histograms(constants_dict=constants, show=False)
 
-    # Each point represents a sequence, with the x-coordinate representing the sequence length and the y-coordinate representing the `c_alpha` value
+    # Each point represents a sequence, with the x-coordinate representing the sequence length
+    # and the y-coordinate representing the `c_alpha` value
     plot_constants_vs_length(
         constants_dict=constants, lengths_dict=sequence_lengths, show=False
     )
 
+    # Save the data to a CSV file
     save_data(constants, sequence_lengths, filename=create_filename("output", "csv"))
 
 
