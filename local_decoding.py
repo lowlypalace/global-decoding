@@ -68,7 +68,6 @@ def generate_sequence(
     while True:
         # Retrieve the logits for the last token from the output
         last_token_logits = predict_logits(curr_input_ids, model)
-
         # Get top-k values
         _, top_indices = torch.topk(last_token_logits, top_k)
 
@@ -78,23 +77,20 @@ def generate_sequence(
 
         # Apply top-k filtering to logits
         filtered_logits = top_k_filtering(last_token_logits, top_indices)
-
         # Normalize the filtered logits to probabilities
         probs = torch.nn.functional.softmax(filtered_logits, dim=-1)
-
         # Sample from the filtered distribution
         next_token = torch.multinomial(probs, num_samples=1).to(device)
-
-        # Concatenate the sampled next_token to the original input_ids to form the extended sequence
-        curr_input_ids = torch.cat([curr_input_ids, next_token], dim=-1)
 
         # Check for end of sequence token
         if next_token.item() == tokenizer.eos_token_id:
             break
-
         # If a maximum length is set and we have reached it, break the loop
         if max_length is not None and sequence_length >= max_length:
             break
+
+        # Concatenate the sampled next_token to the original input_ids to form the extended sequence
+        curr_input_ids = torch.cat([curr_input_ids, next_token], dim=-1)
 
         # Increment sequence length
         sequence_length += 1
@@ -205,7 +201,7 @@ def plot_histograms(constants_dict, decoded_sequences_dict, show=True):
     # Create a layout for the plot
     layout = go.Layout(
         title="Histogram of Decoding Constants",
-        xaxis=dict(title="Decoding Constant"),
+        xaxis=dict(title="Decoding Constant (ln(c_alpha))"),
         yaxis=dict(title="Frequency"),
         barmode="overlay",
     )
@@ -232,7 +228,6 @@ def plot_constants_vs_length(constants_dict, lengths_dict, decoded_sequences_dic
         hover_text = [
             'Length: {}<br>Decoded Sequence: {}<br>c_alpha: {:.2f}'.format(length, seq, const)
             for length, seq, const in zip(lengths_dict[top_k], decoded_sequences, constants_dict[top_k])]
-
         # Create a scatter plot for the current set of constants
         scatter = go.Scatter(
             x=lengths_dict[top_k],
@@ -244,10 +239,11 @@ def plot_constants_vs_length(constants_dict, lengths_dict, decoded_sequences_dic
         )
         data.append(scatter)
 
+    # Create a layout for the plot
     layout = go.Layout(
         title="Decoding Constants vs. Sequence Length",
         xaxis=dict(title="Sequence Length"),
-        yaxis=dict(title="Decoding Constant"),
+        yaxis=dict(title="Decoding Constant (ln(c_alpha))"),
         hovermode="closest",
     )
     # Create a figure with the data and layout
@@ -265,12 +261,10 @@ def save_data(constants, sequence_lengths, decoded_sequences, filename):
     with open(filename, mode="w", newline="") as file:
         # Create a CSV writer object
         csv_writer = csv.writer(file)
-
         # Write the header
         csv_writer.writerow(
             ["top_k", "constant", "sequence_length", "generated_sequence"]
         )
-
         # Write data rows
         for top_k in constants:
             for constant, seq_length, decoded_seq in zip(
@@ -282,16 +276,12 @@ def save_data(constants, sequence_lengths, decoded_sequences, filename):
 def main():
     # Set the device to GPU if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
     # Load pre-trained model tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-
     # Load pre-trained model
     model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
-
     # Set the model to evaluation mode
     model.eval()
-
     # Assume max_model_length is the maximum sequence length the model can handle
     max_model_length = model.config.max_position_embeddings
 
@@ -322,14 +312,12 @@ def main():
     # Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values
     # Separate color is used for each top-k setting
     plot_histograms(constants_dict=constants, decoded_sequences_dict=decoded_sequences,show=False)
-
     # Each point represents a sequence
     # The x-coordinate representing the sequence length
     # The y-coordinate representing the `c_alpha` value
     plot_constants_vs_length(
         constants_dict=constants, decoded_sequences_dict=decoded_sequences, lengths_dict=sequence_lengths, show=False
     )
-
     # Save the data to a CSV file
     save_data(
         constants=constants,
