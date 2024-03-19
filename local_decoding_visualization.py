@@ -186,7 +186,7 @@ def plot_histograms(constants_dict, show=True):
     # Create a layout for the plot
     layout = go.Layout(
         title="Histogram of Local Decoding Constants",
-        xaxis=dict(title="Local Decoding Constant c_alpha"),
+        xaxis=dict(title="Local Decoding Constant c_alpha", type='log'),
         yaxis=dict(title="Frequency"),
         barmode="overlay",
     )
@@ -216,7 +216,7 @@ def plot_constants_vs_length(constants_dict, lengths_dict, show=True):
     layout = go.Layout(
         title="Local Decoding Constants vs. Sequence Length",
         xaxis=dict(title="Sequence Length"),
-        yaxis=dict(title="Local Decoding Constant c_alpha"),
+        yaxis=dict(title="Local Decoding Constant c_alpha", type='log'),
         hovermode="closest",
     )
     # Create a figure with the data and layout
