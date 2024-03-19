@@ -12,11 +12,12 @@ def normalization_constant(logits, top_indices):
     top_k_probs = probs[0][top_indices]
     # Calculate the inverse sum of the top-k (unnormalized) probabilities
     normalization_const = 1.0 / torch.sum(top_k_probs, dim=-1)
+    print("normalization_const:", normalization_const)
 
     return normalization_const
 
 
-def top_k_filtering(logits, top_indices):
+def top_k_filtering(logits, top_indices): # TODO: More genral name
     # Create a mask of the same shape as logits, initialized to True
     mask = torch.ones_like(logits, dtype=torch.bool)
     # Set the mask to False for the top_k indices
@@ -28,10 +29,6 @@ def top_k_filtering(logits, top_indices):
 
 
 def predict_logits(curr_input_ids):
-    # Check if the current input exceeds the maximum model length
-    if curr_input_ids.size(1) >= max_model_length:
-        # If it does, truncate the input to the maximum model length
-        curr_input_ids = curr_input_ids[:, -max_model_length:]
     with torch.no_grad():
         # We pass our input_ids to the model to get the output.
         outputs = model(curr_input_ids)
@@ -42,6 +39,12 @@ def predict_logits(curr_input_ids):
 
     return last_token_logits
 
+def calculate_context_length(input_ids, max_length, max_model_length):
+    # Get the length of the input_ids tensor
+    input_length = input_ids.size(1)
+    # Calculate the max_length based on the input length and model's max position embeddings
+    max_length = max_model_length - input_length if max_length is None else min(max_length, max_model_length - input_length)
+    return max_length
 
 def generate_sequence(tokenizer, input_ids, max_length, top_k, device):
     # Initialize list to store local constants for the sequence
@@ -50,6 +53,8 @@ def generate_sequence(tokenizer, input_ids, max_length, top_k, device):
     curr_input_ids = input_ids.clone()
     # Initialize sequence length
     sequence_length = 0
+    # Calculate the max_length based on the input length and model's max position embeddings
+    max_length = calculate_context_length(input_ids, max_length, max_model_length)
 
     # Loop to generate a single sequence until we reach the end of sequence token
     while True:
@@ -94,7 +99,7 @@ def generate_sequence(tokenizer, input_ids, max_length, top_k, device):
 
 # Main function to generate text and compute local decoding constants
 def generate_and_compute_constants(
-    tokenizer, text, top_k_values, sequence_count, max_length, verbose=False
+    tokenizer, text, top_k_values, sequence_count, max_length, max_model_length, verbose
 ):
     # Encode the input text to tensor
     input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
@@ -222,7 +227,8 @@ top_k_values = [5, 10, 50, 100, 500, 1000]
 # Number of sequences to generate for each top-k setting
 sequence_count = 1000
 # Maximum length of a sequence
-max_length = 10 # This can be set to None to disable the maximum length constraint
+# This can be set to None to disable the maximum length constraint
+max_length = None
 
 # Generate sequences and compute constants
 constants, sequence_lengths = generate_and_compute_constants(
@@ -231,6 +237,7 @@ constants, sequence_lengths = generate_and_compute_constants(
     top_k_values=top_k_values,
     sequence_count=sequence_count,
     max_length=max_length,
+    max_model_length=max_model_length,
     verbose=False,
 )
 
