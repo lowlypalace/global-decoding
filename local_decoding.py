@@ -13,12 +13,11 @@ def normalization_constant(logits, top_indices):
     top_k_probs = probs[0][top_indices]
     # Calculate the inverse sum of the top-k (unnormalized) probabilities
     normalization_const = 1.0 / torch.sum(top_k_probs, dim=-1)
-    print("normalization_const:", normalization_const)
 
     return normalization_const
 
 
-def top_k_filtering(logits, top_indices):  # TODO: More genral name
+def top_k_filtering(logits, top_indices):
     # Create a mask of the same shape as logits, initialized to True
     mask = torch.ones_like(logits, dtype=torch.bool)
     # Set the mask to False for the top_k indices
@@ -101,9 +100,12 @@ def generate_sequence(
         sequence_length += 1
 
     # Calculate the product of constants for the sequence
-    c_alpha = np.prod(local_constants)
+    constants_product = np.prod(local_constants)
 
-    return curr_input_ids, c_alpha, sequence_length
+    # Decode the generated sequence
+    decoded_sequence = tokenizer.decode(curr_input_ids[0], skip_special_tokens=True)
+
+    return decoded_sequence, constants_product, sequence_length
 
 
 # Main function to generate text and compute local decoding constants
@@ -126,15 +128,21 @@ def generate_and_compute_constants(
     constants = {top_k: [] for top_k in top_k_values}
     # Store sequence lengths
     sequence_lengths = {top_k: [] for top_k in top_k_values}
+    # Store the decoded sequences
+    decoded_sequences = {top_k: [] for top_k in top_k_values}
 
     # Iterate over provided top k values
     for top_k in top_k_values:
+        print()
         print(f"Generating sequences for top k = {top_k}")
 
         # This is a top-level loop to generate multiple sequences
-        for _ in range(sequence_count):
+        for i in range(sequence_count):
+            if i % 10 == 0:
+                print(f"Generating sequence {i} of {sequence_count}")
+
             # Generate a single sequence
-            generated_sequence, c_alpha, seq_length = generate_sequence(
+            decoded_seq, constant, seq_length = generate_sequence(
                 tokenizer=tokenizer,
                 model=model,
                 input_ids=input_ids,
@@ -145,17 +153,17 @@ def generate_and_compute_constants(
             )
 
             # Store the product of constants and sequence length for each sequence
-            constants[top_k].append(c_alpha)
+            constants[top_k].append(constant)
             sequence_lengths[top_k].append(seq_length)
+            decoded_sequences[top_k].append(decoded_seq)
 
-            # Print sequences for debugging
+            # Print for debugging
             if verbose:
-                generated_text = tokenizer.decode(
-                    generated_sequence[0], skip_special_tokens=True
-                )
-                print(generated_text)
+                print(f"Generated sequence: {decoded_seq}")
+                print(f"Decoding constant: {constant}")
+                print(f"Sequence length: {seq_length}")
 
-    return constants, sequence_lengths
+    return constants, sequence_lengths, decoded_sequences
 
 
 def create_filename(name, extension):
@@ -176,17 +184,19 @@ def plot_histograms(constants_dict, show=True):
 
     # Loop through the constants_dict to create a histogram for each set of constants
     for top_k, constants in constants_dict.items():
+        # Convert constants to log scale
+        log_constants = np.log(constants)
         # Create a histogram for the current set of constants
         histogram = go.Histogram(
-            x=constants, nbinsx=30, name=f"Top K = {top_k}", opacity=0.5
+            x=log_constants, nbinsx=30, name=f"Top K = {top_k}", opacity=0.5
         )
         # Append the histogram to our data list
         data.append(histogram)
 
     # Create a layout for the plot
     layout = go.Layout(
-        title="Histogram of Local Decoding Constants",
-        xaxis=dict(title="Local Decoding Constant c_alpha", type='log'),
+        title="Histogram of Decoding Constants",
+        xaxis=dict(title="Decoding Constant"),
         yaxis=dict(title="Frequency"),
         barmode="overlay",
     )
@@ -205,18 +215,21 @@ def plot_constants_vs_length(constants_dict, lengths_dict, show=True):
     data = []
 
     for top_k in constants_dict:
+        # Convert constants to log scale
+        log_constants = np.log(constants_dict[top_k])
+        # Create a scatter plot for the current set of constants
         scatter = go.Scatter(
             x=lengths_dict[top_k],
-            y=constants_dict[top_k],
+            y=log_constants,
             mode="markers",
             name=f"Top K = {top_k}",
         )
         data.append(scatter)
 
     layout = go.Layout(
-        title="Local Decoding Constants vs. Sequence Length",
+        title="Decoding Constants vs. Sequence Length",
         xaxis=dict(title="Sequence Length"),
-        yaxis=dict(title="Local Decoding Constant c_alpha", type='log'),
+        yaxis=dict(title="Decoding Constant"),
         hovermode="closest",
     )
     # Create a figure with the data and layout
@@ -229,19 +242,23 @@ def plot_constants_vs_length(constants_dict, lengths_dict, show=True):
 
 
 # Save the data to a CSV file
-def save_data(constants, sequence_lengths, filename):
+def save_data(constants, sequence_lengths, decoded_sequences, filename):
     # Open the file in write mode
     with open(filename, mode="w", newline="") as file:
         # Create a CSV writer object
         csv_writer = csv.writer(file)
 
         # Write the header
-        csv_writer.writerow(["top_k", "c_alpha", "sequence_length"])
+        csv_writer.writerow(
+            ["top_k", "constant", "sequence_length", "generated_sequence"]
+        )
 
         # Write data rows
         for top_k in constants:
-            for c_alpha, seq_length in zip(constants[top_k], sequence_lengths[top_k]):
-                csv_writer.writerow([top_k, c_alpha, seq_length])
+            for constant, seq_length, decoded_seq in zip(
+                constants[top_k], sequence_lengths[top_k], decoded_sequences[top_k]
+            ):
+                csv_writer.writerow([top_k, constant, seq_length, decoded_seq])
 
 
 def main():
@@ -263,15 +280,16 @@ def main():
     # Text to use as a prompt
     text = tokenizer.eos_token
     # Top-k values to use
-    top_k_values = [5, 10, 50, 100, 500, 1000]
+    # top_k_values = [5, 10, 50, 100, 500, 1000, 5000, 10000]
+    top_k_values = [10, 100, 500]
     # Number of sequences to generate for each top-k setting
-    sequence_count = 1000
+    sequence_count = 50
     # Maximum length of a sequence
     # This can be set to None to disable the maximum length constraint
-    max_length = None
+    max_length = 10
 
     # Generate sequences and compute constants
-    constants, sequence_lengths = generate_and_compute_constants(
+    constants, sequence_lengths, decoded_sequences = generate_and_compute_constants(
         tokenizer=tokenizer,
         model=model,
         text=text,
@@ -294,7 +312,12 @@ def main():
     )
 
     # Save the data to a CSV file
-    save_data(constants, sequence_lengths, filename=create_filename("output", "csv"))
+    save_data(
+        constants=constants,
+        sequence_lengths=sequence_lengths,
+        decoded_sequences=decoded_sequences,
+        filename=create_filename("output", "csv"),
+    )
 
 
 if __name__ == "__main__":
