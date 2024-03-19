@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import csv
 from datetime import datetime
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import plotly.graph_objects as go
@@ -221,9 +222,6 @@ def plot_constants_vs_length(constants_dict, lengths_dict, show=True):
     # Show the figure
     if show:
         fig.show()
-
-
-import csv
 
 
 def save_data(constants, sequence_lengths, filename="output.csv"):
