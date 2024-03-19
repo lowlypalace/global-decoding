@@ -33,7 +33,7 @@ def predict_logits(curr_input_ids, model):
     with torch.no_grad():
         # We pass our input_ids to the model to get the output.
         outputs = model(curr_input_ids)
-    # The output of the model is a tuple, where the first element contains the logits (raw, unnormalized scores for each possible next token).
+    # The output of the model is a tuple, where the first element contains the logits.
     predictions = outputs[0]
     # Retrieve the logits for the last token from the output
     last_token_logits = predictions[:, -1, :]
@@ -89,7 +89,7 @@ def generate_sequence(
         if max_length is not None and seq_length >= max_length:
             break
 
-        # Concatenate the sampled next_token to the original input_ids to form the extended sequence
+        # Concatenate the sampled token to form the extended sequence
         curr_input_ids = torch.cat([curr_input_ids, next_token], dim=-1)
 
         # Increment sequence length
@@ -119,7 +119,8 @@ def generate_and_compute_constants(
     input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
         device
     )
-    # Define dictionary that will hold the product of local constants for each sequence and map them to the top k value
+    # Define dictionary that will hold the product of local constants for each sequence
+    # The sequences are mapped to the top k value
     constants_products = {top_k: [] for top_k in top_k_values}
     # Store local constants for each sequence
     constants_lists = {top_k: [] for top_k in top_k_values}
@@ -180,7 +181,7 @@ def create_filename(name, extension):
 def plot_histograms(constants_products, decoded_sequences, show=True):
     data = []
 
-    # Loop through the constants_products dictionary to create a histogram for each set of constants
+    # Loop through the dictionary to create a histogram for each set of constants
     for top_k, constants in constants_products.items():
         # Convert constants to log scale
         log_constants = np.log(constants)
@@ -335,7 +336,7 @@ def main():
         )
     )
 
-    # Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values
+    # Each bar represents the number of sequences that resulted in a specifc range of `c_alpha` values
     # Separate color is used for each top-k setting
     plot_histograms(
         constants_products=constants_products,
