@@ -228,11 +228,14 @@ def plot_constants_vs_length(
     for top_k in constants_products:
         # Generate hover text
         hover_text = [
-            'c_alpha: {:.2f}<br>Length: {}<br>Sequence: {}'.format(
-                const,
-                length,
-                '<br>'.join(re.findall('.{1,90}(?:\\s|$)', seq))
-            ) for const, length, seq in zip(constants_products[top_k], sequence_lengths[top_k], decoded_sequences[top_k])
+            "c_alpha: {:.2f}<br>Length: {}<br>Sequence: {}".format(
+                const, length, "<br>".join(re.findall(".{1,90}(?:\\s|$)", seq))
+            )
+            for const, length, seq in zip(
+                constants_products[top_k],
+                sequence_lengths[top_k],
+                decoded_sequences[top_k],
+            )
         ]
 
         # Convert constants to log scale
@@ -265,21 +268,34 @@ def plot_constants_vs_length(
 
 
 # Save the data to a CSV file
-def save_data(constants_products, constants_lists, sequence_lengths, decoded_sequences, filename):
+def save_data(
+    constants_products, constants_lists, sequence_lengths, decoded_sequences, filename
+):
     # Open the file in write mode
     with open(filename, mode="w", newline="") as file:
         # Create a CSV writer object
         csv_writer = csv.writer(file)
         # Write the header
         csv_writer.writerow(
-            ["top_k", "constants_product", "constants_lists", "sequence_length", "decoded_sequence"]
+            [
+                "top_k",
+                "constants_product",
+                "constants_lists",
+                "sequence_length",
+                "decoded_sequence",
+            ]
         )
         # Write data rows
         for top_k in constants_products:
             for constant_product, constant_list, seq_length, decoded_seq in zip(
-                constants_products[top_k], constants_lists[top_k], sequence_lengths[top_k], decoded_sequences[top_k]
+                constants_products[top_k],
+                constants_lists[top_k],
+                sequence_lengths[top_k],
+                decoded_sequences[top_k],
             ):
-                csv_writer.writerow([top_k, constant_product, constant_list, seq_length, decoded_seq])
+                csv_writer.writerow(
+                    [top_k, constant_product, constant_list, seq_length, decoded_seq]
+                )
 
 
 def main():
@@ -305,22 +321,26 @@ def main():
     max_length = None
 
     # Generate sequences and compute constants
-    constants_products, constants_lists, sequence_lengths, decoded_sequences = generate_and_compute_constants(
-        tokenizer=tokenizer,
-        model=model,
-        text=text,
-        top_k_values=top_k_values,
-        sequence_count=sequence_count,
-        max_length=max_length,
-        max_model_length=max_model_length,
-        device=device,
-        verbose=False,
+    constants_products, constants_lists, sequence_lengths, decoded_sequences = (
+        generate_and_compute_constants(
+            tokenizer=tokenizer,
+            model=model,
+            text=text,
+            top_k_values=top_k_values,
+            sequence_count=sequence_count,
+            max_length=max_length,
+            max_model_length=max_model_length,
+            device=device,
+            verbose=False,
+        )
     )
 
     # Each bar represents the number of sequences that resulted in a particular range of `c_alpha` values
     # Separate color is used for each top-k setting
     plot_histograms(
-        constants_products=constants_products, decoded_sequences=decoded_sequences, show=False
+        constants_products=constants_products,
+        decoded_sequences=decoded_sequences,
+        show=False,
     )
     # Each point represents a sequence
     # The x-coordinate representing the sequence length
