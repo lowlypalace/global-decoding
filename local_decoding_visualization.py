@@ -101,9 +101,7 @@ def generate_sequence(
         sequence_length += 1
 
     # Calculate the product of constants for the sequence
-    print(local_constants)
     c_alpha = np.prod(local_constants)
-    print(c_alpha)
 
     return curr_input_ids, c_alpha, sequence_length
 
@@ -137,7 +135,13 @@ def generate_and_compute_constants(
         for _ in range(sequence_count):
             # Generate a single sequence
             generated_sequence, c_alpha, seq_length = generate_sequence(
-                tokenizer, model, input_ids, max_length, max_model_length, top_k, device
+                tokenizer=tokenizer,
+                model=model,
+                input_ids=input_ids,
+                max_length=max_length,
+                top_k=top_k,
+                max_model_length=max_model_length,
+                device=device,
             )
 
             # Store the product of constants and sequence length for each sequence
