@@ -281,7 +281,7 @@ def save_data(
             [
                 "top_k",
                 "constants_product",
-                "constants_lists",
+                "constants_list",
                 "sequence_length",
                 "decoded_sequence",
             ]
