@@ -5,3 +5,4 @@ plotly
 transformers
 transformers[torch]
 pandas
+scipy
