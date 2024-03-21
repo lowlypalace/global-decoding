@@ -1,3 +1,4 @@
+import os
 import torch
 from datetime import datetime
 
@@ -37,12 +38,14 @@ def calculate_context_length(input_ids, max_length, max_model_length):
     return max_length
 
 
-def create_filename(name, extension):
+def create_filename(name, extension, directory="plots"):
     # Get the current time
     current_time = datetime.now()
     # Format the time in a user-friendly format
     time_str = current_time.strftime("%d-%m-%Y_%H-%M-%S")
     # Create the filename with the current time
     filename = f"{name}_{time_str}.{extension}"
+    # Define the full path for the file
+    full_path = os.path.join(directory, filename)
 
-    return filename
+    return full_path
