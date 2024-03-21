@@ -231,6 +231,7 @@ def main():
     # Extract the probabilities from the generated samples
     generated_probs = [sample[1] for sample in generated_samples]
 
+    # Plot the distribution of the generated probabilities
     plot_mcmc_distribution(generated_probs, plot_type="histogram", show=False)
     plot_mcmc_distribution(generated_probs, plot_type="kde", show=False)
 
