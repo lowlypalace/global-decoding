@@ -215,7 +215,7 @@ def main():
     # Burn-in period as a fraction of the total number of samples
     burnin = 0.2
 
-    # Run the Metropolis-Hastings algorithm
+    # Run the Independent Metropolis-Hastings algorithm
     generated_samples = metropolis_hastings(
         tokenizer=tokenizer,
         model=model,
