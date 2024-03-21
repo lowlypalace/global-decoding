@@ -49,14 +49,14 @@ def generate_sequence(
         # Apply top-k filtering to logits
         filtered_logits = top_k_filtering(last_token_logits, top_indices)
         # Normalize the filtered logits to probabilities
-        probs = torch.nn.functional.softmax(filtered_logits, dim=-1)
+        proposal_probs_distribution = torch.nn.functional.softmax(filtered_logits, dim=-1)
         # Sample from the filtered distribution
-        next_token = torch.multinomial(probs, num_samples=1).to(device)
+        next_token = torch.multinomial(proposal_probs_distribution, num_samples=1).to(device)
 
         # Append the probabilities of the chosen token
         original_prob = original_probs_distribution[0, next_token.item()].item()
         original_probs.append(original_prob)
-        proposal_prob = probs[0, next_token.item()].item()
+        proposal_prob = proposal_probs_distribution[0, next_token.item()].item()
         proposal_probs.append(proposal_prob)
 
         # Check for end of sequence token
