@@ -40,7 +40,7 @@ def generate_sequence(
         # Retrieve the logits for the last token from the output
         last_token_logits = predict_logits(curr_input_ids, model)
         # Calculate probabilities from logits before top-k filtering
-        original_probs_distribution = torch.nn.functional.softmax(
+        original_probs_distribution = torch.nn.functional.log_softmax(
             last_token_logits, dim=-1
         )
         # Get top-k values
@@ -49,9 +49,9 @@ def generate_sequence(
         # Apply top-k filtering to logits
         filtered_logits = top_k_filtering(last_token_logits, top_indices)
         # Normalize the filtered logits to probabilities
-        proposal_probs_distribution = torch.nn.functional.softmax(filtered_logits, dim=-1)
+        proposal_probs_distribution = torch.nn.functional.log_softmax(filtered_logits, dim=-1)
         # Sample from the filtered distribution
-        next_token = torch.multinomial(proposal_probs_distribution, num_samples=1).to(device)
+        next_token = torch.multinomial(proposal_probs_distribution.exp(), num_samples=1).to(device)
 
         # Append the probabilities of the chosen token
         original_prob = original_probs_distribution[0, next_token.item()].item()
@@ -77,8 +77,8 @@ def generate_sequence(
     decoded_seq = tokenizer.decode(curr_input_ids[0], skip_special_tokens=True)
 
     # Calculate the product of the probabilities
-    prob_sequence = np.prod(original_probs)
-    prob_proposal = np.prod(proposal_probs)
+    prob_sequence = np.sum(original_probs)
+    prob_proposal = np.sum(proposal_probs)
 
     return decoded_seq, prob_sequence, prob_proposal
 
@@ -132,12 +132,12 @@ def metropolis_hastings(
 
         # Calculate the acceptance ratio
         numerator = (
-            prob_proposed * indicator_top_k(proposed_sequence) * prob_proposal_current
+            prob_proposed + indicator_top_k(proposed_sequence) + prob_proposal_current
         )
         denominator = (
-            prob_current * indicator_top_k(current_sequence) * prob_proposal_proposed
+            prob_current + indicator_top_k(current_sequence) + prob_proposal_proposed
         )
-        acceptance_ratio = min(1, (numerator) / (denominator))
+        acceptance_ratio = min(1, np.exp(numerator - denominator))
 
         # Accept or reject the new sequence based on the acceptance ratio
         if random.uniform(0, 1) < acceptance_ratio:
