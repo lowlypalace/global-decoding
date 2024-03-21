@@ -137,10 +137,10 @@ def metropolis_hastings(
         denominator = (
             prob_current * indicator_top_k(current_sequence) * prob_proposal_proposed
         )
-        alpha = min(1, (numerator) / (denominator))
+        acceptance_ratio = min(1, (numerator) / (denominator))
 
         # Accept or reject the new sequence based on the acceptance ratio
-        if random.uniform(0, 1) < alpha:
+        if random.uniform(0, 1) < acceptance_ratio:
             current_sequence = proposed_sequence
             prob_current = prob_proposed
             prob_proposal_current = prob_proposal_proposed
