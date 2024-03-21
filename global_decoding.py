@@ -53,7 +53,7 @@ def generate_sequence(
         # Sample from the filtered distribution
         next_token = torch.multinomial(proposal_probs_distribution.exp(), num_samples=1).to(device)
 
-        # Append the probabilities of the chosen token
+        # Append the probabilities of the selected token
         original_prob = original_probs_distribution[0, next_token.item()].item()
         original_probs.append(original_prob)
         proposal_prob = proposal_probs_distribution[0, next_token.item()].item()
@@ -62,14 +62,12 @@ def generate_sequence(
         # Check for end of sequence token
         if next_token.item() == tokenizer.eos_token_id:
             break
-
         # If a maximum length is set and we have reached it, break the loop
         if max_length is not None and seq_length >= max_length:
             break
 
         # Concatenate the sampled token to form the extended sequence
         curr_input_ids = torch.cat([curr_input_ids, next_token], dim=-1)
-
         # Increment sequence length
         seq_length += 1
 
