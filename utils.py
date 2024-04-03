@@ -39,12 +39,6 @@ def generate_sequences(
         num_return_sequences=num_return_sequences,
     )
 
-    # print decoded generated sequences
-    for i, g in enumerate(generated_ids):
-        print(
-            f"Generated sequence {i}: {tokenizer.decode(g, skip_special_tokens=True)}"
-        )
-
     if save_to_file:
         # Save the generated sequences to a file
         with open(create_filename(filename, "json"), "w") as f:

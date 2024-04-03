@@ -27,7 +27,7 @@ def top_k_filtering(logits, top_k):
     return logits
 
 
-def consume_sequence(tokenizer, model, generated_ids, top_k, device):
+def get_probs(model, generated_ids, top_k, device):
     with torch.no_grad():
         # Get the logits from the model
         logits = model(generated_ids[:, :-1], return_dict=True).logits
@@ -64,91 +64,51 @@ def consume_sequence(tokenizer, model, generated_ids, top_k, device):
                 proposal_distribution, 1, generated_ids[:, i + 1].unsqueeze(-1)
             ).squeeze(-1)
 
-    # Decode the generated sequence
-    decoded_seq = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
-
     # Sum the log probabilities for the entire sequence for both distributions
     original_logprob_sum = torch.sum(sequence_original_logprobs).item()
     proposal_logprob_sum = torch.sum(sequence_proposal_logprobs).item()
 
-    return decoded_seq, original_logprob_sum, proposal_logprob_sum
+    return original_logprob_sum, proposal_logprob_sum
 
 
 def metropolis_hastings(
     tokenizer,
     model,
-    text,
     sequence_count,
-    max_length,
-    max_model_length,
     top_k,
     burnin,
-    preload_sequences,
+    sequences,
     device,
 ):
-    # Encode the input text to tensor
-    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
-        device
-    )
-
     # List to store the generated samples, each sample is a tuple of (sequence, prob_sequence, prob_proposal)
     samples = []
 
     # Calculate the number of burn-in samples
     burnin_index = int(burnin * sequence_count)
 
-    if preload_sequences:
-        # Load preloaded sequences
-        preloaded_sequences = load_preloaded_sequences("generated_sequences.json")
+    # Get the probabilities for the current sequence
+    current_sequence = sequences[0]
 
-    # Sample initial sequence
-    generated_ids = generate_sequences(
+    global_logprob_current, local_logprob_current = get_probs(
         tokenizer=tokenizer,
         model=model,
-        input_ids=input_ids,
-        max_length=max_length,
-        top_k=top_k,
-        max_model_length=max_model_length,
-        num_return_sequences=1,
-        save_to_file=False,
-    )
-
-    current_sequence, global_logprob_current, local_logprob_current = consume_sequence(
-        tokenizer=tokenizer,
-        model=model,
-        generated_ids=generated_ids,
+        generated_ids=current_sequence,
         top_k=top_k,
         device=device,
     )
 
     # This is a top-level loop to generate multiple sequences
     for i in range(sequence_count):
-        if preloaded_sequences:
-            # Randomly select a new sequence from preloaded sequences
-            proposal_sequence_idx = random.randint(0, len(preloaded_sequences) - 1)
-            generated_ids = preloaded_sequences[proposal_sequence_idx]
-        else:
-            # Generate a single sequence
-            generated_ids = generate_sequences(
-                tokenizer=tokenizer,
-                model=model,
-                input_ids=input_ids,
-                max_length=max_length,
-                top_k=top_k,
-                max_model_length=max_model_length,
-                num_return_sequences=1,
-                save_to_file=False,
-            )
+        proposed_sequence = sequences[i]
 
         # Calculate the probabilities for the current and proposed sequences
         (
-            proposed_sequence,
             global_logprob_proposed,
             local_logprob_proposed,
-        ) = consume_sequence(
+        ) = get_probs(
             tokenizer=tokenizer,
             model=model,
-            generated_ids=generated_ids,
+            generated_ids=proposed_sequence,
             top_k=top_k,
             device=device,
         )
@@ -174,9 +134,10 @@ def metropolis_hastings(
 
         # After burn-in period, add the current state to the list of samples
         if i >= burnin_index:
-            samples.append(
-                (current_sequence, global_logprob_current, local_logprob_current)
-            )
+            # Decode the generated sequence
+            decoded_seq = tokenizer.decode(proposed_sequence, skip_special_tokens=True)
+            # Append the decoded sequence and its probabilities to the samples list
+            samples.append((decoded_seq, global_logprob_current, local_logprob_current))
 
     return samples
 
@@ -246,8 +207,30 @@ def main():
     # Burn-in period as a fraction of the total number of samples
     burnin = 0.2
 
+    # Preloaded sequences to use
+    preload_sequences = "generated_sequences.json"
+
+    # Encode the input text to tensor
+    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
+        device
+    )
+
+    # Generate sequences and save them to a file
+    if preload_sequences:
+        sequences = load_preloaded_sequences("generated_sequences.json")
+    else:
+        sequences = generate_sequences(
+            tokenizer=tokenizer,
+            model=model,
+            input_ids=input_ids,
+            max_length=max_length,
+            max_model_length=max_model_length,
+            top_k=top_k,
+            save_to_file=True,
+            num_return_sequences=sequence_count,
+        )
+
     # Run the Independent Metropolis-Hastings algorithm
-    start_time = datetime.now()
     generated_samples = metropolis_hastings(
         tokenizer=tokenizer,
         model=model,
@@ -257,12 +240,9 @@ def main():
         max_model_length=max_model_length,
         top_k=top_k,
         burnin=burnin,
-        preload_sequences=False,
+        preload_sequences=preload_sequences,
         device=device,
     )
-    end_time = datetime.now()
-    duration = end_time - start_time
-    print(f"Duration: {duration}")
 
     # Extract the probabilities from the generated samples
     generated_probs = [sample[1] for sample in generated_samples]
