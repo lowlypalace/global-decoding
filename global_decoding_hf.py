@@ -7,40 +7,12 @@ import plotly.figure_factory as ff
 
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
-from utils import (
-    create_filename,
-)
+from utils import create_filename, generate_sequences, load_preloaded_sequences
 
 
 def indicator_top_k(sequence):
     # In our case, we can simply return 1 as we are using top-k sampling
     return 1
-
-
-def generate_sequence(
-    tokenizer,
-    model,
-    input_ids,
-    max_length,
-    top_k,
-    max_model_length,
-    num_return_sequences,
-):
-    # Calculate the max_length so it is bound by the model context length
-    max_length = min(max_length, max_model_length - input_ids.size(1))
-
-    # Generate a single sequence
-    generated_ids = model.generate(
-        input_ids=input_ids,
-        max_length=max_length,
-        pad_token_id=tokenizer.eos_token_id,
-        eos_token_id=tokenizer.eos_token_id,
-        top_k=top_k,
-        do_sample=True,
-        num_return_sequences=num_return_sequences,
-    )
-
-    return generated_ids
 
 
 def top_k_filtering(logits, top_k):
@@ -57,7 +29,7 @@ def top_k_filtering(logits, top_k):
 
 def consume_sequence(tokenizer, model, generated_ids, top_k, device):
     with torch.no_grad():
-        #
+        # Get the logits from the model
         logits = model(generated_ids[:, :-1], return_dict=True).logits
         # Convert logits to log probabilitiesxs
         original_logprobs = torch.nn.functional.log_softmax(logits, dim=-1)
@@ -125,8 +97,12 @@ def metropolis_hastings(
     # Calculate the number of burn-in samples
     burnin_index = int(burnin * sequence_count)
 
+    if preload_sequences:
+        # Load preloaded sequences
+        preloaded_sequences = load_preloaded_sequences("generated_sequences.json")
+
     # Sample initial sequence
-    generated_ids = generate_sequence(
+    generated_ids = generate_sequences(
         tokenizer=tokenizer,
         model=model,
         input_ids=input_ids,
@@ -134,6 +110,7 @@ def metropolis_hastings(
         top_k=top_k,
         max_model_length=max_model_length,
         num_return_sequences=1,
+        save_to_file=False,
     )
 
     current_sequence, global_logprob_current, local_logprob_current = consume_sequence(
@@ -146,9 +123,13 @@ def metropolis_hastings(
 
     # This is a top-level loop to generate multiple sequences
     for i in range(sequence_count):
-        if not preload_sequences:
+        if preloaded_sequences:
+            # Randomly select a new sequence from preloaded sequences
+            proposal_sequence_idx = random.randint(0, len(preloaded_sequences) - 1)
+            generated_ids = preloaded_sequences[proposal_sequence_idx]
+        else:
             # Generate a single sequence
-            generated_ids = generate_sequence(
+            generated_ids = generate_sequences(
                 tokenizer=tokenizer,
                 model=model,
                 input_ids=input_ids,
@@ -156,10 +137,8 @@ def metropolis_hastings(
                 top_k=top_k,
                 max_model_length=max_model_length,
                 num_return_sequences=1,
+                save_to_file=False,
             )
-        else:
-            # TODO: Implement sampling from the preloaded sequences
-            pass
 
         # Calculate the probabilities for the current and proposed sequences
         (
@@ -246,7 +225,6 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Load pre-trained model tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2", padding_side="left")
-    tokenizer.padding_side = "left"
 
     # Load pre-trained model
     model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
@@ -261,10 +239,10 @@ def main():
     # Top-k value to use
     top_k = 100
     # Number of samples to generate
-    sequence_count = 100
+    sequence_count = 10
     # Maximum length of a sequence
     # This can be set to None to disable the maximum length constraint
-    max_length = 10
+    max_length = 1000
     # Burn-in period as a fraction of the total number of samples
     burnin = 0.2
 
