@@ -29,6 +29,8 @@ def top_k_filtering(logits, top_k):
 
 def compute_sequence_probs(model, generated_ids, top_k, device):
     with torch.no_grad():
+        # Add a batch dimension
+        generated_ids = generated_ids.unsqueeze(0)
         # Get the logits from the model
         logits = model(generated_ids[:, :-1], return_dict=True).logits
         # Convert logits to log probabilitiesxs

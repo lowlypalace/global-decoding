@@ -41,7 +41,7 @@ def generate_sequences(
 
     if save_to_file:
         # Save the generated sequences to a file
-        with open(create_filename(filename, "json"), "w") as f:
+        with open(create_filename(filename, "json", "sequences"), "w") as f:
             json.dump([g.tolist() for g in generated_ids], f)
 
     return generated_ids
@@ -89,6 +89,9 @@ def create_filename(name, extension, directory="plots"):
     time_str = current_time.strftime("%d-%m-%Y_%H-%M-%S")
     # Create the filename with the current time
     filename = f"{name}_{time_str}.{extension}"
+    # Create the directory if it does not exist
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     # Define the full path for the file
     full_path = os.path.join(directory, filename)
 
