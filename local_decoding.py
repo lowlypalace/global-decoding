@@ -284,18 +284,21 @@ def main():
     max_length = None
 
     # Generate sequences and compute constants
-    constants_products, constants_lists, sequence_lengths, decoded_sequences = (
-        generate_and_compute_constants(
-            tokenizer=tokenizer,
-            model=model,
-            text=text,
-            top_k_values=top_k_values,
-            sequence_count=sequence_count,
-            max_length=max_length,
-            max_model_length=max_model_length,
-            device=device,
-            verbose=False,
-        )
+    (
+        constants_products,
+        constants_lists,
+        sequence_lengths,
+        decoded_sequences,
+    ) = generate_and_compute_constants(
+        tokenizer=tokenizer,
+        model=model,
+        text=text,
+        top_k_values=top_k_values,
+        sequence_count=sequence_count,
+        max_length=max_length,
+        max_model_length=max_model_length,
+        device=device,
+        verbose=False,
     )
 
     # Each bar represents the number of sequences that resulted in a specifc range of `c_alpha` values

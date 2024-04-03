@@ -1,7 +1,6 @@
 import torch
 import numpy as np
 import random
-
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 
@@ -49,9 +48,13 @@ def generate_sequence(
         # Apply top-k filtering to logits
         filtered_logits = top_k_filtering(last_token_logits, top_indices)
         # Normalize the filtered logits to probabilities
-        proposal_probs_distribution = torch.nn.functional.log_softmax(filtered_logits, dim=-1)
+        proposal_probs_distribution = torch.nn.functional.log_softmax(
+            filtered_logits, dim=-1
+        )
         # Sample from the filtered distribution
-        next_token = torch.multinomial(proposal_probs_distribution.exp(), num_samples=1).to(device)
+        next_token = torch.multinomial(
+            proposal_probs_distribution.exp(), num_samples=1
+        ).to(device)
 
         # Append the probabilities of the selected token
         original_prob = original_probs_distribution[0, next_token.item()].item()
@@ -116,7 +119,6 @@ def metropolis_hastings(
 
     # This is a top-level loop to generate multiple sequences
     for i in range(sequence_count):
-
         # Generate a single sequence
         proposed_sequence, prob_proposed, prob_proposal_proposed = generate_sequence(
             tokenizer=tokenizer,
