@@ -133,11 +133,10 @@ def metropolis_hastings(
         max_length=max_length,
         top_k=top_k,
         max_model_length=max_model_length,
-        device=device,
         num_return_sequences=1,
     )
 
-    current_sequence, prob_current, prob_proposal_current = consume_sequence(
+    current_sequence, global_logprob_current, local_logprob_current = consume_sequence(
         tokenizer=tokenizer,
         model=model,
         generated_ids=generated_ids,
@@ -156,7 +155,6 @@ def metropolis_hastings(
                 max_length=max_length,
                 top_k=top_k,
                 max_model_length=max_model_length,
-                device=device,
                 num_return_sequences=1,
             )
         else:
@@ -164,7 +162,11 @@ def metropolis_hastings(
             pass
 
         # Calculate the probabilities for the current and proposed sequences
-        proposed_sequence, prob_proposed, prob_proposal_proposed = consume_sequence(
+        (
+            proposed_sequence,
+            global_logprob_proposed,
+            local_logprob_proposed,
+        ) = consume_sequence(
             tokenizer=tokenizer,
             model=model,
             generated_ids=generated_ids,
@@ -174,22 +176,31 @@ def metropolis_hastings(
 
         # Calculate the acceptance ratio
         numerator = (
-            prob_proposed + indicator_top_k(proposed_sequence) + prob_proposal_current
+            global_logprob_proposed
+            + indicator_top_k(proposed_sequence)
+            + local_logprob_current
         )
         denominator = (
-            prob_current + indicator_top_k(current_sequence) + prob_proposal_proposed
+            global_logprob_current
+            + indicator_top_k(current_sequence)
+            + local_logprob_proposed
         )
         log_acceptance_ratio = numerator - denominator
 
         # Accept or reject the new sequence based on the acceptance ratio
         if np.log(random.uniform(0, 1)) < log_acceptance_ratio:
+            print("Accepted")
             current_sequence = proposed_sequence
-            prob_current = prob_proposed
-            prob_proposal_current = prob_proposal_proposed
+            global_logprob_current = global_logprob_proposed
+            local_logprob_current = local_logprob_proposed
+        else:
+            print("Rejected")
 
         # After burn-in period, add the current state to the list of samples
         if i >= burnin_index:
-            samples.append((current_sequence, prob_current, prob_proposal_current))
+            samples.append(
+                (current_sequence, global_logprob_current, local_logprob_current)
+            )
 
     return samples
 
