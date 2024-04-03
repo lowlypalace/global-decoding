@@ -91,8 +91,6 @@ def metropolis_hastings(
     # Get the probabilities for the current sequence
     current_sequence = sequences[0]
 
-    print(tokenizer.decode(current_sequence, skip_special_tokens=True))
-
     global_logprob_current, local_logprob_current = compute_sequence_probs(
         model=model,
         generated_ids=current_sequence,
@@ -102,6 +100,7 @@ def metropolis_hastings(
 
     # This is a top-level loop to generate multiple sequences
     for i in range(1, sequence_count):
+        # Get the sequence to propose
         proposed_sequence = sequences[i]
 
         # Calculate the probabilities for the current and proposed sequences
@@ -202,7 +201,7 @@ def main():
     # Top-k value to use
     top_k = 100
     # Number of samples to generate
-    sequence_count = 10
+    sequence_count = 100
     # Maximum length of a sequence
     # This can be set to None to disable the maximum length constraint
     max_length = 10
@@ -210,8 +209,8 @@ def main():
     burnin = 0.2
 
     # Preloaded sequences to use
-    # preload_sequences = "generated_sequences.json"
     preload_sequences = False
+    sequences_filename = "sequences/generated_sequences.json_03-04-2024_16-30-56.json"
 
     # Encode the input text to tensor
     input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
@@ -220,8 +219,10 @@ def main():
 
     # Generate sequences and save them to a file
     if preload_sequences:
-        sequences = load_preloaded_sequences("generated_sequences.json")
+        print("Loading preloaded sequences...")
+        sequences = load_preloaded_sequences(sequences_filename)
     else:
+        print("Generating new sequences...")
         sequences = generate_sequences(
             tokenizer=tokenizer,
             model=model,
