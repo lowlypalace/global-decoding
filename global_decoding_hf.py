@@ -48,9 +48,8 @@ def top_k_filtering(logits, top_k):
     logits[mask] = -float("inf")
     return logits
 
-def consume_sequence(
-    tokenizer, model, generated_ids, top_k, device
-):
+
+def consume_sequence(tokenizer, model, generated_ids, top_k, device):
     with torch.no_grad():
         #
         logits = model(generated_ids[:, :-1], return_dict=True).logits
@@ -59,11 +58,17 @@ def consume_sequence(
         # Creates an index that identifies the positions of the generated tokens
         index = generated_ids[:, 1:].unsqueeze(-1)
         # Extract their log probabilities from the original_logprobs
-        gathered_original_logprobs = torch.gather(original_logprobs, dim=-1, index=index).squeeze(-1)
+        gathered_original_logprobs = torch.gather(
+            original_logprobs, dim=-1, index=index
+        ).squeeze(-1)
 
         # Initialize tensors to store the log probabilities
-        sequence_original_logprobs = torch.zeros(generated_ids.size(1) - 1, device=device)
-        sequence_proposal_logprobs = torch.zeros(generated_ids.size(1) - 1, device=device)
+        sequence_original_logprobs = torch.zeros(
+            generated_ids.size(1) - 1, device=device
+        )
+        sequence_proposal_logprobs = torch.zeros(
+            generated_ids.size(1) - 1, device=device
+        )
 
         for i in range(generated_ids.size(1) - 1):
             # Select the log probability of the token that was actually generated
@@ -72,10 +77,14 @@ def consume_sequence(
             # Apply top-k filtering to create the proposal distribution
             topk_logits = logits[:, i, :].clone()  # Clone to avoid in-place operations
             filtered_logits = top_k_filtering(topk_logits, top_k)
-            proposal_distribution = torch.nn.functional.log_softmax(filtered_logits, dim=-1)
+            proposal_distribution = torch.nn.functional.log_softmax(
+                filtered_logits, dim=-1
+            )
 
             # Select the log probability of the token that was actually generated from the proposal distribution
-            sequence_proposal_logprobs[i] = torch.gather(proposal_distribution, 1, generated_ids[:, i + 1].unsqueeze(-1)).squeeze(-1)
+            sequence_proposal_logprobs[i] = torch.gather(
+                proposal_distribution, 1, generated_ids[:, i + 1].unsqueeze(-1)
+            ).squeeze(-1)
 
     # Decode the generated sequence
     decoded_seq = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
@@ -89,6 +98,7 @@ def consume_sequence(
     print(f"Sequence: {decoded_seq}")
 
     return decoded_seq, original_logprob_sum, proposal_logprob_sum
+
 
 def metropolis_hastings(
     tokenizer,
@@ -133,7 +143,6 @@ def metropolis_hastings(
 
     # This is a top-level loop to generate multiple sequences
     for i in range(sequence_count):
-
         # Generate a single sequence
         generated_ids = generate_sequence(
             tokenizer=tokenizer,
@@ -220,7 +229,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Load pre-trained model tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2", padding_side="left")
-    tokenizer.padding_side = 'left'
+    tokenizer.padding_side = "left"
 
     # Load pre-trained model
     model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
@@ -258,7 +267,6 @@ def main():
     end_time = datetime.now()
     duration = end_time - start_time
     print(f"Duration: {duration}")
-
 
     # Extract the probabilities from the generated samples
     generated_probs = [sample[1] for sample in generated_samples]
