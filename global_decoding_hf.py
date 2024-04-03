@@ -75,7 +75,7 @@ def consume_sequence(tokenizer, model, generated_ids, top_k, device):
             sequence_original_logprobs[i] = gathered_original_logprobs[:, i]
 
             # Apply top-k filtering to create the proposal distribution
-            topk_logits = logits[:, i, :].clone()  # Clone to avoid in-place operations
+            topk_logits = logits[:, i, :].clone()
             filtered_logits = top_k_filtering(topk_logits, top_k)
             proposal_distribution = torch.nn.functional.log_softmax(
                 filtered_logits, dim=-1
@@ -92,10 +92,6 @@ def consume_sequence(tokenizer, model, generated_ids, top_k, device):
     # Sum the log probabilities for the entire sequence for both distributions
     original_logprob_sum = torch.sum(sequence_original_logprobs).item()
     proposal_logprob_sum = torch.sum(sequence_proposal_logprobs).item()
-
-    print(f"Original log probability: {original_logprob_sum}")
-    print(f"Proposal log probability: {proposal_logprob_sum}")
-    print(f"Sequence: {decoded_seq}")
 
     return decoded_seq, original_logprob_sum, proposal_logprob_sum
 
