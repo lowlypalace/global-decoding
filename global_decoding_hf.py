@@ -18,7 +18,13 @@ def indicator_top_k(sequence):
 
 
 def generate_sequence(
-    tokenizer, model, input_ids, max_length, top_k, max_model_length, device
+    tokenizer,
+    model,
+    input_ids,
+    max_length,
+    top_k,
+    max_model_length,
+    num_return_sequences,
 ):
     # Calculate the max_length so it is bound by the model context length
     max_length = min(max_length, max_model_length - input_ids.size(1))
@@ -31,7 +37,7 @@ def generate_sequence(
         eos_token_id=tokenizer.eos_token_id,
         top_k=top_k,
         do_sample=True,
-        # num_return_sequences=1,
+        num_return_sequences=num_return_sequences,
     )
 
     return generated_ids
@@ -105,6 +111,7 @@ def metropolis_hastings(
     max_model_length,
     top_k,
     burnin,
+    preload_sequences,
     device,
 ):
     # Encode the input text to tensor
@@ -127,6 +134,7 @@ def metropolis_hastings(
         top_k=top_k,
         max_model_length=max_model_length,
         device=device,
+        num_return_sequences=1,
     )
 
     current_sequence, prob_current, prob_proposal_current = consume_sequence(
@@ -139,16 +147,21 @@ def metropolis_hastings(
 
     # This is a top-level loop to generate multiple sequences
     for i in range(sequence_count):
-        # Generate a single sequence
-        generated_ids = generate_sequence(
-            tokenizer=tokenizer,
-            model=model,
-            input_ids=input_ids,
-            max_length=max_length,
-            top_k=top_k,
-            max_model_length=max_model_length,
-            device=device,
-        )
+        if not preload_sequences:
+            # Generate a single sequence
+            generated_ids = generate_sequence(
+                tokenizer=tokenizer,
+                model=model,
+                input_ids=input_ids,
+                max_length=max_length,
+                top_k=top_k,
+                max_model_length=max_model_length,
+                device=device,
+                num_return_sequences=1,
+            )
+        else:
+            # TODO: Implement sampling from the preloaded sequences
+            pass
 
         # Calculate the probabilities for the current and proposed sequences
         proposed_sequence, prob_proposed, prob_proposal_proposed = consume_sequence(
@@ -258,6 +271,7 @@ def main():
         max_model_length=max_model_length,
         top_k=top_k,
         burnin=burnin,
+        preload_sequences=False,
         device=device,
     )
     end_time = datetime.now()
