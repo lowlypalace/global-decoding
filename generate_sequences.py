@@ -1,9 +1,4 @@
 import torch
-import numpy as np
-import random
-from datetime import datetime
-import plotly.graph_objects as go
-import plotly.figure_factory as ff
 
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
