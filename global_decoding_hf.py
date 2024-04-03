@@ -189,12 +189,9 @@ def metropolis_hastings(
 
         # Accept or reject the new sequence based on the acceptance ratio
         if np.log(random.uniform(0, 1)) < log_acceptance_ratio:
-            print("Accepted")
             current_sequence = proposed_sequence
             global_logprob_current = global_logprob_proposed
             local_logprob_current = local_logprob_proposed
-        else:
-            print("Rejected")
 
         # After burn-in period, add the current state to the list of samples
         if i >= burnin_index:
