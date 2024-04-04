@@ -3,6 +3,16 @@ import torch
 import json
 from datetime import datetime
 
+def top_k_batch_filtering(logits, top_k):
+    # Retrieve the top_k logits and their indices for each sequence in the batch
+    _, topk_indices = torch.topk(logits, top_k, dim=-1)
+    # Create a mask of the same shape as logits, initialized to False
+    mask = torch.ones_like(logits).scatter_(
+        -1, topk_indices, 0
+    ).bool()
+    # Set all elements of logits that are not in the top_k to -float("inf")
+    logits[mask] = -float("inf")
+    return logits
 
 def load_preloaded_sequences(filename):
     with open(filename, "r") as f:
