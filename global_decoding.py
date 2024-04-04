@@ -31,7 +31,7 @@ def main():
     # Number of samples to generate
     sequence_count = 100
     # Maximum length of a sequence
-    # This can be set to None to disable the maximum length constraint
+    # If not provided, it will be set to the maximum model length minus the length of the input text
     max_length = 10
     # Burn-in period as a fraction of the total number of samples
     burnin = 0.2
@@ -39,11 +39,6 @@ def main():
     # Preloaded sequences to use
     preload_sequences = False
     sequences_filename = "sequences/generated_sequences.json_03-04-2024_16-30-56.json"
-
-    # Encode the input text to tensor
-    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
-        device
-    )
 
     # Generate sequences and save them to a file
     if preload_sequences:
@@ -55,12 +50,22 @@ def main():
             )
     else:
         print("Generating new sequences...")
+        # Encode the input text to tensor
+        input_ids = tokenizer.encode(
+            text, add_special_tokens=True, return_tensors="pt"
+        ).to(device)
+        # Calculate the max_length so it is bound by the model context length
+        max_length = (
+            max_length
+            if max_length is not None
+            else max_model_length - input_ids.size(1)
+        )
+        # Generate sequences
         sequences = generate_sequences(
             tokenizer=tokenizer,
             model=model,
             input_ids=input_ids,
             max_length=max_length,
-            max_model_length=max_model_length,
             top_k=top_k,
             save_to_file=True,
             num_return_sequences=sequence_count,
@@ -87,6 +92,8 @@ def main():
 
     # Extract the probabilities from the generated samples
     generated_probs = [sample[1] for sample in generated_samples]
+
+    print(len(generated_probs))
 
     # Plot the distribution of the generated probabilities
     plot_mcmc_distribution(generated_probs, plot_type="histogram", show=False)

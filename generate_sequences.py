@@ -12,14 +12,10 @@ def generate_sequences(
     input_ids,
     max_length,
     top_k,
-    max_model_length,
     num_return_sequences,
     save_to_file=False,
     filename="generated_sequences.json",
 ):
-    # Calculate the max_length so it is bound by the model context length
-    max_length = min(max_length, max_model_length - input_ids.size(1))
-
     # Generate sequences
     generated_ids = model.generate(
         input_ids=input_ids,
