@@ -3,7 +3,7 @@ import torch
 from torch.nn.functional import log_softmax
 
 from utils import (
-    top_k_batch_filtering,
+    top_k_filtering,
 )
 
 
@@ -22,7 +22,7 @@ def get_proposal_logprobs(logits, top_k, index):
     # Clone the logits to avoid modifying the original tensor
     filtered_logits = logits.clone()
     # Filter the logits using top-k filtering
-    filtered_logits = top_k_batch_filtering(filtered_logits, top_k)
+    filtered_logits = top_k_filtering(filtered_logits, top_k)
     # Convert the filtered logits to log probabilities
     proposal_distribution = log_softmax(filtered_logits, dim=-1)
     # Extract the log probabilities for the generated tokens from the proposal distribution
