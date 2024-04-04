@@ -80,6 +80,8 @@ def metropolis_hastings(
     sequence_count,
     burnin,
     sequences,
+    target_logprobs,
+    proposal_logprobs
 ):
     # List to store the generated samples, each sample is a tuple of (sequence, prob_sequence, prob_proposal)
     samples = []
@@ -88,47 +90,41 @@ def metropolis_hastings(
     burnin_index = int(burnin * sequence_count)
 
     # Get the first sequence and its probabilities
-    current_sequence = sequences["sequences"][0]
-    global_logprob_current, local_logprob_current = (
-        sequences["global_logprobs"][0],
-        sequences["local_logprobs"][0],
-    )
+    current_sequence = sequences[0]
+    logprob_target_current, logprob_proposal_current = target_logprobs[0], proposal_logprobs[0]
 
     # This is a top-level loop to generate multiple sequences
     for i in range(1, sequence_count):
         # Get the sequence to propose
-        proposed_sequence = sequences["sequences"][i]
+        proposed_sequence = sequences[i]
         # Get the probabilities for the proposed sequences
-        global_logprob_proposed, local_logprob_proposed = (
-            sequences["global_logprobs"][i],
-            sequences["local_logprobs"][i],
-        )
+        logprob_target_proposed, logprob_proposal_proposed = target_logprobs[i], proposal_logprobs[i]
 
         # Calculate the acceptance ratio
         numerator = (
-            global_logprob_proposed
+            logprob_target_proposed
             + indicator_top_k(proposed_sequence)
-            + local_logprob_current
+            + logprob_proposal_current
         )
         denominator = (
-            global_logprob_current
+            logprob_target_current
             + indicator_top_k(current_sequence)
-            + local_logprob_proposed
+            + logprob_proposal_proposed
         )
         log_acceptance_ratio = numerator - denominator
 
         # Accept or reject the new sequence based on the acceptance ratio
         if np.log(np.random.uniform(0, 1)) < log_acceptance_ratio:
             current_sequence = proposed_sequence
-            global_logprob_current = global_logprob_proposed
-            local_logprob_current = local_logprob_proposed
+            logprob_target_current = logprob_target_proposed
+            logprob_proposal_current = logprob_proposal_proposed
 
         # After burn-in period, add the current state to the list of samples
         if i >= burnin_index:
             # Decode the generated sequence
             decoded_seq = tokenizer.decode(current_sequence, skip_special_tokens=True)
             # Append the decoded sequence and its probabilities to the samples list
-            samples.append((decoded_seq, global_logprob_current, local_logprob_current))
+            samples.append((decoded_seq, logprob_target_current, logprob_proposal_current))
 
     return samples
 
@@ -177,7 +173,6 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Load pre-trained model tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2", padding_side="left")
-
     # Load pre-trained model
     model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
 
@@ -228,6 +223,7 @@ def main():
             num_return_sequences=sequence_count,
         )
 
+    print("Computing probabilities for the generated sequences...")
     # Get the probabilities for the generated sequences
     global_logprobs, local_logprobs = get_sequence_probs(
         model=model,
@@ -235,19 +231,15 @@ def main():
         top_k=top_k,
     )
 
-    # Pack the sequences and their probabilities into a dictionary
-    sequences_dict = {
-        "sequences": sequences,
-        "global_logprobs": global_logprobs,
-        "local_logprobs": local_logprobs,
-    }
-
     # Run the Independent Metropolis-Hastings algorithm
+    print("Running Independent Metropolis-Hastings algorithm...")
     generated_samples = metropolis_hastings(
         tokenizer=tokenizer,
         sequence_count=sequence_count,
         burnin=burnin,
-        sequences=sequences_dict,
+        sequences=sequences,
+        target_logprobs=global_logprobs,
+        proposal_logprobs=local_logprobs
     )
 
     # Extract the probabilities from the generated samples
