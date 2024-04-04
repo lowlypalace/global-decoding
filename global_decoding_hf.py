@@ -44,12 +44,23 @@ def get_proposal_logprobs(logits, top_k, index):
     return gathered_proposal_logprobs
 
 
+def create_index_tensor(generated_ids):
+    # Create an index tensor that identifies the positions of the generated tokens
+    index = generated_ids[:, 1:].unsqueeze(-1)
+    return index
+
+
+def get_logits(model, generated_ids):
+    # Slice off the last token from each sequence and get the logits
+    return model(generated_ids[:, :-1], return_dict=True).logits
+
+
 def get_sequence_probs(model, generated_ids, top_k):
     with torch.no_grad():
         # Get the logits from the model
-        logits = model(generated_ids[:, :-1], return_dict=True).logits
-        # Creates an index that identifies the positions of the generated tokens
-        index = generated_ids[:, 1:].unsqueeze(-1)
+        logits = get_logits(model, generated_ids)
+        # Get the index tensor for the generated tokens
+        index = create_index_tensor(generated_ids)
         # Get the log probabilities for the original sequence
         gathered_original_logprobs = get_original_logprobs(logits, index)
         # Get the log probabilities for the proposed sequence
