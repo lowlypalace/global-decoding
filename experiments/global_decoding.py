@@ -8,10 +8,9 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 from utils import (
     create_filename,
-    calculate_context_length,
-    predict_logits,
-    top_k_filtering,
 )
+
+from helpers import calculate_context_length, predict_logits, top_k_filtering
 
 
 def indicator_top_k(sequence):

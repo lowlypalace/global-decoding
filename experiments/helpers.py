@@ -36,19 +36,3 @@ def calculate_context_length(input_ids, max_length, max_model_length):
         else min(max_length, max_model_length - input_length)
     )
     return max_length
-
-
-def create_filename(name, extension, directory="plots"):
-    # Get the current time
-    current_time = datetime.now()
-    # Format the time in a user-friendly format
-    time_str = current_time.strftime("%d-%m-%Y_%H-%M-%S")
-    # Create the filename with the current time
-    filename = f"{name}_{time_str}.{extension}"
-    # Create the directory if it does not exist
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    # Define the full path for the file
-    full_path = os.path.join(directory, filename)
-
-    return full_path

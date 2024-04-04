@@ -9,10 +9,9 @@ import plotly.graph_objects as go
 
 from utils import (
     create_filename,
-    calculate_context_length,
-    predict_logits,
-    top_k_filtering,
 )
+
+from helpers import calculate_context_length, predict_logits, top_k_filtering
 
 
 def normalization_constant(logits, top_indices):
