@@ -1,13 +1,16 @@
 import torch
 import numpy as np
-import random
-from datetime import datetime
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
-from utils import create_filename, generate_sequences, load_preloaded_sequences
+from utils import (
+    create_filename,
+    generate_sequences,
+    load_preloaded_sequences,
+    top_k_batch_filtering,
+)
 
 
 def indicator_top_k(sequence):
@@ -15,60 +18,46 @@ def indicator_top_k(sequence):
     return 1
 
 
-def top_k_filtering(logits, top_k):
-    # Retrieve the top_k logits and their indices
-    _, topk_indices = torch.topk(logits, top_k, dim=-1)
-    # Create a mask of the same shape as logits, initialized to True
-    mask = torch.ones_like(logits, dtype=torch.bool)
-    # Set the mask to False for the top_k indices
-    mask.scatter_(1, topk_indices, False)
-    # Set all elements of logits that are not in the top_k to -float("inf")
-    logits[mask] = -float("inf")
-    return logits
+def get_original_logprobs(logits, index):
+    # Convert logits to log probabilities
+    original_logprobs = torch.nn.functional.log_softmax(logits, dim=-1)
+    # Extract their log probabilities from the original log probabilities
+    gathered_original_logprobs = torch.gather(
+        original_logprobs, dim=-1, index=index
+    ).squeeze(-1)
+
+    return gathered_original_logprobs
 
 
-def compute_sequence_probs(model, generated_ids, top_k, device):
+def get_proposal_logprobs(logits, top_k, index):
+    # Clone the logits to avoid modifying the original tensor
+    filtered_logits = logits.clone()
+    # Filter the logits using top-k filtering
+    filtered_logits = top_k_batch_filtering(filtered_logits, top_k)
+    # Convert the filtered logits to log probabilities
+    proposal_distribution = torch.nn.functional.log_softmax(filtered_logits, dim=-1)
+    # Extract the log probabilities for the generated tokens from the proposal distribution
+    gathered_proposal_logprobs = torch.gather(
+        proposal_distribution, dim=-1, index=index
+    ).squeeze(-1)
+
+    return gathered_proposal_logprobs
+
+
+def get_sequence_probs(model, generated_ids, top_k):
     with torch.no_grad():
-        # Add a batch dimension
-        generated_ids = generated_ids.unsqueeze(0)
         # Get the logits from the model
         logits = model(generated_ids[:, :-1], return_dict=True).logits
-        # Convert logits to log probabilitiesxs
-        original_logprobs = torch.nn.functional.log_softmax(logits, dim=-1)
         # Creates an index that identifies the positions of the generated tokens
         index = generated_ids[:, 1:].unsqueeze(-1)
-        # Extract their log probabilities from the original_logprobs
-        gathered_original_logprobs = torch.gather(
-            original_logprobs, dim=-1, index=index
-        ).squeeze(-1)
-
-        # Initialize tensors to store the log probabilities
-        sequence_original_logprobs = torch.zeros(
-            generated_ids.size(1) - 1, device=device
-        )
-        sequence_proposal_logprobs = torch.zeros(
-            generated_ids.size(1) - 1, device=device
-        )
-
-        for i in range(generated_ids.size(1) - 1):
-            # Select the log probability of the token that was actually generated
-            sequence_original_logprobs[i] = gathered_original_logprobs[:, i]
-
-            # Apply top-k filtering to create the proposal distribution
-            topk_logits = logits[:, i, :].clone()
-            filtered_logits = top_k_filtering(topk_logits, top_k)
-            proposal_distribution = torch.nn.functional.log_softmax(
-                filtered_logits, dim=-1
-            )
-
-            # Select the log probability of the token that was actually generated from the proposal distribution
-            sequence_proposal_logprobs[i] = torch.gather(
-                proposal_distribution, 1, generated_ids[:, i + 1].unsqueeze(-1)
-            ).squeeze(-1)
+        # Get the log probabilities for the original sequence
+        gathered_original_logprobs = get_original_logprobs(logits, index)
+        # Get the log probabilities for the proposed sequence
+        gathered_proposal_logprobs = get_proposal_logprobs(logits, top_k, index)
 
     # Sum the log probabilities for the entire sequence for both distributions
-    original_logprob_sum = torch.sum(sequence_original_logprobs).item()
-    proposal_logprob_sum = torch.sum(sequence_proposal_logprobs).item()
+    original_logprob_sum = torch.sum(gathered_original_logprobs).item()
+    proposal_logprob_sum = torch.sum(gathered_proposal_logprobs).item()
 
     return original_logprob_sum, proposal_logprob_sum
 
@@ -91,7 +80,7 @@ def metropolis_hastings(
     # Get the probabilities for the current sequence
     current_sequence = sequences[0]
 
-    global_logprob_current, local_logprob_current = compute_sequence_probs(
+    global_logprob_current, local_logprob_current = get_sequence_probs(
         model=model,
         generated_ids=current_sequence,
         top_k=top_k,
@@ -107,7 +96,7 @@ def metropolis_hastings(
         (
             global_logprob_proposed,
             local_logprob_proposed,
-        ) = compute_sequence_probs(
+        ) = get_sequence_probs(
             model=model,
             generated_ids=proposed_sequence,
             top_k=top_k,
@@ -221,6 +210,10 @@ def main():
     if preload_sequences:
         print("Loading preloaded sequences...")
         sequences = load_preloaded_sequences(sequences_filename)
+        if len(sequences) != sequence_count:
+            raise ValueError(
+                f"Number of sequences in the file ({len(sequences)}) does not match sequence_count ({sequence_count})."
+            )
     else:
         print("Generating new sequences...")
         sequences = generate_sequences(
@@ -233,6 +226,8 @@ def main():
             save_to_file=True,
             num_return_sequences=sequence_count,
         )
+
+    # TODO: compute the probabilities for the generated sequences in advance
 
     # Run the Independent Metropolis-Hastings algorithm
     generated_samples = metropolis_hastings(
