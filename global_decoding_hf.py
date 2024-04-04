@@ -3,6 +3,8 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 
+from torch.nn.functional import log_softmax
+
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 from utils import (
@@ -20,7 +22,7 @@ def indicator_top_k(sequence):
 
 def get_original_logprobs(logits, index):
     # Convert logits to log probabilities
-    original_logprobs = torch.nn.functional.log_softmax(logits, dim=-1)
+    original_logprobs = log_softmax(logits, dim=-1)
     # Extract their log probabilities from the original log probabilities
     gathered_original_logprobs = torch.gather(
         original_logprobs, dim=-1, index=index
@@ -35,7 +37,7 @@ def get_proposal_logprobs(logits, top_k, index):
     # Filter the logits using top-k filtering
     filtered_logits = top_k_batch_filtering(filtered_logits, top_k)
     # Convert the filtered logits to log probabilities
-    proposal_distribution = torch.nn.functional.log_softmax(filtered_logits, dim=-1)
+    proposal_distribution = log_softmax(filtered_logits, dim=-1)
     # Extract the log probabilities for the generated tokens from the proposal distribution
     gathered_proposal_logprobs = torch.gather(
         proposal_distribution, dim=-1, index=index
@@ -44,43 +46,40 @@ def get_proposal_logprobs(logits, top_k, index):
     return gathered_proposal_logprobs
 
 
-def create_index_tensor(generated_ids):
+def create_index_tensor(sequences):
     # Create an index tensor that identifies the positions of the generated tokens
-    index = generated_ids[:, 1:].unsqueeze(-1)
+    index = sequences[:, 1:].unsqueeze(-1)
     return index
 
 
-def get_logits(model, generated_ids):
+def get_logits(model, sequences):
     # Slice off the last token from each sequence and get the logits
-    return model(generated_ids[:, :-1], return_dict=True).logits
+    return model(sequences[:, :-1], return_dict=True).logits
 
 
-def get_sequence_probs(model, generated_ids, top_k):
+def get_sequence_probs(model, sequences, top_k):
     with torch.no_grad():
         # Get the logits from the model
-        logits = get_logits(model, generated_ids)
+        logits = get_logits(model, sequences)
         # Get the index tensor for the generated tokens
-        index = create_index_tensor(generated_ids)
+        index = create_index_tensor(sequences)
         # Get the log probabilities for the original sequence
         gathered_original_logprobs = get_original_logprobs(logits, index)
         # Get the log probabilities for the proposed sequence
         gathered_proposal_logprobs = get_proposal_logprobs(logits, top_k, index)
 
     # Sum the log probabilities for the entire sequence for both distributions
-    original_logprob_sum = torch.sum(gathered_original_logprobs).item()
-    proposal_logprob_sum = torch.sum(gathered_proposal_logprobs).item()
+    original_logprob_sum = torch.sum(gathered_original_logprobs, dim=-1)
+    proposal_logprob_sum = torch.sum(gathered_proposal_logprobs, dim=-1)
 
     return original_logprob_sum, proposal_logprob_sum
 
 
 def metropolis_hastings(
     tokenizer,
-    model,
     sequence_count,
-    top_k,
     burnin,
     sequences,
-    device,
 ):
     # List to store the generated samples, each sample is a tuple of (sequence, prob_sequence, prob_proposal)
     samples = []
@@ -88,30 +87,21 @@ def metropolis_hastings(
     # Calculate the number of burn-in samples
     burnin_index = int(burnin * sequence_count)
 
-    # Get the probabilities for the current sequence
-    current_sequence = sequences[0]
-
-    global_logprob_current, local_logprob_current = get_sequence_probs(
-        model=model,
-        generated_ids=current_sequence,
-        top_k=top_k,
-        device=device,
+    # Get the first sequence and its probabilities
+    current_sequence = sequences["sequences"][0]
+    global_logprob_current, local_logprob_current = (
+        sequences["global_logprobs"][0],
+        sequences["local_logprobs"][0],
     )
 
     # This is a top-level loop to generate multiple sequences
     for i in range(1, sequence_count):
         # Get the sequence to propose
-        proposed_sequence = sequences[i]
-
-        # Calculate the probabilities for the current and proposed sequences
-        (
-            global_logprob_proposed,
-            local_logprob_proposed,
-        ) = get_sequence_probs(
-            model=model,
-            generated_ids=proposed_sequence,
-            top_k=top_k,
-            device=device,
+        proposed_sequence = sequences["sequences"][i]
+        # Get the probabilities for the proposed sequences
+        global_logprob_proposed, local_logprob_proposed = (
+            sequences["global_logprobs"][i],
+            sequences["local_logprobs"][i],
         )
 
         # Calculate the acceptance ratio
@@ -238,17 +228,26 @@ def main():
             num_return_sequences=sequence_count,
         )
 
-    # TODO: compute the probabilities for the generated sequences in advance
+    # Get the probabilities for the generated sequences
+    global_logprobs, local_logprobs = get_sequence_probs(
+        model=model,
+        sequences=sequences,
+        top_k=top_k,
+    )
+
+    # Pack the sequences and their probabilities into a dictionary
+    sequences_dict = {
+        "sequences": sequences,
+        "global_logprobs": global_logprobs,
+        "local_logprobs": local_logprobs,
+    }
 
     # Run the Independent Metropolis-Hastings algorithm
     generated_samples = metropolis_hastings(
         tokenizer=tokenizer,
-        model=model,
         sequence_count=sequence_count,
-        top_k=top_k,
         burnin=burnin,
-        sequences=sequences,
-        device=device,
+        sequences=sequences_dict,
     )
 
     # Extract the probabilities from the generated samples
