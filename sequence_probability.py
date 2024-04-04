@@ -2,9 +2,15 @@ import torch
 
 from torch.nn.functional import log_softmax
 
-from utils import (
-    top_k_filtering,
-)
+
+def top_k_filtering(logits, top_k):
+    # Retrieve the top_k logits and their indices for each sequence in the batch
+    _, topk_indices = torch.topk(logits, top_k, dim=-1)
+    # Create a mask of the same shape as logits, initialized to False
+    mask = torch.ones_like(logits).scatter_(-1, topk_indices, 0).bool()
+    # Set all elements of logits that are not in the top_k to -float("inf")
+    logits[mask] = -float("inf")
+    return logits
 
 
 def get_original_logprobs(logits, index):

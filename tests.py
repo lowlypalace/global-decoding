@@ -1,7 +1,7 @@
 import unittest
 import torch
 
-from utils import top_k_filtering
+from sequence_probability import top_k_filtering
 
 # from global_decoding import (
 #     create_index_tensor,
