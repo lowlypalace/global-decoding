@@ -1,8 +1,7 @@
 import torch
-
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
-from utils import (
+from generate_sequences import (
     generate_sequences,
     load_preloaded_sequences,
 )
