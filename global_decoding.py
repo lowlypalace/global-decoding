@@ -1,3 +1,4 @@
+import argparse
 import torch
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
@@ -9,6 +10,55 @@ from generate_sequences import (
 from sequence_probability import get_sequence_probs
 from metropolis_hastings import metropolis_hastings
 from plots import plot_mcmc_distribution
+
+
+# Define the function to parse command-line arguments
+def parse_args(tokenizer):
+    parser = argparse.ArgumentParser(
+        description="Generate text sequences with GPT-2 and perform MCMC analysis."
+    )
+
+    parser.add_argument(
+        "--text",
+        type=str,
+        default=tokenizer.eos_token,
+        help="Text to use as a prompt. Defaults to the EOS token.",
+    )
+    parser.add_argument(
+        "--top_k", type=int, default=100, help="Top-k value for text generation."
+    )
+    parser.add_argument(
+        "--sequence_count",
+        type=int,
+        default=100,
+        help="Number of sequence samples to generate and use for MCMC analysis.",
+    )
+    parser.add_argument(
+        "--max_length",
+        type=int,
+        default=None,
+        help="Maximum sequence length. If not provided, it will be set to the maximum model length minus the length of the input text.",
+    )
+    parser.add_argument(
+        "--burnin",
+        type=float,
+        default=0.2,
+        help="Burn-in period as a fraction of the total number of samples.",
+    )
+    parser.add_argument(
+        "--preload_sequences",
+        action="store_true",
+        help="Use preloaded sequences instead of generating new ones.",
+    )
+    parser.add_argument(
+        "--sequences_filename",
+        type=str,
+        default="sequences/generated_sequences.json",
+        help="Filename for preloaded sequences.",
+    )
+
+    args = parser.parse_args()
+    return args
 
 
 def main():
@@ -24,21 +74,15 @@ def main():
     # Assume max_model_length is the maximum sequence length the model can handle
     max_model_length = model.config.max_position_embeddings
 
-    # Text to use as a prompt
-    text = tokenizer.eos_token
-    # Top-k value to use
-    top_k = 100
-    # Number of samples to generate
-    sequence_count = 100
-    # Maximum length of a sequence
-    # If not provided, it will be set to the maximum model length minus the length of the input text
-    max_length = 10
-    # Burn-in period as a fraction of the total number of samples
-    burnin = 0.2
-
-    # Preloaded sequences to use
-    preload_sequences = False
-    sequences_filename = "sequences/generated_sequences.json_03-04-2024_16-30-56.json"
+    # Parse command-line arguments
+    args = parse_args(tokenizer)
+    top_k = args.top_k
+    sequence_count = args.sequence_count
+    max_length = args.max_length
+    burnin = args.burnin
+    preload_sequences = args.preload_sequences
+    sequences_filename = args.sequences_filename
+    text = args.text
 
     # Generate sequences and save them to a file
     if preload_sequences:
