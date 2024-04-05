@@ -53,7 +53,6 @@ def plot_mcmc_distribution(samples, plot_type="histogram", show=True):
 def compute_kde(samples, x_range=None):
     if x_range is None:
         x_range = min(samples), max(samples)
-    print(samples)
     g_kde = gaussian_kde(samples)
     x_kde = np.linspace(*x_range, num=100)
 

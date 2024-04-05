@@ -1,4 +1,5 @@
 import argparse
+import logging
 import torch
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
@@ -11,6 +12,12 @@ from sequence_probability import get_sequence_probs
 from metropolis_hastings import metropolis_hastings
 from plots import plot_mcmc_distribution, plot_chain
 
+# Set up logging
+def setup_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+    )
 
 # Define the function to parse command-line arguments
 def parse_args(tokenizer):
@@ -69,6 +76,8 @@ def parse_args(tokenizer):
 
 
 def main():
+    setup_logging()
+
     # Load pre-trained model tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2", padding_side="left")
     # Load pre-trained model
@@ -94,14 +103,14 @@ def main():
 
     # Generate sequences and save them to a file
     if preload_sequences:
-        print("Loading preloaded sequences...")
+        logging.info("Loading preloaded sequences...")
         sequences = load_preloaded_sequences(sequences_filename)
         if len(sequences) != sequence_count:
             raise ValueError(
                 f"Number of sequences in the file ({len(sequences)}) does not match sequence_count ({sequence_count})."
             )
     else:
-        print("Generating new sequences...")
+        logging.info("Generating new sequences...")
         # Encode the input text to tensor
         input_ids = tokenizer.encode(
             text, add_special_tokens=True, return_tensors="pt"
@@ -123,7 +132,7 @@ def main():
             num_return_sequences=sequence_count,
         )
 
-    print("Computing probabilities for the generated sequences...")
+    logging.info("Computing probabilities for the generated sequences...")
     # Get the probabilities for the generated sequences
     global_logprobs, local_logprobs = get_sequence_probs(
         model=model,
@@ -132,7 +141,7 @@ def main():
     )
 
     # Run the Independent Metropolis-Hastings algorithm
-    print("Running Independent Metropolis-Hastings algorithm...")
+    logging.info("Running Independent Metropolis-Hastings algorithm...")
     generated_samples = metropolis_hastings(
         tokenizer=tokenizer,
         sequence_count=sequence_count,
