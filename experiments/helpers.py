@@ -1,6 +1,4 @@
-import os
 import torch
-from datetime import datetime
 
 
 def top_k_filtering(logits, top_indices):
