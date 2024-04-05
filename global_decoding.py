@@ -127,6 +127,7 @@ def main():
             else max_model_length - input_ids.size(1)
         )
         # Generate sequences
+        # TODO: Output scores
         sequences = generate_sequences(
             tokenizer=tokenizer,
             model=model,
@@ -135,6 +136,7 @@ def main():
             top_k=top_k,
             save_to_file=True,
             num_return_sequences=sequence_count,
+            output_scores=False,
         )
 
     logging.info("Computing probabilities for the generated sequences...")
@@ -144,6 +146,7 @@ def main():
         sequences=sequences,
         top_k=top_k,
         pad_token_id=tokenizer.pad_token_id,
+        input_ids=input_ids,
     )
 
     # Run the Independent Metropolis-Hastings algorithm

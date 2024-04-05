@@ -1,17 +1,7 @@
 import unittest
 import torch
 
-from sequence_probability import top_k_filtering
-
-# from global_decoding import (
-#     create_index_tensor,
-#     get_logits,
-#     get_original_logprobs,
-#     get_proposal_logprobs,
-#     get_sequence_probs,
-# )
-
-# from torch.nn.functional import log_softmax
+from sequence_probability import top_k_filtering, create_index_tensor
 
 
 class TestTopKFiltering(unittest.TestCase):
@@ -57,6 +47,30 @@ class TestTopKFiltering(unittest.TestCase):
                 self.assertEqual(
                     torch.isfinite(filtered_logits[i, j]).sum().item(), top_k
                 )
+
+
+# class TestSequenceProbability(unittest.TestCase):
+
+#     def test_with_pad_tokens(self):
+#         sequences = torch.tensor(
+#             [
+#                 [50256, 464, 5940, 8123, 338, 4452, 50256],
+#                 [50256, 960, 383, 281, 1468, 12, 50256],
+#                 [50256, 49, 1523, 284, 46085, 262, 50256],
+#                 [50256, 13, 198, 13, 50256, 50256, 50256],
+#             ]
+#         )
+#         pad_token_id = 50256
+#         expected = torch.tensor(
+#             [
+#                 [[0], [464], [5940], [8123], [338], [4452], [0]],
+#                 [[0], [960], [383], [281], [1468], [12], [0]],
+#                 [[0], [49], [1523], [284], [46085], [262], [0]],
+#                 [[0], [13], [198], [13], [0], [0], [0]],
+#             ]
+#         )
+#         output = create_index_tensor(sequences, pad_token_id)
+#         torch.testing.assert_close(output, expected)
 
 
 if __name__ == "__main__":

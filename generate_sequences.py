@@ -15,6 +15,7 @@ def generate_sequences(
     num_return_sequences,
     save_to_file=False,
     filename="generated_sequences.json",
+    output_scores=False,
 ):
     # Generate sequences
     generated_ids = model.generate(
@@ -25,6 +26,7 @@ def generate_sequences(
         top_k=top_k,
         do_sample=True,
         num_return_sequences=num_return_sequences,
+        output_scores=output_scores,
     )
 
     if save_to_file:
