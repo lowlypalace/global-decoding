@@ -58,36 +58,3 @@ def get_sequence_probs(model, sequences, top_k, pad_token_id):
 
     return target_logprob_sum, proposal_logprob_sum
 
-
-
-
-# def get_target_logprobs(logits, index):
-#     # Convert logits to log probabilities
-#     target_distribution = log_softmax(logits, dim=-1)
-#     # Extract their log probabilities from the original log probabilities
-#     selected_target_logprobs = torch.gather(
-#         target_distribution, dim=-1, index=index
-#     ).squeeze(-1)
-
-#     return selected_target_logprobs
-
-
-# def get_proposal_logprobs(logits, top_k, index):
-#     # Clone the logits to avoid modifying the original tensor
-#     filtered_logits = logits.clone()
-#     # Filter the logits using top-k filtering
-#     filtered_logits = top_k_filtering(filtered_logits, top_k)
-#     # Convert the filtered logits to log probabilities
-#     proposal_distribution = log_softmax(filtered_logits, dim=-1)
-#     # Extract the log probabilities for the generated tokens from the proposal distribution
-#     selected_proposal_logprobs = torch.gather(
-#         proposal_distribution, dim=-1, index=index
-#     ).squeeze(-1)
-
-#     return selected_proposal_logprobs
-
-
-#     # Check if proposal_logprobs has any -inf values
-#     # If so, print out the sequence that caused it
-#     if torch.isinf(proposal_logprobs).any():
-#         print(sequences[torch.isinf(proposal_logprobs).any(dim=-1)])
