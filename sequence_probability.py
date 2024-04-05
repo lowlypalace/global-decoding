@@ -52,12 +52,6 @@ def sum_logprobs(logprobs):
 
 
 def get_sequence_probs(model, sequences, top_k, pad_token_id, input_ids):
-    sequences = torch.tensor(
-        # [[50256, 464, 5940, 8123, 338, 50256],
-        [
-            [50256, 13, 198, 13, 50256, 50256],
-        ]
-    )
     with torch.no_grad():
         # Get the logits from the model
         logits = get_logits(model, sequences)
@@ -77,8 +71,3 @@ def get_sequence_probs(model, sequences, top_k, pad_token_id, input_ids):
     proposal_logprob_sum = sum_logprobs(proposal_logprobs)
 
     return target_logprob_sum, proposal_logprob_sum
-
-    # # Check if proposal_logprobs has any -inf values
-    # # If so, print out the sequence that caused it
-    # if torch.isinf(proposal_logprobs).any():
-    #     print(sequences[torch.isinf(proposal_logprobs).any(dim=-1)])

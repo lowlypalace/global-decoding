@@ -76,5 +76,3 @@ class TestSequenceProbability(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-    # pad_token_id = 50256
