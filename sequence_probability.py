@@ -13,6 +13,13 @@ def top_k_filtering(logits, top_k):
     return logits
 
 
+def mask_out_pad_token(log_probs, index, pad_token_id):
+    # Mask out the log probabilities for the pad_token_id
+    pad_mask_selected = index.squeeze(-1) == pad_token_id
+    log_probs[pad_mask_selected] = 0
+    return log_probs
+
+
 def get_logprobs(logits, index, pad_token_id, top_k=None):
     # If top_k is specified, apply top-k filtering
     if top_k is not None:
@@ -24,10 +31,8 @@ def get_logprobs(logits, index, pad_token_id, top_k=None):
     # Extract the log probabilities for the generated tokens
     selected_logprobs = torch.gather(log_probs, dim=-1, index=index).squeeze(-1)
 
-    # Mask out the log probabilities for the pad_token_id
     # TODO: Currently this masks out the EOS token as well
-    pad_mask_selected = index.squeeze(-1) == pad_token_id
-    selected_logprobs[pad_mask_selected] = 0
+    selected_logprobs = mask_out_pad_token(selected_logprobs, index, pad_token_id)
 
     return selected_logprobs
 
