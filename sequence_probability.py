@@ -57,6 +57,7 @@ def sum_logprobs(logprobs):
 def get_sequence_probs(model, sequences, top_k, pad_token_id, input_ids):
     with torch.no_grad():
         # Get the logits from the model
+        # TODO: Make it optional to pass the logits from generate() scores
         logits = get_logits(model, sequences)
         # Get the index tensor for the generated tokens
         index = create_index_tensor(sequences, input_ids)
