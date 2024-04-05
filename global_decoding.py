@@ -154,10 +154,10 @@ def main():
     # Extract the probabilities from the generated samples
     generated_probs = [sample[1] for sample in generated_samples]
 
+    logging.info("Plotting the results...")
     # Plot the distribution of the generated probabilities
     plot_mcmc_distribution(generated_probs, plot_type="histogram", show=False)
     plot_mcmc_distribution(generated_probs, plot_type="kde", show=False)
-
     # Plot the chain of generated samples
     plot_chain(generated_probs, burnin=burnin, show=False)
 
