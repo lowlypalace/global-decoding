@@ -13,30 +13,20 @@ def top_k_filtering(logits, top_k):
     return logits
 
 
-def get_target_logprobs(logits, index):
-    # Convert logits to log probabilities
-    target_distribution = log_softmax(logits, dim=-1)
-    # Extract their log probabilities from the original log probabilities
-    selected_target_logprobs = torch.gather(
-        target_distribution, dim=-1, index=index
+
+def get_logprobs(logits, index, pad_token_id, top_k=None):
+    # If top_k is specified, apply top-k filtering
+    if top_k is not None:
+        logits = top_k_filtering(logits, top_k)
+    # Convert the (filtered) logits to log probabilities
+    log_probs = log_softmax(logits, dim=-1)
+    # Extract the log probabilities for the generated tokens
+    selected_logprobs = torch.gather(
+        log_probs, dim=-1, index=index
     ).squeeze(-1)
 
-    return selected_target_logprobs
+    return selected_logprobs
 
-
-def get_proposal_logprobs(logits, top_k, index):
-    # Clone the logits to avoid modifying the original tensor
-    filtered_logits = logits.clone()
-    # Filter the logits using top-k filtering
-    filtered_logits = top_k_filtering(filtered_logits, top_k)
-    # Convert the filtered logits to log probabilities
-    proposal_distribution = log_softmax(filtered_logits, dim=-1)
-    # Extract the log probabilities for the generated tokens from the proposal distribution
-    selected_proposal_logprobs = torch.gather(
-        proposal_distribution, dim=-1, index=index
-    ).squeeze(-1)
-
-    return selected_proposal_logprobs
 
 
 def create_index_tensor(sequences):
@@ -50,19 +40,54 @@ def get_logits(model, sequences):
     return model(sequences[:, :-1], return_dict=True).logits
 
 
-def get_sequence_probs(model, sequences, top_k):
+def get_sequence_probs(model, sequences, top_k, pad_token_id):
     with torch.no_grad():
         # Get the logits from the model
         logits = get_logits(model, sequences)
         # Get the index tensor for the generated tokens
         index = create_index_tensor(sequences)
         # Get the log probabilities for the original sequence
-        target_logprobs = get_target_logprobs(logits, index)
+        target_logprobs = get_logprobs(logits=logits, index=index, pad_token_id=pad_token_id)
         # Get the log probabilities for the proposed sequence
-        proposal_logprobs = get_proposal_logprobs(logits, top_k, index)
+        proposal_logprobs = get_logprobs(logits=logits, index=index, pad_token_id=pad_token_id, top_k=top_k)
+
 
     # Sum the log probabilities for the entire sequence for both distributions
     target_logprob_sum = torch.sum(target_logprobs, dim=-1)
     proposal_logprob_sum = torch.sum(proposal_logprobs, dim=-1)
 
     return target_logprob_sum, proposal_logprob_sum
+
+
+
+
+# def get_target_logprobs(logits, index):
+#     # Convert logits to log probabilities
+#     target_distribution = log_softmax(logits, dim=-1)
+#     # Extract their log probabilities from the original log probabilities
+#     selected_target_logprobs = torch.gather(
+#         target_distribution, dim=-1, index=index
+#     ).squeeze(-1)
+
+#     return selected_target_logprobs
+
+
+# def get_proposal_logprobs(logits, top_k, index):
+#     # Clone the logits to avoid modifying the original tensor
+#     filtered_logits = logits.clone()
+#     # Filter the logits using top-k filtering
+#     filtered_logits = top_k_filtering(filtered_logits, top_k)
+#     # Convert the filtered logits to log probabilities
+#     proposal_distribution = log_softmax(filtered_logits, dim=-1)
+#     # Extract the log probabilities for the generated tokens from the proposal distribution
+#     selected_proposal_logprobs = torch.gather(
+#         proposal_distribution, dim=-1, index=index
+#     ).squeeze(-1)
+
+#     return selected_proposal_logprobs
+
+
+#     # Check if proposal_logprobs has any -inf values
+#     # If so, print out the sequence that caused it
+#     if torch.isinf(proposal_logprobs).any():
+#         print(sequences[torch.isinf(proposal_logprobs).any(dim=-1)])

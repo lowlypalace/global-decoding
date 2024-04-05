@@ -79,13 +79,16 @@ def main():
     setup_logging()
 
     # Load pre-trained model tokenizer
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2", padding_side="left")
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     # Load pre-trained model
     model = GPT2LMHeadModel.from_pretrained("gpt2")
     # Set the model to evaluation mode
     model.eval()
     # Assume max_model_length is the maximum sequence length the model can handle
     max_model_length = model.config.max_position_embeddings
+    # Set the padding token to the EOS token
+    if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
 
     # Parse command-line arguments
     args = parse_args(tokenizer)
@@ -138,6 +141,7 @@ def main():
         model=model,
         sequences=sequences,
         top_k=top_k,
+        pad_token_id=tokenizer.pad_token_id,
     )
 
     # Run the Independent Metropolis-Hastings algorithm
@@ -152,7 +156,6 @@ def main():
     )
 
     logging.info("Plotting the results...")
-    print(sampled_probs)
     # Plot the distribution of the generated probabilities
     plot_mcmc_distribution(sampled_probs, plot_type="histogram", show=False)
     plot_mcmc_distribution(sampled_probs, plot_type="kde", show=False)

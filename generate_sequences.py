@@ -20,7 +20,7 @@ def generate_sequences(
     generated_ids = model.generate(
         input_ids=input_ids,
         max_length=max_length,
-        pad_token_id=tokenizer.eos_token_id,
+        pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
         top_k=top_k,
         do_sample=True,
