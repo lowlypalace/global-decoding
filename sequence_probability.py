@@ -39,6 +39,8 @@ def get_logits(model, sequences):
     # Get the logits from the model
     return model(sequences, return_dict=True).logits
 
+def sum_logprobs(logprobs):
+    return torch.sum(logprobs, dim=-1)
 
 def get_sequence_probs(model, sequences, top_k, pad_token_id, input_ids):
 
@@ -57,8 +59,8 @@ def get_sequence_probs(model, sequences, top_k, pad_token_id, input_ids):
         )
 
     # Sum the log probabilities for the entire sequence for both distributions
-    target_logprob_sum = torch.sum(target_logprobs, dim=-1)
-    proposal_logprob_sum = torch.sum(proposal_logprobs, dim=-1)
+    target_logprob_sum = sum_logprobs(target_logprobs)
+    proposal_logprob_sum = sum_logprobs(proposal_logprobs)
 
     return target_logprob_sum, proposal_logprob_sum
 
