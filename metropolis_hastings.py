@@ -9,8 +9,9 @@ def indicator_top_k(sequence):
 def metropolis_hastings(
     tokenizer, sequence_count, burnin, sequences, target_logprobs, proposal_logprobs
 ):
-    # List to store the generated samples, each sample is a tuple of (sequence, prob_sequence, prob_proposal)
-    samples = []
+    # List to store the generated samples
+    sampled_sequences = []
+    sampled_target_logprobs = []
 
     # Calculate the number of burn-in samples
     burnin_index = int(burnin * sequence_count)
@@ -55,9 +56,9 @@ def metropolis_hastings(
         if i >= burnin_index:
             # Decode the generated sequence
             decoded_seq = tokenizer.decode(current_sequence, skip_special_tokens=True)
-            # Append the decoded sequence and its probabilities to the samples list
-            samples.append(
-                (decoded_seq, logprob_target_current, logprob_proposal_current)
-            )
+            # Append the decoded sequence and its probabilities to samples
+            sampled_sequences.append(decoded_seq)
+            sampled_target_logprobs.append(logprob_target_current)
 
-    return samples
+
+    return sampled_sequences, sampled_target_logprobs

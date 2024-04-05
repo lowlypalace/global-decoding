@@ -142,7 +142,7 @@ def main():
 
     # Run the Independent Metropolis-Hastings algorithm
     logging.info("Running Independent Metropolis-Hastings algorithm...")
-    generated_samples = metropolis_hastings(
+    sampled_sequences, sampled_probs = metropolis_hastings(
         tokenizer=tokenizer,
         sequence_count=sequence_count,
         burnin=burnin,
@@ -151,15 +151,13 @@ def main():
         proposal_logprobs=local_logprobs,
     )
 
-    # Extract the probabilities from the generated samples
-    generated_probs = [sample[1] for sample in generated_samples]
-
     logging.info("Plotting the results...")
+    print(sampled_probs)
     # Plot the distribution of the generated probabilities
-    plot_mcmc_distribution(generated_probs, plot_type="histogram", show=False)
-    plot_mcmc_distribution(generated_probs, plot_type="kde", show=False)
+    plot_mcmc_distribution(sampled_probs, plot_type="histogram", show=False)
+    plot_mcmc_distribution(sampled_probs, plot_type="kde", show=False)
     # Plot the chain of generated samples
-    plot_chain(generated_probs, burnin=burnin, show=False)
+    plot_chain(sampled_probs, burnin=burnin, show=False)
 
 
 if __name__ == "__main__":
