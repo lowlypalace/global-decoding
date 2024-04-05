@@ -56,23 +56,21 @@ def parse_args(tokenizer):
         default="sequences/generated_sequences.json",
         help="Filename for preloaded sequences.",
     )
+    parser.add_argument(
+        "--device",
+        type=str,
+        choices=["cpu", "cuda"],
+        default="cuda" if torch.cuda.is_available() else "cpu",
+        help='Device to use for computation. Defaults to "cuda" if available.',
+    )
 
     args = parser.parse_args()
     return args
 
 
 def main():
-    # Set the device to GPU if available
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Load pre-trained model tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2", padding_side="left")
-    # Load pre-trained model
-    model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
-
-    # Set the model to evaluation mode
-    model.eval()
-    # Assume max_model_length is the maximum sequence length the model can handle
-    max_model_length = model.config.max_position_embeddings
 
     # Parse command-line arguments
     args = parse_args(tokenizer)
@@ -83,6 +81,14 @@ def main():
     preload_sequences = args.preload_sequences
     sequences_filename = args.sequences_filename
     text = args.text
+    device = torch.device(args.device)
+
+    # Load pre-trained model
+    model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
+    # Set the model to evaluation mode
+    model.eval()
+    # Assume max_model_length is the maximum sequence length the model can handle
+    max_model_length = model.config.max_position_embeddings
 
     # Generate sequences and save them to a file
     if preload_sequences:
