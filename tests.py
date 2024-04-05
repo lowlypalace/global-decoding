@@ -49,28 +49,30 @@ class TestTopKFiltering(unittest.TestCase):
                 )
 
 
-# class TestSequenceProbability(unittest.TestCase):
+class TestSequenceProbability(unittest.TestCase):
 
-#     def test_with_pad_tokens(self):
-#         sequences = torch.tensor(
-#             [
-#                 [50256, 464, 5940, 8123, 338, 4452, 50256],
-#                 [50256, 960, 383, 281, 1468, 12, 50256],
-#                 [50256, 49, 1523, 284, 46085, 262, 50256],
-#                 [50256, 13, 198, 13, 50256, 50256, 50256],
-#             ]
-#         )
-#         pad_token_id = 50256
-#         expected = torch.tensor(
-#             [
-#                 [[0], [464], [5940], [8123], [338], [4452], [0]],
-#                 [[0], [960], [383], [281], [1468], [12], [0]],
-#                 [[0], [49], [1523], [284], [46085], [262], [0]],
-#                 [[0], [13], [198], [13], [0], [0], [0]],
-#             ]
-#         )
-#         output = create_index_tensor(sequences, pad_token_id)
-#         torch.testing.assert_close(output, expected)
+    def test_with_pad_tokens(self):
+        input_ids = torch.tensor([[50256]])
+        sequences = torch.tensor(
+            [
+                [50256, 464, 5940, 8123, 338, 4452, 50256],
+                [50256, 960, 383, 281, 1468, 12, 50256],
+                [50256, 49, 1523, 284, 46085, 262, 50256],
+                [50256, 13, 198, 13, 50256, 50256, 50256],
+            ]
+        )
+        pad_token_id = 50256
+        expected = torch.tensor(
+            [
+                [[464], [5940], [8123], [338], [4452], [50256]],
+                [[960], [383], [281], [1468], [12], [50256]],
+                [[49], [1523], [284], [46085], [262], [50256]],
+                [[13], [198], [13], [50256], [50256], [50256]],
+            ]
+        )
+
+        output = create_index_tensor(sequences, pad_token_id, input_ids)
+        torch.testing.assert_close(output, expected)
 
 
 if __name__ == "__main__":
