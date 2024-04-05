@@ -1,6 +1,6 @@
 import torch
 
-from torch.nn.functional import log_softmax, softmax
+from torch.nn.functional import log_softmax
 
 
 def top_k_filtering(logits, top_k):
@@ -36,7 +36,7 @@ def create_index_tensor(sequences, pad_token_id, input_ids):
 
 
 def get_logits(model, sequences):
-    # Slice off the last token from each sequence and get the logits
+    # Get the logits from the model
     return model(sequences, return_dict=True).logits
 
 
