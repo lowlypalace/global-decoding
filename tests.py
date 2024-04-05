@@ -78,15 +78,14 @@ class TestSequenceProbability(unittest.TestCase):
         logprobs = torch.tensor(
             [[-2.3026, -1.6094, -1.2039], [-1.6094, -2.3026, -0.9163]]
         )
-
         # Call the sum_logprobs method
         summed_logprobs = sum_logprobs(logprobs)
-
         # The expected result is the sum along the last dimension (dim=-1)
         expected_sum = torch.tensor([-5.1159, -4.8283])
-
         # Assert that the summed log probabilities match the expected values
         torch.testing.assert_close(summed_logprobs, expected_sum)
+
+    # TODO: add get_logprobs test
 
 
 if __name__ == "__main__":
