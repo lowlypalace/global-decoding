@@ -12,12 +12,14 @@ from sequence_probability import get_sequence_probs
 from metropolis_hastings import metropolis_hastings
 from plots import plot_mcmc_distribution, plot_chain
 
+
 # Set up logging
 def setup_logging():
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
+
 
 # Define the function to parse command-line arguments
 def parse_args(tokenizer):
@@ -88,7 +90,7 @@ def main():
     max_model_length = model.config.max_position_embeddings
     # Set the padding token to the EOS token
     if tokenizer.pad_token is None:
-            tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token = tokenizer.eos_token
 
     # Parse command-line arguments
     args = parse_args(tokenizer)

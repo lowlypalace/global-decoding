@@ -60,5 +60,4 @@ def metropolis_hastings(
             sampled_sequences.append(decoded_seq)
             sampled_target_logprobs.append(logprob_target_current)
 
-
     return sampled_sequences, sampled_target_logprobs
