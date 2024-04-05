@@ -39,8 +39,10 @@ def get_logits(model, sequences):
     # Get the logits from the model
     return model(sequences, return_dict=True).logits
 
+
 def sum_logprobs(logprobs):
     return torch.sum(logprobs, dim=-1)
+
 
 def get_sequence_probs(model, sequences, top_k, pad_token_id, input_ids):
 
