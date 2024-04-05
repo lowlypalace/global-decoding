@@ -1,7 +1,7 @@
 import unittest
 import torch
 
-from sequence_probability import top_k_filtering, create_index_tensor
+from sequence_probability import top_k_filtering, create_index_tensor, sum_logprobs
 
 
 class TestTopKFiltering(unittest.TestCase):
@@ -72,6 +72,21 @@ class TestSequenceProbability(unittest.TestCase):
 
         output = create_index_tensor(sequences, input_ids)
         torch.testing.assert_close(output, expected)
+
+    def test_sum_logprobs(self):
+        # Create a tensor of log probabilities for testing
+        logprobs = torch.tensor(
+            [[-2.3026, -1.6094, -1.2039], [-1.6094, -2.3026, -0.9163]]
+        )
+
+        # Call the sum_logprobs method
+        summed_logprobs = sum_logprobs(logprobs)
+
+        # The expected result is the sum along the last dimension (dim=-1)
+        expected_sum = torch.tensor([-5.1159, -4.8283])
+
+        # Assert that the summed log probabilities match the expected values
+        torch.testing.assert_close(summed_logprobs, expected_sum)
 
 
 if __name__ == "__main__":
