@@ -61,7 +61,6 @@ class TestSequenceProbability(unittest.TestCase):
                 [50256, 13, 198, 13, 50256, 50256, 50256],
             ]
         )
-        pad_token_id = 50256
         expected = torch.tensor(
             [
                 [[464], [5940], [8123], [338], [4452], [50256]],
@@ -71,9 +70,11 @@ class TestSequenceProbability(unittest.TestCase):
             ]
         )
 
-        output = create_index_tensor(sequences, pad_token_id, input_ids)
+        output = create_index_tensor(sequences, input_ids)
         torch.testing.assert_close(output, expected)
 
 
 if __name__ == "__main__":
     unittest.main()
+
+    # pad_token_id = 50256
