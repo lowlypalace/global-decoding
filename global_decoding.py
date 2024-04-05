@@ -9,7 +9,7 @@ from generate_sequences import (
 
 from sequence_probability import get_sequence_probs
 from metropolis_hastings import metropolis_hastings
-from plots import plot_mcmc_distribution
+from plots import plot_mcmc_distribution, plot_chain
 
 
 # Define the function to parse command-line arguments
@@ -146,6 +146,9 @@ def main():
     # Plot the distribution of the generated probabilities
     plot_mcmc_distribution(generated_probs, plot_type="histogram", show=False)
     plot_mcmc_distribution(generated_probs, plot_type="kde", show=False)
+
+    # Plot the chain of generated samples
+    plot_chain(generated_probs, burnin=burnin, show=False)
 
 
 if __name__ == "__main__":
