@@ -71,6 +71,12 @@ def parse_args(tokenizer):
 def main():
     # Load pre-trained model tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2", padding_side="left")
+    # Load pre-trained model
+    model = GPT2LMHeadModel.from_pretrained("gpt2")
+    # Set the model to evaluation mode
+    model.eval()
+    # Assume max_model_length is the maximum sequence length the model can handle
+    max_model_length = model.config.max_position_embeddings
 
     # Parse command-line arguments
     args = parse_args(tokenizer)
@@ -83,12 +89,8 @@ def main():
     text = args.text
     device = torch.device(args.device)
 
-    # Load pre-trained model
-    model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
-    # Set the model to evaluation mode
-    model.eval()
-    # Assume max_model_length is the maximum sequence length the model can handle
-    max_model_length = model.config.max_position_embeddings
+    # Move the model to the specified device
+    model.to(device)
 
     # Generate sequences and save them to a file
     if preload_sequences:
