@@ -13,15 +13,15 @@ def top_k_filtering(logits, top_k):
     return logits
 
 
-def get_original_logprobs(logits, index):
+def get_target_logprobs(logits, index):
     # Convert logits to log probabilities
-    original_logprobs = log_softmax(logits, dim=-1)
+    target_distribution = log_softmax(logits, dim=-1)
     # Extract their log probabilities from the original log probabilities
-    gathered_original_logprobs = torch.gather(
-        original_logprobs, dim=-1, index=index
+    selected_target_logprobs = torch.gather(
+        target_distribution, dim=-1, index=index
     ).squeeze(-1)
 
-    return gathered_original_logprobs
+    return selected_target_logprobs
 
 
 def get_proposal_logprobs(logits, top_k, index):
@@ -32,11 +32,11 @@ def get_proposal_logprobs(logits, top_k, index):
     # Convert the filtered logits to log probabilities
     proposal_distribution = log_softmax(filtered_logits, dim=-1)
     # Extract the log probabilities for the generated tokens from the proposal distribution
-    gathered_proposal_logprobs = torch.gather(
+    selected_proposal_logprobs = torch.gather(
         proposal_distribution, dim=-1, index=index
     ).squeeze(-1)
 
-    return gathered_proposal_logprobs
+    return selected_proposal_logprobs
 
 
 def create_index_tensor(sequences):
@@ -57,12 +57,12 @@ def get_sequence_probs(model, sequences, top_k):
         # Get the index tensor for the generated tokens
         index = create_index_tensor(sequences)
         # Get the log probabilities for the original sequence
-        gathered_original_logprobs = get_original_logprobs(logits, index)
+        target_logprobs = get_target_logprobs(logits, index)
         # Get the log probabilities for the proposed sequence
-        gathered_proposal_logprobs = get_proposal_logprobs(logits, top_k, index)
+        proposal_logprobs = get_proposal_logprobs(logits, top_k, index)
 
     # Sum the log probabilities for the entire sequence for both distributions
-    original_logprob_sum = torch.sum(gathered_original_logprobs, dim=-1)
-    proposal_logprob_sum = torch.sum(gathered_proposal_logprobs, dim=-1)
+    target_logprob_sum = torch.sum(target_logprobs, dim=-1)
+    proposal_logprob_sum = torch.sum(proposal_logprobs, dim=-1)
 
-    return original_logprob_sum, proposal_logprob_sum
+    return target_logprob_sum, proposal_logprob_sum
