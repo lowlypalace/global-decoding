@@ -19,8 +19,8 @@ def metropolis_hastings(
     # Get the first sequence and its probabilities
     current_sequence = sequences[0]
     logprob_target_current, logprob_proposal_current = (
-        target_logprobs[0],
-        proposal_logprobs[0],
+        target_logprobs[0].item(),
+        proposal_logprobs[0].item(),
     )
 
     # This is a top-level loop to generate multiple sequences
@@ -29,8 +29,8 @@ def metropolis_hastings(
         proposed_sequence = sequences[i]
         # Get the probabilities for the proposed sequences
         logprob_target_proposed, logprob_proposal_proposed = (
-            target_logprobs[i],
-            proposal_logprobs[i],
+            target_logprobs[i].item(),
+            proposal_logprobs[i].item(),
         )
 
         # Calculate the acceptance ratio
