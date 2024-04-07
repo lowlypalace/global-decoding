@@ -95,10 +95,11 @@ class TestSequenceProbability(unittest.TestCase):
     def test_mask_out_pad_token(self):
         # Define the inputs
         input_ids = torch.tensor([[50256]])
-        # log_probs = torch.tensor([
-        #     [50256, 50256, 50256, 50256, 50256],  # Sequence with EOS token and pad tokens
-        #     [50256, 0.7, 0.8, 0.9, 1.0]   # S
-        # ])
+        pad_token_id = 50256
+        # Sequence with all but the first EOS masked
+        # Second sequence with no tokens masked
+        # Third sequence with all but the last PAD masked
+        # Fourth sequence with no tokens masked
         sequences = torch.tensor(
             [
                 [50256, 50256, 50256, 50256, 50256],
@@ -107,81 +108,58 @@ class TestSequenceProbability(unittest.TestCase):
                 [50256, 12, 49368, 13, 50256],
             ]
         )
-        # get logits from model
-        logits = get_logits(model, sequences)
-        # print("logits: ", logits)
         index = create_index_tensor(sequences, input_ids)
 
-        # get probs from model
-        # logprobs = get_logprobs(logits, index, top_k=None, pad_token_id=tokenizer.pad_token_id)
-        # print("logprobs: ", logprobs)
-        # logprobs = get_logprobs(logits, index, top_k=100, pad_token_id=tokenizer.pad_token_id)
-        # print("logprobs with top-k: ", logprobs)
         logprobs = torch.tensor(
             [
-                [-6.2530e00, -1.3405e01, -1.3767e01, -1.3907e01],
-                [-4.4828e00, -7.3980e-01, -6.6570e-03, -1.9486e00],
-                [-6.2220e00, -6.2684e00, -4.5776e00, -1.2446e01],
-                [-4.8731e00, -6.6102e00, -6.2977e00, -3.4066e00],
+                [-6.2530, -13.405, -13.767, -13.907],
+                [-4.4828, -0.7398, -0.0067, -1.9486],
+                [-6.2220, -6.2684, -4.5776, -12.446],
+                [-4.8731, -6.6102, -6.2977, -3.4066],
             ]
         )
 
         inf = float("-inf")
         logprobs_with_top_k = torch.tensor(
             [
-                [-5.5133e00, -inf, -inf, -inf],
-                [-3.7431e00, -5.0686e-01, -4.7710e-03, -1.3873e00],
-                [-5.4823e00, -5.5139e00, -3.6154e00, -inf],
-                [-4.1333e00, -5.4711e00, -5.7164e00, -3.0604e00],
+                [-5.5133, -inf, -inf, -inf],
+                [-3.7431, -0.5069, -0.0048, -1.3873],
+                [-5.4823, -5.5139, -3.6154, -inf],
+                [-4.1333, -5.4711, -5.7164, -3.0604],
+            ]
+        )
+        expected_output_logprobs = torch.tensor(
+            [
+                [-6.2530, 0, 0, 0],
+                [-4.4828, -0.7398, -0.0067, -1.9486],
+                [-6.2220, -6.2684, -4.5776, 0],
+                [-4.8731, -6.6102, -6.2977, -3.4066],
             ]
         )
 
-        expected_output = torch.tensor(
+        expected_output_logprobs_with_top_k = torch.tensor(
             [
-                [-5.5133e00, 0, 0, 0],  # Sequence with all but the first EOS masked
-                [
-                    -3.7431e00,
-                    -5.0686e-01,
-                    -4.7710e-03,
-                    -1.3873e00,
-                ],  # Second sequence with no tokens masked
-                [
-                    -5.4823e00,
-                    -5.5139e00,
-                    -3.6154e00,
-                    0,
-                ],  # Third sequence with all but the last PAD masked
-                [
-                    -4.1333e00,
-                    -5.4711e00,
-                    -5.7164e00,
-                    -3.0604e00,
-                ],  # Fourth sequence with no tokens masked
+                [-5.5133, 0, 0, 0],
+                [-3.7431, -0.5069, -0.0048, -1.3873],
+                [-5.4823, -5.5139, -3.6154, 0],
+                [-4.1333, -5.4711, -5.7164, -3.0604],
             ]
         )
 
         # Run the mask_out_pad_token function
-        output_logprobs = mask_out_pad_token(logprobs.clone(), index, tokenizer.pad_token_id)
-        output_logprobs_with_top_k = mask_out_pad_token(logprobs_with_top_k.clone(), index, tokenizer.pad_token_id)
+        output_logprobs = mask_out_pad_token(logprobs.clone(), index, pad_token_id)
+        output_logprobs_with_top_k = mask_out_pad_token(
+            logprobs_with_top_k.clone(), index, pad_token_id
+        )
 
         # Check if the output matches the expected_output
-        self.assertTrue(torch.equal(output_logprobs, expected_output))
-        self.assertTrue(torch.equal(output_logprobs_with_top_k, expected_output))
+        self.assertTrue(torch.equal(output_logprobs, expected_output_logprobs))
+        self.assertTrue(
+            torch.equal(output_logprobs_with_top_k, expected_output_logprobs_with_top_k)
+        )
 
     # TODO: add get_logprobs test
 
 
 if __name__ == "__main__":
-    # Load pre-trained model tokenizer
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    # Set the padding side to the left
-    tokenizer.padding_side = "left"
-    # Load pre-trained model
-    model = GPT2LMHeadModel.from_pretrained("gpt2")
-    # Set the model to evaluation mode
-    model.eval()
-
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-
     unittest.main()
