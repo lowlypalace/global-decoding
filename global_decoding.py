@@ -77,10 +77,16 @@ def parse_args(tokenizer):
         help='Device to use for computation. Defaults to "cuda" if available.',
     )
     parser.add_argument(
-        "--batch_size",
+        "--batch_size_seq",
         type=int,
         default=64,
         help="Batch size for generating sequences.",
+    )
+    parser.add_argument(
+        "--batch_size_prob",
+        type=int,
+        default=64,
+        help="Batch size for computing probabilities.",
     )
 
     args = parser.parse_args()
@@ -113,7 +119,8 @@ def main():
     preload_sequences = args.preload_sequences
     sequences_filename = args.sequences_filename
     text = args.text
-    batch_size = args.batch_size
+    batch_size_seq = args.batch_size_seq
+    batch_size_prob = args.batch_size_prob
     device = torch.device(args.device)
 
     # Move the model to the specified device
@@ -134,7 +141,6 @@ def main():
             text, add_special_tokens=True, return_tensors="pt"
         ).to(device)
         # Calculate the max_length so it is bound by the model context length
-        # max_length incudes both the input text and the generated text
         max_length = max_length if max_length is not None else max_model_length
         # Generate sequences
         sequences = generate_sequences(
@@ -146,7 +152,7 @@ def main():
             sequence_count=sequence_count,
             pad_token_id=tokenizer.pad_token_id,
             eos_token_id=tokenizer.eos_token_id,
-            batch_size=batch_size,
+            batch_size=batch_size_seq,
             filename="generated_sequences",
         )
 
@@ -158,6 +164,8 @@ def main():
         top_k=top_k,
         pad_token_id=tokenizer.pad_token_id,
         input_ids=input_ids,
+        batch_size=batch_size_prob,
+        save_to_file=True,
     )
 
     # Run the Independent Metropolis-Hastings algorithm

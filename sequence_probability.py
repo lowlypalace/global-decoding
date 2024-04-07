@@ -1,6 +1,10 @@
 import torch
-
+import logging
 from torch.nn.functional import log_softmax
+
+from utils import (
+    create_filename,
+)
 
 
 def top_k_filtering(logits, top_k):
@@ -54,24 +58,65 @@ def sum_logprobs(logprobs):
     return torch.sum(logprobs, dim=-1)
 
 
-def get_sequence_probs(model, sequences, top_k, pad_token_id, input_ids):
+def get_sequence_probs(
+    model, sequences, top_k, pad_token_id, input_ids, batch_size, save_to_file
+):
+    # Calculate the number of batches
+    num_sequences = sequences.size(0)
+    num_batches = (num_sequences + batch_size - 1) // batch_size
+
+    # Placeholder for the log probability sums
+    target_logprob_sums = torch.tensor([], device=sequences.device)
+    proposal_logprob_sums = torch.tensor([], device=sequences.device)
+
+    logging.info(
+        f"Computing probabilities for {num_sequences} sequences in {num_batches} batches of size {batch_size}..."
+    )
+
     with torch.no_grad():
-        # Get the logits from the model
-        # TODO: Make it optional to pass the logits from generate() scores
-        logits = get_logits(model, sequences)
-        # Get the index tensor for the generated tokens
-        index = create_index_tensor(sequences, input_ids)
-        # Get the log probabilities for the original sequence
-        target_logprobs = get_logprobs(
-            logits=logits, index=index, pad_token_id=pad_token_id
-        )
-        # Get the log probabilities for the proposed sequence
-        proposal_logprobs = get_logprobs(
-            logits=logits, index=index, pad_token_id=pad_token_id, top_k=top_k
-        )
+        for i in range(num_batches):
+            # Compute the start and end indices for the current batch
+            start_idx = i * batch_size
+            end_idx = min(start_idx + batch_size, num_sequences)
 
-    # Sum the log probabilities for the entire sequence for both distributions
-    target_logprob_sum = sum_logprobs(target_logprobs)
-    proposal_logprob_sum = sum_logprobs(proposal_logprobs)
+            # Slice the sequences to obtain the current batch
+            sequences_batch = sequences[start_idx:end_idx]
 
-    return target_logprob_sum, proposal_logprob_sum
+            # Get the logits from the model for the current batch
+            logits = get_logits(model, sequences_batch)
+
+            # Get the index tensor for the generated tokens in the current batch
+            index = create_index_tensor(sequences_batch, input_ids)
+
+            # Get the log probabilities for the original sequence in the current batch
+            target_logprobs = get_logprobs(
+                logits=logits, index=index, pad_token_id=pad_token_id
+            )
+
+            # Get the log probabilities for the proposed sequence in the current batch
+            proposal_logprobs = get_logprobs(
+                logits=logits, index=index, pad_token_id=pad_token_id, top_k=top_k
+            )
+
+            # Sum the log probabilities for the entire sequence for both distributions
+            target_logprob_sum = sum_logprobs(target_logprobs)
+            proposal_logprob_sum = sum_logprobs(proposal_logprobs)
+
+            # Append the results to the placeholders
+            target_logprob_sums = torch.cat((target_logprob_sums, target_logprob_sum))
+            proposal_logprob_sums = torch.cat(
+                (proposal_logprob_sums, proposal_logprob_sum)
+            )
+
+    if save_to_file:
+        # Save the log probability sums to a file
+        with open(create_filename("logprobs", "pt", "logprobs"), "wb") as f:
+            torch.save(
+                {
+                    "target_logprob_sums": target_logprob_sums,
+                    "proposal_logprob_sums": proposal_logprob_sums,
+                },
+                f,
+            )
+
+    return target_logprob_sums, proposal_logprob_sums
