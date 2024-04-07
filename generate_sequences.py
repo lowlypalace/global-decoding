@@ -1,5 +1,6 @@
 import json
 import torch
+import logging
 
 from utils import (
     create_filename,
@@ -7,34 +8,54 @@ from utils import (
 
 
 def generate_sequences(
-    tokenizer,
     model,
     input_ids,
     max_length,
     top_k,
-    num_return_sequences,
-    save_to_file=False,
-    filename="generated_sequences.json",
-    output_scores=False,
+    batch_size,
+    sequence_count,
+    pad_token_id,
+    eos_token_id,
+    save_to_file,
+    filename,
 ):
-    # Generate sequences
-    generated_ids = model.generate(
-        input_ids=input_ids,
-        max_length=max_length,
-        pad_token_id=tokenizer.pad_token_id,
-        eos_token_id=tokenizer.eos_token_id,
-        top_k=top_k,
-        do_sample=True,
-        num_return_sequences=num_return_sequences,
-        output_scores=output_scores,
-    )
+    # Calculate number of batches needed to generate the desired sequence_count
+    num_batches = sequence_count // batch_size + (sequence_count % batch_size > 0)
+    logging.info(f"Generating {sequence_count} sequences in {num_batches} batches of size {batch_size}...")
+
+    # Container for all generated sequences
+    all_generated_sequences = []
+
+    for _ in range(num_batches):
+        # Generate a batch of sequences
+        batch_sequences = model.generate(
+            input_ids=input_ids,
+            max_length=max_length,
+            pad_token_id=pad_token_id,
+            eos_token_id=eos_token_id,
+            top_k=top_k,
+            do_sample=True,
+            num_return_sequences=batch_size,
+        )
+
+        # Collect the generated sequences
+        all_generated_sequences.extend(batch_sequences)
+
+        # If we've generated enough sequences, stop
+        if len(all_generated_sequences) >= sequence_count:
+            break
+
+    # If we have more sequences than needed due to the last batch, truncate the list
+    all_generated_sequences = all_generated_sequences[:sequence_count]
 
     if save_to_file:
         # Save the generated sequences to a file
-        with open(create_filename(filename, "json", "sequences"), "w") as f:
-            json.dump([g.tolist() for g in generated_ids], f)
+       with open(create_filename(filename, "json", "sequences"), "w") as f:
+            json.dump([g.tolist() for g in all_generated_sequences], f)
 
-    return generated_ids
+    logging.info(f"Generated {len(all_generated_sequences)} sequences in total.")
+
+    return torch.stack(all_generated_sequences)
 
 
 def load_preloaded_sequences(filename):
