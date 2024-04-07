@@ -76,6 +76,13 @@ def parse_args(tokenizer):
         default="cuda" if torch.cuda.is_available() else "cpu",
         help='Device to use for computation. Defaults to "cuda" if available.',
     )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=64,
+        help="Batch size for generating sequences.",
+    )
+
 
     args = parser.parse_args()
     return args
@@ -86,6 +93,8 @@ def main():
 
     # Load pre-trained model tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    # Set the padding side to the left
+    tokenizer.padding_side = "left"
     # Load pre-trained model
     model = GPT2LMHeadModel.from_pretrained("gpt2")
     # Set the model to evaluation mode
@@ -105,6 +114,7 @@ def main():
     preload_sequences = args.preload_sequences
     sequences_filename = args.sequences_filename
     text = args.text
+    batch_size = args.batch_size
     device = torch.device(args.device)
 
     # Move the model to the specified device
@@ -132,17 +142,17 @@ def main():
             else max_model_length
         )
         # Generate sequences
-        sequences, logits = generate_sequences(
+        sequences = generate_sequences(
             model=model,
             input_ids=input_ids,
             max_length=max_length,
             top_k=top_k,
             save_to_file=True,
-            num_return_sequences=sequence_count,
-            output_logits=True,
+            sequence_count=sequence_count,
             pad_token_id=tokenizer.pad_token_id,
             eos_token_id=tokenizer.eos_token_id,
-            return_dict_in_generate=True,
+            batch_size=batch_size,
+            filename="generated_sequences",
         )
 
     logging.info("Computing probabilities for the generated sequences...")
