@@ -85,7 +85,7 @@ def parse_args(tokenizer):
     parser.add_argument(
         "--batch_size_prob",
         type=int,
-        default=64,
+        default=16,
         help="Batch size for computing probabilities.",
     )
 
@@ -158,6 +158,7 @@ def main():
 
     logging.info("Computing probabilities for the generated sequences...")
     # Get the probabilities for the generated sequences
+    # TODO: Load the probs from the file if it exists
     global_logprobs, local_logprobs = get_sequence_probs(
         model=model,
         sequences=sequences,
@@ -180,8 +181,6 @@ def main():
     )
 
     logging.info("Plotting the results...")
-    # # Move the sampled probabilities to the CPU for plotting
-    # sampled_probs = [s.cpu().numpy() for s in sampled_probs]
     # Plot the distribution of the generated probabilities
     plot_mcmc_distribution(sampled_probs, plot_type="histogram", show=False)
     plot_mcmc_distribution(sampled_probs, plot_type="kde", show=False)

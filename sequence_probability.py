@@ -18,9 +18,15 @@ def top_k_filtering(logits, top_k):
 
 
 def mask_out_pad_token(log_probs, index, pad_token_id):
-    # Mask out the log probabilities for the pad_token_id
-    pad_mask_selected = index.squeeze(-1) == pad_token_id
-    log_probs[pad_mask_selected] = 0
+    # Create a mask that marks all pad_token_ids as True
+    pad_mask = index.squeeze(-1) == pad_token_id
+
+    # Find the first pad_token_id occurrence
+    first_pad_mask = torch.cumsum(pad_mask, dim=1) == 1
+
+    # Use the mask to set all but the first pad_token_id log_probs to 0
+    # As the first pad_token_id is the end of the sequence, we do not want to mask it out
+    log_probs[pad_mask & ~first_pad_mask] = 0
     return log_probs
 
 
@@ -35,7 +41,7 @@ def get_logprobs(logits, index, pad_token_id, top_k=None):
     # Extract the log probabilities for the generated tokens
     selected_logprobs = torch.gather(log_probs, dim=-1, index=index).squeeze(-1)
 
-    # TODO: Currently this masks out the EOS token as well
+    # Mask out the log probabilities for the padding tokens
     selected_logprobs = mask_out_pad_token(selected_logprobs, index, pad_token_id)
 
     return selected_logprobs
@@ -72,7 +78,6 @@ def get_sequence_probs(
     logging.info(
         f"Computing probabilities for {num_sequences} sequences in {num_batches} batches of size {batch_size}..."
     )
-
     with torch.no_grad():
         for i in range(num_batches):
             # Compute the start and end indices for the current batch
@@ -110,7 +115,7 @@ def get_sequence_probs(
 
     if save_to_file:
         # Save the log probability sums to a file
-        with open(create_filename("logprobs", "pt", "logprobs"), "wb") as f:
+        with open(create_filename("probs", "pt", "probs"), "wb") as f:
             torch.save(
                 {
                     "target_logprob_sums": target_logprob_sums,

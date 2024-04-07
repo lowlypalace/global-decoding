@@ -96,7 +96,7 @@ class TestSequenceProbability(unittest.TestCase):
         # Define the inputs
         input_ids = torch.tensor([[50256]])
         pad_token_id = 50256
-        # Sequence with all but the first EOS masked
+        # First sequence with all but the first EOS masked
         # Second sequence with no tokens masked
         # Third sequence with all but the last PAD masked
         # Fourth sequence with no tokens masked
