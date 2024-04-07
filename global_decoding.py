@@ -1,7 +1,11 @@
 import argparse
 import logging
 import torch
+import os
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
+
+# Set the environment variable for memory allocation strategy
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
 from generate_sequences import (
     generate_sequences,
@@ -121,22 +125,24 @@ def main():
             text, add_special_tokens=True, return_tensors="pt"
         ).to(device)
         # Calculate the max_length so it is bound by the model context length
+        # max_length incudes both the input text and the generated text
         max_length = (
             max_length
             if max_length is not None
-            else max_model_length - input_ids.size(1)
+            else max_model_length
         )
         # Generate sequences
-        # TODO: Output scores
-        sequences = generate_sequences(
-            tokenizer=tokenizer,
+        sequences, logits = generate_sequences(
             model=model,
             input_ids=input_ids,
             max_length=max_length,
             top_k=top_k,
             save_to_file=True,
             num_return_sequences=sequence_count,
-            output_scores=False,
+            output_logits=True,
+            pad_token_id=tokenizer.pad_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+            return_dict_in_generate=True,
         )
 
     logging.info("Computing probabilities for the generated sequences...")
@@ -161,6 +167,8 @@ def main():
     )
 
     logging.info("Plotting the results...")
+    # # Move the sampled probabilities to the CPU for plotting
+    # sampled_probs = [s.cpu().numpy() for s in sampled_probs]
     # Plot the distribution of the generated probabilities
     plot_mcmc_distribution(sampled_probs, plot_type="histogram", show=False)
     plot_mcmc_distribution(sampled_probs, plot_type="kde", show=False)
