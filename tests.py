@@ -5,7 +5,6 @@ from sequence_probability import top_k_filtering, create_index_tensor, sum_logpr
 
 
 class TestTopKFiltering(unittest.TestCase):
-
     def test_single_value(self):
         logits = torch.tensor([[1.0, 2.0, 3.0]])
         top_k = 1
@@ -50,7 +49,6 @@ class TestTopKFiltering(unittest.TestCase):
 
 
 class TestSequenceProbability(unittest.TestCase):
-
     def test_with_pad_tokens(self):
         input_ids = torch.tensor([[50256]])
         sequences = torch.tensor(

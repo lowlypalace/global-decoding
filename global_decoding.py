@@ -5,7 +5,7 @@ import os
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 # Set the environment variable for memory allocation strategy
-os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 from generate_sequences import (
     generate_sequences,
@@ -83,7 +83,6 @@ def parse_args(tokenizer):
         help="Batch size for generating sequences.",
     )
 
-
     args = parser.parse_args()
     return args
 
@@ -136,11 +135,7 @@ def main():
         ).to(device)
         # Calculate the max_length so it is bound by the model context length
         # max_length incudes both the input text and the generated text
-        max_length = (
-            max_length
-            if max_length is not None
-            else max_model_length
-        )
+        max_length = max_length if max_length is not None else max_model_length
         # Generate sequences
         sequences = generate_sequences(
             model=model,

@@ -21,7 +21,9 @@ def generate_sequences(
 ):
     # Calculate number of batches needed to generate the desired sequence_count
     num_batches = sequence_count // batch_size + (sequence_count % batch_size > 0)
-    logging.info(f"Generating {sequence_count} sequences in {num_batches} batches of size {batch_size}...")
+    logging.info(
+        f"Generating {sequence_count} sequences in {num_batches} batches of size {batch_size}..."
+    )
 
     # Container for all generated sequences
     all_generated_sequences = []
@@ -50,7 +52,7 @@ def generate_sequences(
 
     if save_to_file:
         # Save the generated sequences to a file
-       with open(create_filename(filename, "json", "sequences"), "w") as f:
+        with open(create_filename(filename, "json", "sequences"), "w") as f:
             json.dump([g.tolist() for g in all_generated_sequences], f)
 
     logging.info(f"Generated {len(all_generated_sequences)} sequences in total.")
