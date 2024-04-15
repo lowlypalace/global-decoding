@@ -7,7 +7,7 @@ def indicator_top_k(sequence):
 
 
 def metropolis_hastings(
-    tokenizer, sequence_count, burnin, sequences, target_logprobs, proposal_logprobs
+    tokenizer, sequence_count, burnin, sequences, target_logprobs, proposal_logprobs, rate
 ):
     # List to store the generated samples
     sampled_sequences = []
@@ -52,8 +52,8 @@ def metropolis_hastings(
             logprob_target_current = logprob_target_proposed
             logprob_proposal_current = logprob_proposal_proposed
 
-        # After burn-in period, add the current state to the list of samples
-        if i >= burnin_index:
+        # After the burn-in period, add the current state to the list of samples at the specified rate
+        if i >= burnin_index and i % rate == 0:
             # Decode the generated sequence
             decoded_seq = tokenizer.decode(current_sequence, skip_special_tokens=True)
             # Append the decoded sequence and its probabilities to samples
