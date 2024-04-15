@@ -2,7 +2,8 @@ import argparse
 import logging
 import torch
 import os
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
+import time
+from transformers import GPT2Tokenizer, GPT2LMHeadModel, AutoTokenizer, AutoModelForCausalLM
 
 # Set the environment variable for memory allocation strategy
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
@@ -26,15 +27,23 @@ def setup_logging():
 
 
 # Define the function to parse command-line arguments
-def parse_args(tokenizer):
+def parse_args():
     parser = argparse.ArgumentParser(
         description="Generate text sequences with GPT-2 and perform MCMC analysis."
     )
 
     parser.add_argument(
+        "--model_name",
+        type=str,
+        default="gpt2",
+        choices=["gpt2-large", "gpt2", "pythia"],
+        help="Model to use for text generation. Supports 'gpt2-large', 'gpt2', and 'pythia'."
+    )
+
+    parser.add_argument(
         "--text",
         type=str,
-        default=tokenizer.eos_token,
+        default=None,
         help="Text to use as a prompt. Defaults to the EOS token.",
     )
     parser.add_argument(
@@ -102,22 +111,8 @@ def parse_args(tokenizer):
 def main():
     setup_logging()
 
-    # Load pre-trained model tokenizer
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    # Set the padding side to the left
-    tokenizer.padding_side = "left"
-    # Load pre-trained model
-    model = GPT2LMHeadModel.from_pretrained("gpt2")
-    # Set the model to evaluation mode
-    model.eval()
-    # Assume max_model_length is the maximum sequence length the model can handle
-    max_model_length = model.config.max_position_embeddings
-    # Set the padding token to the EOS token
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-
     # Parse command-line arguments
-    args = parse_args(tokenizer)
+    args = parse_args()
     top_k = args.top_k
     sequence_count = args.sequence_count
     max_length = args.max_length
@@ -128,7 +123,30 @@ def main():
     text = args.text
     batch_size_seq = args.batch_size_seq
     batch_size_prob = args.batch_size_prob
+    model_name = args.model_name
     device = torch.device(args.device)
+
+    # Load model and tokenizer based on the selected model
+    if args.model_name == "pythia":
+        tokenizer = AutoTokenizer.from_pretrained("facebook/pythia")
+        model = AutoModelForCausalLM.from_pretrained("facebook/pythia")
+    else:  # Default to gpt2 or gpt2-large
+        tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+        model = GPT2LMHeadModel.from_pretrained(model_name)
+
+    # Set the padding side to the left
+    tokenizer.padding_side = "left"
+    # Set the model to evaluation mode
+    model.eval()
+    # Assume max_model_length is the maximum sequence length the model can handle
+    max_model_length = model.config.max_position_embeddings
+    # Set the padding token to the EOS token
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    # Set the text to the EOS token if it is not set
+    if text is None:
+        text = tokenizer.eos_token
 
     # Move the model to the specified device
     model.to(device)
@@ -142,7 +160,8 @@ def main():
                 f"Number of sequences in the file ({len(sequences)}) does not match sequence_count ({sequence_count})."
             )
     else:
-        logging.info("Generating new sequences...")
+        start_time = time.time()
+        # logging.info("Generating new sequences...")
         # Encode the input text to tensor
         input_ids = tokenizer.encode(
             text, add_special_tokens=True, return_tensors="pt"
@@ -162,10 +181,13 @@ def main():
             batch_size=batch_size_seq,
             filename="generated_sequences",
         )
+        end_time = time.time()
+        logging.info(f"Generated {sequence_count} sequences in {end_time - start_time:.2f} seconds.")
 
-    logging.info("Computing probabilities for the generated sequences...")
+    # logging.info("Computing probabilities for the generated sequences...")
     # Get the probabilities for the generated sequences
     # TODO: Load the probs from the file if it exists
+    start_time = time.time()
     global_logprobs, local_logprobs = get_sequence_probs(
         model=model,
         sequences=sequences,
@@ -175,9 +197,12 @@ def main():
         batch_size=batch_size_prob,
         save_to_file=True,
     )
+    end_time = time.time()
+    logging.info(f"Computed probabilities in {end_time - start_time:.2f} seconds.")
 
     # Run the Independent Metropolis-Hastings algorithm
-    logging.info("Running Independent Metropolis-Hastings algorithm...")
+    start_time = time.time()
+    # logging.info("Running Independent Metropolis-Hastings algorithm...")
     sampled_sequences, sampled_probs = metropolis_hastings(
         tokenizer=tokenizer,
         sequence_count=sequence_count,
@@ -187,6 +212,8 @@ def main():
         proposal_logprobs=local_logprobs,
         rate = rate,
     )
+    end_time = time.time()
+    logging.info(f"Finished running the algorithm in {end_time - start_time:.2f} seconds.")
 
     logging.info("Plotting the results...")
     # Plot the distribution of the generated probabilities
