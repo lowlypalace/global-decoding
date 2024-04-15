@@ -88,6 +88,12 @@ def parse_args(tokenizer):
         default=16,
         help="Batch size for computing probabilities.",
     )
+    parser.add_argument(
+        "--rate",
+        type=int,
+        default=1,
+        help="Rate at which to sample sequences after the burn-in period.",
+    )
 
     args = parser.parse_args()
     return args
@@ -116,6 +122,7 @@ def main():
     sequence_count = args.sequence_count
     max_length = args.max_length
     burnin = args.burnin
+    rate = args.rate
     preload_sequences = args.preload_sequences
     sequences_filename = args.sequences_filename
     text = args.text
@@ -178,6 +185,7 @@ def main():
         sequences=sequences,
         target_logprobs=global_logprobs,
         proposal_logprobs=local_logprobs,
+        rate = rate,
     )
 
     logging.info("Plotting the results...")
