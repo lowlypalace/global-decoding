@@ -150,6 +150,8 @@ def main():
 
     # Move the model to the specified device
     model.to(device)
+    # Convert the model to double precision to avoid floating point discrepancies
+    model.double()
 
     # Generate sequences and save them to a file
     if preload_sequences:
