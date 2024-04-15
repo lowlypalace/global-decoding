@@ -1,17 +1,14 @@
 import unittest
 import torch
 
-from transformers import GPT2Tokenizer, GPT2LMHeadModel
-
 from sequence_probability import (
     top_k_filtering,
     create_index_tensor,
     sum_logprobs,
     mask_out_pad_token,
-    get_logprobs,
-    get_logits,
 )
 
+# TODO: Run tests on commits
 
 class TestTopKFiltering(unittest.TestCase):
     def test_single_value(self):
@@ -58,7 +55,7 @@ class TestTopKFiltering(unittest.TestCase):
 
 
 class TestSequenceProbability(unittest.TestCase):
-    def test_with_pad_tokens(self):
+    def test_index_with_pad_tokens(self):
         input_ids = torch.tensor([[50256]])
         sequences = torch.tensor(
             [
@@ -109,7 +106,6 @@ class TestSequenceProbability(unittest.TestCase):
             ]
         )
         index = create_index_tensor(sequences, input_ids)
-
         logprobs = torch.tensor(
             [
                 [-6.2530, -13.405, -13.767, -13.907],
@@ -118,7 +114,6 @@ class TestSequenceProbability(unittest.TestCase):
                 [-4.8731, -6.6102, -6.2977, -3.4066],
             ]
         )
-
         inf = float("-inf")
         logprobs_with_top_k = torch.tensor(
             [
@@ -136,7 +131,6 @@ class TestSequenceProbability(unittest.TestCase):
                 [-4.8731, -6.6102, -6.2977, -3.4066],
             ]
         )
-
         expected_output_logprobs_with_top_k = torch.tensor(
             [
                 [-5.5133, 0, 0, 0],
@@ -145,13 +139,11 @@ class TestSequenceProbability(unittest.TestCase):
                 [-4.1333, -5.4711, -5.7164, -3.0604],
             ]
         )
-
         # Run the mask_out_pad_token function
         output_logprobs = mask_out_pad_token(logprobs.clone(), index, pad_token_id)
         output_logprobs_with_top_k = mask_out_pad_token(
             logprobs_with_top_k.clone(), index, pad_token_id
         )
-
         # Check if the output matches the expected_output
         self.assertTrue(torch.equal(output_logprobs, expected_output_logprobs))
         self.assertTrue(
