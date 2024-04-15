@@ -36,8 +36,8 @@ def parse_args():
         "--model_name",
         type=str,
         default="gpt2",
-        choices=["gpt2-large", "gpt2", "pythia"],
-        help="Model to use for text generation. Supports 'gpt2-large', 'gpt2', and 'pythia'."
+        choices=["gpt2", "gpt2-medium", "gpt2-large", "gpt2-xl", "pythia"],
+        help="Model to use for text generation. Supports GPT-2 and Pythia."
     )
 
     parser.add_argument(
