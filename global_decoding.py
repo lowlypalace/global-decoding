@@ -103,6 +103,14 @@ def parse_args():
         default=1,
         help="Rate at which to sample sequences after the burn-in period.",
     )
+    # parser.add_argument(
+    #     "--output_dir",
+    #     type=str,
+    #     default="output",
+    #     help="Directory to save output files.",
+    # )
+
+
 
     args = parser.parse_args()
     return args
@@ -162,8 +170,6 @@ def main():
                 f"Number of sequences in the file ({len(sequences)}) does not match sequence_count ({sequence_count})."
             )
     else:
-        start_time = time.time()
-        # logging.info("Generating new sequences...")
         # Encode the input text to tensor
         input_ids = tokenizer.encode(
             text, add_special_tokens=True, return_tensors="pt"
@@ -171,6 +177,8 @@ def main():
         # Calculate the max_length so it is bound by the model context length
         max_length = max_length if max_length is not None else max_model_length
         # Generate sequences
+        start_time = time.time()
+        logging.info("Generating new sequences...")
         sequences = generate_sequences(
             model=model,
             input_ids=input_ids,
@@ -186,10 +194,10 @@ def main():
         end_time = time.time()
         logging.info(f"Generated {sequence_count} sequences in {end_time - start_time:.2f} seconds.")
 
-    # logging.info("Computing probabilities for the generated sequences...")
-    # Get the probabilities for the generated sequences
     # TODO: Load the probs from the file if it exists
+    # Get the probabilities for the generated sequences
     start_time = time.time()
+    logging.info("Computing probabilities for the generated sequences...")
     global_logprobs, local_logprobs = get_sequence_probs(
         model=model,
         sequences=sequences,
@@ -204,7 +212,7 @@ def main():
 
     # Run the Independent Metropolis-Hastings algorithm
     start_time = time.time()
-    # logging.info("Running Independent Metropolis-Hastings algorithm...")
+    logging.info("Running Independent Metropolis-Hastings algorithm...")
     sampled_sequences, sampled_probs = metropolis_hastings(
         tokenizer=tokenizer,
         sequence_count=sequence_count,
