@@ -10,6 +10,7 @@ from sequence_probability import (
 
 # TODO: Run tests on commits
 
+
 class TestTopKFiltering(unittest.TestCase):
     def test_single_value(self):
         logits = torch.tensor([[1.0, 2.0, 3.0]])

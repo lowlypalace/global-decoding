@@ -3,7 +3,12 @@ import logging
 import torch
 import os
 import time
-from transformers import GPT2Tokenizer, GPT2LMHeadModel, AutoTokenizer, AutoModelForCausalLM
+from transformers import (
+    GPT2Tokenizer,
+    GPT2LMHeadModel,
+    AutoTokenizer,
+    AutoModelForCausalLM,
+)
 
 # Set the environment variable for memory allocation strategy
 # TODO: Check if this is needed
@@ -38,7 +43,7 @@ def parse_args():
         type=str,
         default="gpt2",
         choices=["gpt2", "gpt2-medium", "gpt2-large", "gpt2-xl", "pythia"],
-        help="Model to use for text generation. Supports GPT-2 and Pythia."
+        help="Model to use for text generation. Supports GPT-2 and Pythia.",
     )
 
     parser.add_argument(
@@ -110,8 +115,6 @@ def parse_args():
     #     default="output",
     #     help="Directory to save output files.",
     # )
-
-
 
     args = parser.parse_args()
     return args
@@ -193,7 +196,9 @@ def main():
             filename="generated_sequences",
         )
         end_time = time.time()
-        logging.info(f"Generated {sequence_count} sequences in {end_time - start_time:.2f} seconds.")
+        logging.info(
+            f"Generated {sequence_count} sequences in {end_time - start_time:.2f} seconds."
+        )
 
     # TODO: Load the probs from the file if it exists
     # Get the probabilities for the generated sequences
@@ -221,10 +226,12 @@ def main():
         sequences=sequences,
         target_logprobs=global_logprobs,
         proposal_logprobs=local_logprobs,
-        rate = rate,
+        rate=rate,
     )
     end_time = time.time()
-    logging.info(f"Finished running the algorithm in {end_time - start_time:.2f} seconds.")
+    logging.info(
+        f"Finished running the algorithm in {end_time - start_time:.2f} seconds."
+    )
 
     logging.info("Plotting the results...")
     # Plot the distribution of the generated probabilities

@@ -7,7 +7,13 @@ def indicator_top_k(sequence):
 
 
 def metropolis_hastings(
-    tokenizer, sequence_count, burnin, sequences, target_logprobs, proposal_logprobs, rate
+    tokenizer,
+    sequence_count,
+    burnin,
+    sequences,
+    target_logprobs,
+    proposal_logprobs,
+    rate,
 ):
     # List to store the generated samples
     sampled_sequences = []
