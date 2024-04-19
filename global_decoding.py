@@ -115,6 +115,12 @@ def parse_args():
     #     default="output",
     #     help="Directory to save output files.",
     # )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Random seed for reproducibility.",
+    )
 
     args = parser.parse_args()
     return args
@@ -136,7 +142,11 @@ def main():
     batch_size_seq = args.batch_size_seq
     batch_size_prob = args.batch_size_prob
     model_name = args.model_name
+    seed = args.seed
     device = torch.device(args.device)
+
+    # Set the random seed for reproducibility
+    torch.manual_seed(seed)
 
     # Load model and tokenizer based on the selected model
     if args.model_name == "pythia":
