@@ -81,7 +81,7 @@ def parse_args():
     parser.add_argument(
         "--sequences_filename",
         type=str,
-        default="sequences/generated_sequences.json",
+        default="generated_sequences",
         help="Filename for preloaded sequences.",
     )
     parser.add_argument(
@@ -109,12 +109,6 @@ def parse_args():
         default=1,
         help="Rate at which to sample sequences after the burn-in period.",
     )
-    # parser.add_argument(
-    #     "--output_dir",
-    #     type=str,
-    #     default="output",
-    #     help="Directory to save output files.",
-    # )
     parser.add_argument(
         "--seed",
         type=int,
@@ -147,6 +141,13 @@ def main():
 
     # Set the random seed for reproducibility
     torch.manual_seed(seed)
+
+    # Create a filename that encapsulates the parameters and saves it into directory with the model name
+    # output_dir = os.path.join(args.output_dir, args.model_name)
+    # os.makedirs(output_dir, exist_ok=True)
+    # filename = create_filename(output_dir, "json", "output")
+
+
 
     # Load model and tokenizer based on the selected model
     if args.model_name == "pythia":
@@ -203,7 +204,7 @@ def main():
             pad_token_id=tokenizer.pad_token_id,
             eos_token_id=tokenizer.eos_token_id,
             batch_size=batch_size_seq,
-            filename="generated_sequences",
+            filename=sequences_filename,
         )
         end_time = time.time()
         logging.info(
@@ -229,6 +230,7 @@ def main():
     # Run the Independent Metropolis-Hastings algorithm
     start_time = time.time()
     logging.info("Running Independent Metropolis-Hastings algorithm...")
+    # TODO: Save the sampled sequences and probabilities to a file
     sampled_sequences, sampled_probs = metropolis_hastings(
         tokenizer=tokenizer,
         sequence_count=sequence_count,
@@ -253,3 +255,13 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# - /output
+# -- /gpt2
+# --- /plots
+# --- /probs
+# --- /sequences
+# ---- generated_sequences.json
+# -- /gpt2-medium
+# ...
