@@ -6,6 +6,7 @@ import time
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, AutoTokenizer, AutoModelForCausalLM
 
 # Set the environment variable for memory allocation strategy
+# TODO: Check if this is needed
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 from generate_sequences import (
