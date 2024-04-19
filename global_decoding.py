@@ -22,15 +22,11 @@ from generate_sequences import (
 from sequence_probability import get_sequence_probs
 from metropolis_hastings import metropolis_hastings
 from plots import plot_mcmc_distribution, plot_chain
+from utils import setup_logging
 
 
 # Set up logging
-def setup_logging():
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-    )
-
+setup_logging()
 
 # Define the function to parse command-line arguments
 def parse_args():
@@ -147,8 +143,6 @@ def main():
     # os.makedirs(output_dir, exist_ok=True)
     # filename = create_filename(output_dir, "json", "output")
 
-
-
     # Load model and tokenizer based on the selected model
     if args.model_name == "pythia":
         tokenizer = AutoTokenizer.from_pretrained("facebook/pythia")
@@ -255,13 +249,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# - /output
-# -- /gpt2
-# --- /plots
-# --- /probs
-# --- /sequences
-# ---- generated_sequences.json
-# -- /gpt2-medium
-# ...

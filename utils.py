@@ -2,7 +2,14 @@ import os
 from datetime import datetime
 
 
-def create_filename(name, extension, directory="plots"):
+def setup_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+    )
+
+
+def create_filename(name, extension, directory):
     # Get the current time
     current_time = datetime.now()
     # Format the time in a user-friendly format
