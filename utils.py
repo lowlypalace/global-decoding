@@ -1,5 +1,6 @@
 import os
 import logging
+import json
 from datetime import datetime
 
 
@@ -8,6 +9,16 @@ def setup_logging():
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
+
+
+def save_args(args, output_dir):
+    """Save the arguments to a JSON file."""
+    os.makedirs(output_dir, exist_ok=True)
+    args_dict = vars(args)  # Convert argparse Namespace to dictionary
+    json_path = os.path.join(output_dir, "metadata.json")
+    with open(json_path, "w") as f:
+        json.dump(args_dict, f, indent=4)
+    logging.info(f"Arguments saved to {json_path}")
 
 
 def create_filename(name, extension, directory):

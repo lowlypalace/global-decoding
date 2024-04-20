@@ -22,11 +22,12 @@ from generate_sequences import (
 from sequence_probability import get_sequence_probs
 from metropolis_hastings import metropolis_hastings
 from plots import plot_mcmc_distribution, plot_chain
-from utils import setup_logging
+from utils import setup_logging, save_args
 
 
 # Set up logging
 setup_logging()
+
 
 # Define the function to parse command-line arguments
 def parse_args():
@@ -111,6 +112,12 @@ def parse_args():
         default=42,
         help="Random seed for reproducibility.",
     )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="output",
+        help="Directory to save the output files.",
+    )
 
     args = parser.parse_args()
     return args
@@ -133,13 +140,15 @@ def main():
     batch_size_prob = args.batch_size_prob
     model_name = args.model_name
     seed = args.seed
+    output_dir = args.output_dir
     device = torch.device(args.device)
+    # Save command-line arguments to JSON
+    save_args(args, output_dir)
 
     # Set the random seed for reproducibility
     torch.manual_seed(seed)
 
     # Create a filename that encapsulates the parameters and saves it into directory with the model name
-    output_dir = os.path.join("output", args.model_name)
     os.makedirs(output_dir, exist_ok=True)
 
     # Load model and tokenizer based on the selected model
@@ -158,13 +167,11 @@ def main():
     model.to(device)
     # Convert the model to double precision to avoid floating point discrepancies
     model.double()
-
     # Assume max_model_length is the maximum sequence length the model can handle
     max_model_length = model.config.max_position_embeddings
     # Set the padding token to the EOS token
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-
     # Set the text to the EOS token if it is not set
     if text is None:
         text = tokenizer.eos_token
@@ -246,7 +253,6 @@ def main():
     logging.info(
         f"Finished running the algorithm in {end_time - start_time:.2f} seconds."
     )
-
 
     # Plot the distribution of the generated probabilities
     logging.info("Plotting the results...")
