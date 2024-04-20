@@ -12,7 +12,6 @@ def setup_logging():
 
 
 def save_args(args, output_dir):
-    """Save the arguments to a JSON file."""
     os.makedirs(output_dir, exist_ok=True)
     args_dict = vars(args)  # Convert argparse Namespace to dictionary
     json_path = os.path.join(output_dir, "metadata.json")
