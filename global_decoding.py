@@ -225,7 +225,11 @@ def main():
     start_time = time.time()
     logging.info("Running Independent Metropolis-Hastings algorithm...")
     # TODO: Save the sampled sequences and probabilities to a file
-    sampled_sequences, sampled_decoded_sequences, sampled_logprobs = metropolis_hastings(
+    (
+        sampled_sequences,
+        sampled_decoded_sequences,
+        sampled_logprobs,
+    ) = metropolis_hastings(
         tokenizer=tokenizer,
         sequence_count=sequence_count,
         burnin=burnin,
@@ -243,10 +247,25 @@ def main():
 
     logging.info("Plotting the results...")
     # Plot the distribution of the generated probabilities
-    plot_mcmc_distribution(sampled_logprobs, plot_type="histogram", show=False, output_dir=os.path.join(output_dir, "plots"))
-    plot_mcmc_distribution(sampled_logprobs, plot_type="kde", show=False, output_dir=os.path.join(output_dir, "plots"))
+    plot_mcmc_distribution(
+        sampled_logprobs,
+        plot_type="histogram",
+        show=False,
+        output_dir=os.path.join(output_dir, "plots"),
+    )
+    plot_mcmc_distribution(
+        sampled_logprobs,
+        plot_type="kde",
+        show=False,
+        output_dir=os.path.join(output_dir, "plots"),
+    )
     # Plot the chain of generated samples
-    plot_chain(sampled_logprobs, burnin=burnin, show=False, output_dir=os.path.join(output_dir, "plots"))
+    plot_chain(
+        sampled_logprobs,
+        burnin=burnin,
+        show=False,
+        output_dir=os.path.join(output_dir, "plots"),
+    )
 
 
 if __name__ == "__main__":

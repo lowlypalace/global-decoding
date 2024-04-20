@@ -65,7 +65,14 @@ def sum_logprobs(logprobs):
 
 
 def get_sequence_probs(
-    model, sequences, top_k, pad_token_id, input_ids, batch_size, save_to_file, output_dir
+    model,
+    sequences,
+    top_k,
+    pad_token_id,
+    input_ids,
+    batch_size,
+    save_to_file,
+    output_dir,
 ):
     # Calculate the number of batches
     num_sequences = sequences.size(0)

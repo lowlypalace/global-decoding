@@ -72,7 +72,9 @@ def metropolis_hastings(
         if i >= burnin_index and i % rate == 0:
             sampled_sequences.append(current_sequence)
             # Decode the generated sequence
-            current_decoded_seq = tokenizer.decode(current_sequence, skip_special_tokens=True)
+            current_decoded_seq = tokenizer.decode(
+                current_sequence, skip_special_tokens=True
+            )
             # Append the decoded sequence and its probabilities to samples
             sampled_decoded_sequences.append(current_decoded_seq)
             sampled_target_logprobs.append(logprob_target_current)
@@ -80,9 +82,13 @@ def metropolis_hastings(
     if save_to_file:
         with open(create_filename("sampled_sequences", "pt", output_dir), "wb") as f:
             torch.save(sampled_sequences, f)
-        with open(create_filename("sampled_decoded_sequences", "json", output_dir), "w") as f:
+        with open(
+            create_filename("sampled_decoded_sequences", "json", output_dir), "w"
+        ) as f:
             json.dump(sampled_decoded_sequences, f)
-        with open(create_filename("sampled_target_logprobs", "json", output_dir), "w") as f:
+        with open(
+            create_filename("sampled_target_logprobs", "json", output_dir), "w"
+        ) as f:
             json.dump(sampled_target_logprobs, f)
 
     return sampled_sequences, sampled_decoded_sequences, sampled_target_logprobs
