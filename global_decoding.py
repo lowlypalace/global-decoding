@@ -208,7 +208,9 @@ def main():
     # Get the probabilities for the generated sequences
     start_time = time.time()
     logging.info("Computing probabilities for the generated sequences...")
-    global_logprobs, local_logprobs = get_sequence_probs(
+    # target_logpropbs are probabilities sampled from the global unnormalized distribution
+    # proposal_logprobs are probabilities sampled from the local normalized distribution
+    target_logprobs, proposal_logprobs = get_sequence_probs(
         model=model,
         sequences=sequences,
         top_k=top_k,
@@ -234,8 +236,8 @@ def main():
         sequence_count=sequence_count,
         burnin=burnin,
         sequences=sequences,
-        target_logprobs=global_logprobs,
-        proposal_logprobs=local_logprobs,
+        target_logprobs=target_logprobs,
+        proposal_logprobs=proposal_logprobs,
         rate=rate,
         save_to_file=True,
         output_dir=os.path.join(output_dir, "metropolis_hastings"),
@@ -245,8 +247,9 @@ def main():
         f"Finished running the algorithm in {end_time - start_time:.2f} seconds."
     )
 
-    logging.info("Plotting the results...")
+
     # Plot the distribution of the generated probabilities
+    logging.info("Plotting the results...")
     plot_mcmc_distribution(
         sampled_logprobs,
         plot_type="histogram",
