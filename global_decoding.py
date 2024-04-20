@@ -2,6 +2,7 @@ import argparse
 import logging
 import torch
 import os
+import sys
 import time
 from transformers import (
     GPT2Tokenizer,
@@ -23,10 +24,6 @@ from sequence_probability import get_sequence_probs
 from metropolis_hastings import metropolis_hastings
 from plots import plot_mcmc_distribution, plot_chain
 from utils import setup_logging, save_args
-
-
-# Set up logging
-setup_logging()
 
 
 # Define the function to parse command-line arguments
@@ -124,8 +121,6 @@ def parse_args():
 
 
 def main():
-    setup_logging()
-
     # Parse command-line arguments
     args = parse_args()
     top_k = args.top_k
@@ -142,14 +137,16 @@ def main():
     seed = args.seed
     output_dir = args.output_dir
     device = torch.device(args.device)
+
+    # Create a directory to save the output files
+    os.makedirs(output_dir, exist_ok=True)
+    # Save log messages to a file
+    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
     # Save command-line arguments to JSON
     save_args(args, output_dir)
 
     # Set the random seed for reproducibility
     torch.manual_seed(seed)
-
-    # Create a filename that encapsulates the parameters and saves it into directory with the model name
-    os.makedirs(output_dir, exist_ok=True)
 
     # Load model and tokenizer based on the selected model
     if args.model_name == "pythia":
@@ -233,7 +230,6 @@ def main():
     # Run the Independent Metropolis-Hastings algorithm
     start_time = time.time()
     logging.info("Running Independent Metropolis-Hastings algorithm...")
-    # TODO: Save the sampled sequences and probabilities to a file
     (
         sampled_sequences,
         sampled_decoded_sequences,

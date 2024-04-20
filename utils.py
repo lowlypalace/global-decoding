@@ -1,14 +1,38 @@
 import os
-import logging
 import json
+import logging
+import logging.handlers
 from datetime import datetime
 
 
-def setup_logging():
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-    )
+# def setup_logging():
+#     logging.basicConfig(
+#         level=logging.INFO,
+#         format="%(asctime)s - %(levelname)s - %(message)s",
+#     )
+
+
+def setup_logging(log_file):
+    # Create logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    # Create formatter
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+
+    # Create console handler and set level to info
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    ch.setFormatter(formatter)
+
+    # Create file handler and set level to info
+    fh = logging.FileHandler(log_file)
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(formatter)
+
+    # Add handlers to logger
+    logger.addHandler(ch)
+    logger.addHandler(fh)
 
 
 def save_args(args, output_dir):

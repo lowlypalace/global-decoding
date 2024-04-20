@@ -20,10 +20,8 @@ def top_k_filtering(logits, top_k):
 def mask_out_pad_token(log_probs, index, pad_token_id):
     # Create a mask that marks all pad_token_ids as True
     pad_mask = index.squeeze(-1) == pad_token_id
-
     # Find the first pad_token_id occurrence
     first_pad_mask = torch.cumsum(pad_mask, dim=1) == 1
-
     # Use the mask to set all but the first pad_token_id log_probs to 0
     # As the first pad_token_id is the end of the sequence, we do not want to mask it out
     log_probs[pad_mask & ~first_pad_mask] = 0
@@ -37,10 +35,8 @@ def get_logprobs(logits, index, pad_token_id, top_k=None):
 
     # Convert the (filtered) logits to log probabilities
     log_probs = log_softmax(logits, dim=-1)
-
     # Extract the log probabilities for the generated tokens
     selected_logprobs = torch.gather(log_probs, dim=-1, index=index).squeeze(-1)
-
     # Mask out the log probabilities for the padding tokens
     selected_logprobs = mask_out_pad_token(selected_logprobs, index, pad_token_id)
 
