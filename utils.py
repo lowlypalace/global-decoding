@@ -36,18 +36,17 @@ def save_args(args, output_dir):
         json.dump(args_dict, f, indent=4)
     logging.info(f"Arguments saved to {json_path}")
 
+def get_timestamp():
+    # Get the current time
+    current_time = datetime.now()
+    # Format the time in a user-friendly format
+    time_str = current_time.strftime("%d-%m-%Y_%H-%M-%S")
 
-def create_filename(name, extension, directory, timestamp=False):
-    if timestamp:
-        # Get the current time
-        current_time = datetime.now()
-        # Format the time in a user-friendly format
-        time_str = current_time.strftime("%d-%m-%Y_%H-%M-%S")
-        # Create the filename with the current time
-        filename = f"{name}_{time_str}.{extension}"
-    else:
-        # Create the filename without the current time
-        filename = f"{name}.{extension}"
+    return time_str
+
+def create_filename(name, extension, directory):
+    # Create the filename
+    filename = f"{name}.{extension}"
     # Create the directory if it does not exist
     if not os.path.exists(directory):
         os.makedirs(directory)

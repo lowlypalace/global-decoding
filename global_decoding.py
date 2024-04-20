@@ -23,7 +23,7 @@ from generate_sequences import (
 from sequence_probability import get_sequence_probs
 from metropolis_hastings import metropolis_hastings
 from plots import plot_mcmc_distribution, plot_chain
-from utils import setup_logging, save_args
+from utils import setup_logging, save_args, get_timestamp
 
 
 # Define the function to parse command-line arguments
@@ -138,6 +138,8 @@ def main():
     output_dir = args.output_dir
     device = torch.device(args.device)
 
+    # Add a directory with a timestamp to the output directory
+    output_dir = os.path.join(output_dir, get_timestamp())
     # Create a directory to save the output files
     os.makedirs(output_dir, exist_ok=True)
     # Save log messages to a file
@@ -243,7 +245,7 @@ def main():
         proposal_logprobs=proposal_logprobs,
         rate=rate,
         save_to_file=True,
-        output_dir=os.path.join(output_dir, "metropolis_hastings"),
+        output_dir=os.path.join(output_dir, "mh"),
     )
     end_time = time.time()
     logging.info(
