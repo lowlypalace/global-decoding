@@ -65,7 +65,7 @@ def sum_logprobs(logprobs):
 
 
 def get_sequence_probs(
-    model, sequences, top_k, pad_token_id, input_ids, batch_size, save_to_file
+    model, sequences, top_k, pad_token_id, input_ids, batch_size, save_to_file, output_dir
 ):
     # Calculate the number of batches
     num_sequences = sequences.size(0)
@@ -115,7 +115,7 @@ def get_sequence_probs(
 
     if save_to_file:
         # Save the log probability sums to a file
-        with open(create_filename("probs", "pt", "probs"), "wb") as f:
+        with open(create_filename("generaged_probs", "pt", output_dir), "wb") as f:
             torch.save(
                 {
                     "target_logprob_sums": target_logprob_sums,

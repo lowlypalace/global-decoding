@@ -1,4 +1,10 @@
 import numpy as np
+import torch
+import json
+
+from utils import (
+    create_filename,
+)
 
 
 def indicator_top_k(sequence):
@@ -14,10 +20,14 @@ def metropolis_hastings(
     target_logprobs,
     proposal_logprobs,
     rate,
+    save_to_file,
+    output_dir,
 ):
     # List to store the generated samples
     sampled_sequences = []
+    sampled_decoded_sequences = []
     sampled_target_logprobs = []
+    # proposal_logprobs = []
 
     # Calculate the number of burn-in samples
     burnin_index = int(burnin * sequence_count)
@@ -60,10 +70,19 @@ def metropolis_hastings(
 
         # After the burn-in period, add the current state to the list of samples at the specified rate
         if i >= burnin_index and i % rate == 0:
+            sampled_sequences.append(current_sequence)
             # Decode the generated sequence
-            decoded_seq = tokenizer.decode(current_sequence, skip_special_tokens=True)
+            current_decoded_seq = tokenizer.decode(current_sequence, skip_special_tokens=True)
             # Append the decoded sequence and its probabilities to samples
-            sampled_sequences.append(decoded_seq)
+            sampled_decoded_sequences.append(current_decoded_seq)
             sampled_target_logprobs.append(logprob_target_current)
 
-    return sampled_sequences, sampled_target_logprobs
+    if save_to_file:
+        with open(create_filename("sampled_sequences", "pt", output_dir), "wb") as f:
+            torch.save(sampled_sequences, f)
+        with open(create_filename("sampled_decoded_sequences", "json", output_dir), "w") as f:
+            json.dump(sampled_decoded_sequences, f)
+        with open(create_filename("sampled_target_logprobs", "json", output_dir), "w") as f:
+            json.dump(sampled_target_logprobs, f)
+
+    return sampled_sequences, sampled_decoded_sequences, sampled_target_logprobs

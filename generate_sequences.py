@@ -17,7 +17,7 @@ def generate_sequences(
     pad_token_id,
     eos_token_id,
     save_to_file,
-    filename,
+    output_dir,
 ):
     # Calculate number of batches needed to generate the desired sequence_count
     num_batches = sequence_count // batch_size + (sequence_count % batch_size > 0)
@@ -52,7 +52,7 @@ def generate_sequences(
 
     if save_to_file:
         # Save the generated sequences to a file
-        with open(create_filename(filename, "json", "sequences"), "w") as f:
+        with open(create_filename("generated_sequences", "json", output_dir), "w") as f:
             json.dump([g.tolist() for g in all_generated_sequences], f)
 
     logging.info(f"Generated {len(all_generated_sequences)} sequences in total.")

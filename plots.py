@@ -11,7 +11,7 @@ from utils import (
 )
 
 
-def plot_mcmc_distribution(samples, plot_type="histogram", show=True):
+def plot_mcmc_distribution(samples, plot_type, show, output_dir):
     if plot_type == "histogram":
         # Create the histogram data
         trace = go.Histogram(
@@ -44,7 +44,7 @@ def plot_mcmc_distribution(samples, plot_type="histogram", show=True):
     else:
         raise ValueError("Invalid plot_type. Use 'histogram' or 'kde'.")
     # Write the plot to an HTML file
-    fig.write_html(create_filename(f"mcmc_{plot_type}", "html"))
+    fig.write_html(create_filename(f"mcmc_{plot_type}", "html", output_dir))
     # Plot the figure
     if show:
         fig.show()
@@ -61,6 +61,7 @@ def compute_kde(samples, x_range=None):
 
 def plot_chain(
     samples,
+    output_dir,
     burnin=0.2,
     initial=0.01,
     nsig=1,
@@ -211,6 +212,6 @@ def plot_chain(
 
     fig = go.Figure(plots, layout=layout)
     # Write the plot to an HTML file
-    fig.write_html(create_filename(f"mcmc_chain", "html"))
+    fig.write_html(create_filename(f"mcmc_chain", "html", output_dir))
     if show:
         fig.show()
