@@ -139,9 +139,8 @@ def main():
     torch.manual_seed(seed)
 
     # Create a filename that encapsulates the parameters and saves it into directory with the model name
-    # output_dir = os.path.join(args.output_dir, args.model_name)
-    # os.makedirs(output_dir, exist_ok=True)
-    # filename = create_filename(output_dir, "json", "output")
+    output_dir = os.path.join("output", args.model_name)
+    os.makedirs(output_dir, exist_ok=True)
 
     # Load model and tokenizer based on the selected model
     if args.model_name == "pythia":
@@ -155,6 +154,11 @@ def main():
     tokenizer.padding_side = "left"
     # Set the model to evaluation mode
     model.eval()
+    # Move the model to the specified device
+    model.to(device)
+    # Convert the model to double precision to avoid floating point discrepancies
+    model.double()
+
     # Assume max_model_length is the maximum sequence length the model can handle
     max_model_length = model.config.max_position_embeddings
     # Set the padding token to the EOS token
@@ -164,11 +168,6 @@ def main():
     # Set the text to the EOS token if it is not set
     if text is None:
         text = tokenizer.eos_token
-
-    # Move the model to the specified device
-    model.to(device)
-    # Convert the model to double precision to avoid floating point discrepancies
-    model.double()
 
     # Generate sequences and save them to a file
     if preload_sequences:
@@ -198,7 +197,7 @@ def main():
             pad_token_id=tokenizer.pad_token_id,
             eos_token_id=tokenizer.eos_token_id,
             batch_size=batch_size_seq,
-            filename=sequences_filename,
+            output_dir=os.path.join(output_dir, "sequences"),
         )
         end_time = time.time()
         logging.info(
@@ -217,6 +216,7 @@ def main():
         input_ids=input_ids,
         batch_size=batch_size_prob,
         save_to_file=True,
+        output_dir=os.path.join(output_dir, "probs"),
     )
     end_time = time.time()
     logging.info(f"Computed probabilities in {end_time - start_time:.2f} seconds.")
@@ -241,10 +241,10 @@ def main():
 
     logging.info("Plotting the results...")
     # Plot the distribution of the generated probabilities
-    plot_mcmc_distribution(sampled_probs, plot_type="histogram", show=False)
-    plot_mcmc_distribution(sampled_probs, plot_type="kde", show=False)
+    plot_mcmc_distribution(sampled_probs, plot_type="histogram", show=False, output_dir=os.path.join(output_dir, "plots"))
+    plot_mcmc_distribution(sampled_probs, plot_type="kde", show=False, output_dir=os.path.join(output_dir, "plots"))
     # Plot the chain of generated samples
-    plot_chain(sampled_probs, burnin=burnin, show=False)
+    plot_chain(sampled_probs, burnin=burnin, show=False, output_dir=os.path.join(output_dir, "plots"))
 
 
 if __name__ == "__main__":
