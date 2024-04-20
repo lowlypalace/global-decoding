@@ -234,7 +234,7 @@ def main():
         proposal_logprobs=local_logprobs,
         rate=rate,
         save_to_file=True,
-        output_dir=os.path.join(output_dir, "samples"),
+        output_dir=os.path.join(output_dir, "metropolis_hastings"),
     )
     end_time = time.time()
     logging.info(
