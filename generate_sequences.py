@@ -17,6 +17,9 @@ from utils import (
     create_filename,
 )
 
+from sequence_probability import get_sequence_probs
+from utils import setup_logging, save_args, get_timestamp
+
 
 # Set the environment variable for memory allocation strategy
 # TODO: Check if this is needed
@@ -25,15 +28,13 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 def generate_sequences(
     model,
+    tokenizer,
     input_ids,
     max_length,
     top_k,
     batch_size,
     sequence_count,
-    pad_token_id,
-    eos_token_id,
-    save_to_file,
-    output_dir,
+    output_dir
 ):
     # Calculate number of batches needed to generate the desired sequence_count
     num_batches = sequence_count // batch_size + (sequence_count % batch_size > 0)
@@ -49,8 +50,8 @@ def generate_sequences(
         batch_sequences = model.generate(
             input_ids=input_ids,
             max_length=max_length,
-            pad_token_id=pad_token_id,
-            eos_token_id=eos_token_id,
+            pad_token_id=tokenizer.pad_token_id,
+            eos_token_id=tokenizer.eos_token_id,
             top_k=top_k,
             do_sample=True,
             num_return_sequences=batch_size,
@@ -66,14 +67,22 @@ def generate_sequences(
     # If we have more sequences than needed due to the last batch, truncate the list
     all_generated_sequences = all_generated_sequences[:sequence_count]
 
-    if save_to_file:
-        # Save the generated sequences to a file
-        with open(create_filename("generated_sequences", "json", output_dir), "w") as f:
-            json.dump([g.tolist() for g in all_generated_sequences], f)
-
     logging.info(f"Generated {len(all_generated_sequences)} sequences in total.")
 
-    return torch.stack(all_generated_sequences)
+    # Decode sequences to text
+    decoded_sequences = [tokenizer.decode(g, skip_special_tokens=True) for g in all_generated_sequences]
+
+    # Save the encoded sequences
+    logging.info("Saving the generated sequences...")
+    with open(create_filename("sequences_ids", "json", output_dir), "w") as f:
+        json.dump([g.tolist() for g in all_generated_sequences], f)
+
+    # Save the decoded sequences
+    with open(create_filename("sequences_decoded", "json", output_dir), "w") as f:
+        json.dump(decoded_sequences, f)
+
+
+    return torch.stack(all_generated_sequences), decoded_sequences
 
 
 def load_preloaded_sequences(filename):
@@ -86,8 +95,6 @@ def load_preloaded_sequences(filename):
     return preloaded_sequences
 
 
-from sequence_probability import get_sequence_probs
-from utils import setup_logging, save_args, get_timestamp
 
 # Define the function to parse command-line arguments
 def parse_args():
@@ -161,7 +168,7 @@ def parse_args():
     parser.add_argument(
         "--output_dir",
         type=str,
-        default="output",
+        default=os.path.join("output", "seq"),
         help="Directory to save the output files.",
     )
 
@@ -240,24 +247,22 @@ def main():
         # Generate sequences
         start_time = time.time()
         logging.info("Generating new sequences...")
-        sequences = generate_sequences(
+        # TODO: get logits from generate method
+        sequences, decoded_sequences = generate_sequences(
             model=model,
+            tokenizer = tokenizer,
             input_ids=input_ids,
             max_length=max_length,
             top_k=top_k,
-            save_to_file=True,
             sequence_count=sequence_count,
-            pad_token_id=tokenizer.pad_token_id,
-            eos_token_id=tokenizer.eos_token_id,
             batch_size=batch_size_seq,
-            output_dir=os.path.join(output_dir, "sequences"),
+            output_dir=os.path.join(output_dir),
         )
         end_time = time.time()
         logging.info(
             f"Generated {sequence_count} sequences in {end_time - start_time:.2f} seconds."
         )
 
-    # TODO: Load the probs from the file if it exists
     # Get the probabilities for the generated sequences
     start_time = time.time()
     logging.info("Computing probabilities for the generated sequences...")
@@ -270,12 +275,10 @@ def main():
         pad_token_id=tokenizer.pad_token_id,
         input_ids=input_ids,
         batch_size=batch_size_prob,
-        save_to_file=True,
-        output_dir=os.path.join(output_dir, "probs"),
+        output_dir=os.path.join(output_dir),
     )
     end_time = time.time()
     logging.info(f"Computed probabilities in {end_time - start_time:.2f} seconds.")
-
 
 if __name__ == "__main__":
     main()

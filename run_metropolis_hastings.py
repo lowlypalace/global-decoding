@@ -11,7 +11,6 @@ from utils import (
 )
 
 
-from metropolis_hastings import metropolis_hastings
 from plots import plot_mcmc_distribution, plot_chain
 from utils import setup_logging, save_args, get_timestamp
 
@@ -34,7 +33,7 @@ def metropolis_hastings(
 ):
     # List to store the generated samples
     sampled_sequences = []
-    sampled_decoded_sequences = []
+    # sampled_decoded_sequences = []
     sampled_target_logprobs = []
     # proposal_logprobs = []
 
@@ -88,17 +87,16 @@ def metropolis_hastings(
             # sampled_decoded_sequences.append(current_decoded_seq)
             sampled_target_logprobs.append(logprob_target_current)
 
-    if save_to_file:
-        with open(create_filename("sampled_sequences", "pt", output_dir), "wb") as f:
-            torch.save(sampled_sequences, f)
-        # with open(
-        #     create_filename("sampled_decoded_sequences", "json", output_dir), "w"
-        # ) as f:
-        #     json.dump(sampled_decoded_sequences, f)
-        with open(
-            create_filename("sampled_target_logprobs", "json", output_dir), "w"
-        ) as f:
-            json.dump(sampled_target_logprobs, f)
+    with open(create_filename("sampled_sequences", "pt", output_dir), "wb") as f:
+        torch.save(sampled_sequences, f)
+    # with open(
+    #     create_filename("sampled_decoded_sequences", "json", output_dir), "w"
+    # ) as f:
+    #     json.dump(sampled_decoded_sequences, f)
+    with open(
+        create_filename("sampled_target_logprobs", "json", output_dir), "w"
+    ) as f:
+        json.dump(sampled_target_logprobs, f)
 
     # return sampled_sequences, sampled_decoded_sequences, sampled_target_logprobs
 
@@ -128,23 +126,53 @@ def parse_args():
         help="Random seed for reproducibility.",
     )
     parser.add_argument(
+        "--input_dir",
+        type=str,
+        default=os.path.join("output", "seq"),
+        help="Directory to load the input files.",
+    )
+    parser.add_argument(
         "--output_dir",
         type=str,
         default="output",
         help="Directory to save the output files.",
     )
+    parser.add_argument(
+        "--dirs",
+        nargs="+",
+        help = "Directories inside of the input folder to load the sequences and probabilities from. If multiple are provided, the algorithm will sample from multiple."
+    )
 
     args = parser.parse_args()
     return args
 
+def load_sequences(input_dir, directories):
+    sequences = []
+    target_logprobs = []
+    proposal_logprobs = []
+
+    for directory in directories:
+        sequences_filename = os.path.join(input_dir, directory, "sampled_sequences.pt")
+        target_logprobs_filename = os.path.join(input_dir, directory, "sampled_target_logprobs.json")
+        proposal_logprobs_filename = os.path.join(input_dir, directory, "sampled_proposal_logprobs.json")
+
+        with open(sequences_filename, "rb") as f:
+            sequences.append(torch.load(f))
+        with open(target_logprobs_filename, "r") as f:
+            target_logprobs.append(json.load(f))
+        with open(proposal_logprobs_filename, "r") as f:
+            proposal_logprobs.append(json.load(f))
+
+    return sequences, target_logprobs, proposal_logprobs
 
 def main():
     # Parse command-line arguments
     args = parse_args()
-    sequence_count = args.sequence_count
     burnin = args.burnin
     rate = args.rate
     seed = args.seed
+    input_dir = args.input_dir
+    dirs = args.dirs
     output_dir = args.output_dir
 
     # Add a directory with a timestamp to the output directory
@@ -157,6 +185,12 @@ def main():
     save_args(args, output_dir)
 
     # TODO: Load sequences, target_logprobs, proposal_logprobs
+    sequences, target_logprobs, proposal_logprobs = load_sequences(input_dir, dirs)
+
+    # TODO: get sequence count from all loaded sequences
+    sequence_count = len(sequences[0])
+
+    logging.info(f"Loaded {sequence_count} sequences.")
 
     # Set random seed for reproducibility numpy
     np.random.seed(seed)
@@ -166,7 +200,7 @@ def main():
     logging.info("Running Independent Metropolis-Hastings algorithm...")
     (
         sampled_sequences,
-        sampled_decoded_sequences,
+        # sampled_decoded_sequences,
         sampled_logprobs,
     ) = metropolis_hastings(
         # tokenizer=tokenizer,
@@ -176,7 +210,6 @@ def main():
         target_logprobs=target_logprobs,
         proposal_logprobs=proposal_logprobs,
         rate=rate,
-        save_to_file=True,
         output_dir=os.path.join(output_dir, "mh"),
     )
     end_time = time.time()

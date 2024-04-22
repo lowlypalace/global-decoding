@@ -1,5 +1,6 @@
 import torch
 import logging
+import json
 from torch.nn.functional import log_softmax
 
 from utils import (
@@ -59,6 +60,13 @@ def get_logits(model, sequences):
 def sum_logprobs(logprobs):
     return torch.sum(logprobs, dim=-1)
 
+def save_logprobs(logprobs, filename):
+    # Convert tensors to lists for JSON serialization
+    logprobs_list = logprobs.tolist()
+    # Save the target log probabilities in JSON format
+    with open(filename, "w") as f:
+        json.dump(logprobs_list, f)
+
 
 def get_sequence_probs(
     model,
@@ -67,7 +75,6 @@ def get_sequence_probs(
     pad_token_id,
     input_ids,
     batch_size,
-    save_to_file,
     output_dir,
 ):
     # Calculate the number of batches
@@ -116,15 +123,9 @@ def get_sequence_probs(
                 (proposal_logprob_sums, proposal_logprob_sum)
             )
 
-    if save_to_file:
-        # Save the log probability sums to a file
-        with open(create_filename("generaged_probs", "pt", output_dir), "wb") as f:
-            torch.save(
-                {
-                    "target_logprob_sums": target_logprob_sums,
-                    "proposal_logprob_sums": proposal_logprob_sums,
-                },
-                f,
-            )
+    logging.info("Saving the log probabilities...")
+    save_logprobs(target_logprob_sums, create_filename("logprobs_target", "json", output_dir))
+    save_logprobs(proposal_logprob_sums, create_filename("logprobs_proposal", "json", output_dir))
+
 
     return target_logprob_sums, proposal_logprob_sums
