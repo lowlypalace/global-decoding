@@ -157,7 +157,7 @@ def load_sequences(input_dir, directories):
             input_dir, directory, "logprobs_proposal.json"
         )
 
-        with open(sequences_filename, "rb") as f:
+        with open(sequences_filename, "r") as f:
             sequences.extend(json.load(f))
         with open(sequences_decoded_filename, "r") as f:
             sequences_decoded.extend(json.load(f))
