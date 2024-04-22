@@ -8,16 +8,16 @@ python generate_sequences.py \
   --max_length 10 \
   --batch_size_prob 16 \
   --model gpt2 \
-  --seed 0
+  --seed 42
 ```
 
-Example usage to run Metropolis-Hastings with the generated sequences:
+Example usage to run MCMC with the generated sequences:
 
 ```
 python run_metropolis_hastings.py \
   --burnin 0.2 \
   --seed 0 \
-  --dirs 22-04-2024_11-43-31
+  --dirs 22-04-2024_12-28-05 22-04-2024_12-36-21
 ```
 
 Running tests:
