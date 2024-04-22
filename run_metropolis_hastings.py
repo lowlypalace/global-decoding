@@ -2,7 +2,6 @@ import numpy as np
 import json
 import argparse
 import logging
-import torch
 import os
 import time
 
@@ -84,7 +83,7 @@ def metropolis_hastings(
             sampled_decoded_sequences.append(current_decoded_seq)
             sampled_target_logprobs.append(logprob_target_current)
 
-    with open(create_filename("sampled_sequences", "pt", output_dir), "wb") as f:
+    with open(create_filename("sampled_sequences", "json", output_dir), "w") as f:
         json.dump(sampled_sequences, f)
     with open(
         create_filename("sampled_decoded_sequences", "json", output_dir), "w"
