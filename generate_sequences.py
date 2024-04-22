@@ -182,8 +182,6 @@ def main():
     top_k = args.top_k
     sequence_count = args.sequence_count
     max_length = args.max_length
-    preload_sequences = args.preload_sequences
-    sequences_filename = args.sequences_filename
     text = args.text
     batch_size_seq = args.batch_size_seq
     batch_size_prob = args.batch_size_prob
@@ -229,39 +227,30 @@ def main():
     if text is None:
         text = tokenizer.eos_token
 
-    # Generate sequences and save them to a file
-    if preload_sequences:
-        logging.info("Loading preloaded sequences...")
-        sequences = load_preloaded_sequences(sequences_filename)
-        if len(sequences) != sequence_count:
-            raise ValueError(
-                f"Number of sequences in the file ({len(sequences)}) does not match sequence_count ({sequence_count})."
-            )
-    else:
-        # Encode the input text to tensor
-        input_ids = tokenizer.encode(
-            text, add_special_tokens=True, return_tensors="pt"
-        ).to(device)
-        # Calculate the max_length so it is bound by the model context length
-        max_length = max_length if max_length is not None else max_model_length
-        # Generate sequences
-        start_time = time.time()
-        logging.info("Generating new sequences...")
-        # TODO: get logits from generate method
-        sequences, decoded_sequences = generate_sequences(
-            model=model,
-            tokenizer=tokenizer,
-            input_ids=input_ids,
-            max_length=max_length,
-            top_k=top_k,
-            sequence_count=sequence_count,
-            batch_size=batch_size_seq,
-            output_dir=os.path.join(output_dir),
-        )
-        end_time = time.time()
-        logging.info(
-            f"Generated {sequence_count} sequences in {end_time - start_time:.2f} seconds."
-        )
+    # Encode the input text to tensor
+    input_ids = tokenizer.encode(
+        text, add_special_tokens=True, return_tensors="pt"
+    ).to(device)
+    # Calculate the max_length so it is bound by the model context length
+    max_length = max_length if max_length is not None else max_model_length
+    # Generate sequences
+    start_time = time.time()
+    logging.info("Generating new sequences...")
+    # TODO: get logits from generate method
+    sequences, decoded_sequences = generate_sequences(
+        model=model,
+        tokenizer=tokenizer,
+        input_ids=input_ids,
+        max_length=max_length,
+        top_k=top_k,
+        sequence_count=sequence_count,
+        batch_size=batch_size_seq,
+        output_dir=os.path.join(output_dir),
+    )
+    end_time = time.time()
+    logging.info(
+        f"Generated {sequence_count} sequences in {end_time - start_time:.2f} seconds."
+    )
 
     # Get the probabilities for the generated sequences
     start_time = time.time()
