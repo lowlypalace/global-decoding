@@ -3,7 +3,6 @@ import json
 import argparse
 import logging
 import os
-import time
 
 from utils import (
     create_filename,
@@ -130,41 +129,51 @@ def parse_args():
         help="Directory to save the output files.",
     )
     parser.add_argument(
-        "--dirs",
-        nargs="+",
-        help="Directories inside the input folder to load the sequences from.",
+        "--top_k",
+        type=int,
+        default=100,
+        help="Top-k value used to generate the sequences.",
+    )
+    parser.add_argument(
+        "--model_name",
+        type=str,
+        default="gpt2",
+        help="Name of the model used to generate the sequences.",
     )
 
     args = parser.parse_args()
     return args
 
-
-def load_sequences(input_dir, directories):
+def find_sequences(input_dir, top_k, model_name):
     sequences = []
     sequences_decoded = []
     target_logprobs = []
     proposal_logprobs = []
 
-    for directory in directories:
-        sequences_filename = os.path.join(input_dir, directory, "sequences_ids.json")
-        sequences_decoded_filename = os.path.join(
-            input_dir, directory, "sequences_decoded.json"
-        )
-        target_logprobs_filename = os.path.join(
-            input_dir, directory, "logprobs_target.json"
-        )
-        proposal_logprobs_filename = os.path.join(
-            input_dir, directory, "logprobs_proposal.json"
-        )
+    # List all directories in the input directory
+    directories = [d for d in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, d))]
 
-        with open(sequences_filename, "r") as f:
-            sequences.extend(json.load(f))
-        with open(sequences_decoded_filename, "r") as f:
-            sequences_decoded.extend(json.load(f))
-        with open(target_logprobs_filename, "r") as f:
-            target_logprobs.extend(json.load(f))
-        with open(proposal_logprobs_filename, "r") as f:
-            proposal_logprobs.extend(json.load(f))
+    for directory in directories:
+        metadata_file = os.path.join(input_dir, directory, "metadata.json")
+
+        # Read metadata.json to check if the directory matches the criteria
+        with open(metadata_file, "r") as f:
+            metadata = json.load(f)
+
+        if metadata['top_k'] == top_k and metadata['model_name'] == model_name:
+            sequences_filename = os.path.join(input_dir, directory, "sequences_ids.json")
+            sequences_decoded_filename = os.path.join(input_dir, directory, "sequences_decoded.json")
+            target_logprobs_filename = os.path.join(input_dir, directory, "logprobs_target.json")
+            proposal_logprobs_filename = os.path.join(input_dir, directory, "logprobs_proposal.json")
+
+            with open(sequences_filename, "r") as f:
+                sequences.extend(json.load(f))
+            with open(sequences_decoded_filename, "r") as f:
+                sequences_decoded.extend(json.load(f))
+            with open(target_logprobs_filename, "r") as f:
+                target_logprobs.extend(json.load(f))
+            with open(proposal_logprobs_filename, "r") as f:
+                proposal_logprobs.extend(json.load(f))
 
     return sequences, sequences_decoded, target_logprobs, proposal_logprobs
 
@@ -175,8 +184,9 @@ def main():
     burnin = args.burnin
     rate = args.rate
     seed = args.seed
+    top_k = args.top_k
+    model_name = args.model_name
     input_dir = args.input_dir
-    dirs = args.dirs
     output_dir = args.output_dir
 
     # Add a directory with a timestamp to the output directory
@@ -197,7 +207,7 @@ def main():
         sequences_decoded,
         target_logprobs,
         proposal_logprobs,
-    ) = load_sequences(input_dir, dirs)
+    ) = find_sequences(input_dir, top_k, model_name)
 
     # Get the number of sequences
     sequence_count = len(sequences_ids)

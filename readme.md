@@ -17,7 +17,8 @@ Example usage to run MCMC with the generated sequences:
 python run_metropolis_hastings.py \
   --burnin 0.2 \
   --seed 0 \
-  --dirs 22-04-2024_12-28-05 22-04-2024_12-36-21
+  --model gpt2 \
+  --top_k 100
 ```
 
 Running tests:
