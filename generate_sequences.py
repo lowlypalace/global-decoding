@@ -5,7 +5,6 @@ import argparse
 import logging
 import torch
 import os
-import time
 from transformers import (
     GPT2Tokenizer,
     GPT2LMHeadModel,
@@ -45,25 +44,25 @@ def generate_sequences(
     # Container for all generated sequences
     all_generated_sequences = []
 
-    for _ in range(num_batches):
-        # Generate a batch of sequences
-        # TODO: get logits from generate method
-        batch_sequences = model.generate(
-            input_ids=input_ids,
-            max_length=max_length,
-            pad_token_id=tokenizer.pad_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-            top_k=top_k,
-            do_sample=True,
-            num_return_sequences=batch_size,
-        )
+    with torch.no_grad():
+        for _ in range(num_batches):
+            # Generate a batch of sequences
+            batch_sequences = model.generate(
+                input_ids=input_ids,
+                max_length=max_length,
+                pad_token_id=tokenizer.pad_token_id,
+                eos_token_id=tokenizer.eos_token_id,
+                top_k=top_k,
+                do_sample=True,
+                num_return_sequences=batch_size,
+            )
 
-        # Collect the generated sequences
-        all_generated_sequences.extend(batch_sequences)
+            # Collect the generated sequences
+            all_generated_sequences.extend(batch_sequences)
 
-        # If we've generated enough sequences, stop
-        if len(all_generated_sequences) >= sequence_count:
-            break
+            # If we've generated enough sequences, stop
+            if len(all_generated_sequences) >= sequence_count:
+                break
 
     # If we have more sequences than needed due to the last batch, truncate the list
     all_generated_sequences = all_generated_sequences[:sequence_count]
