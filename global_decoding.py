@@ -2,7 +2,6 @@ import argparse
 import logging
 import torch
 import os
-import sys
 import time
 from transformers import (
     GPT2Tokenizer,
