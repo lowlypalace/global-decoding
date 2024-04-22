@@ -85,17 +85,6 @@ def generate_sequences(
 
     return torch.stack(all_generated_sequences), decoded_sequences
 
-
-def load_preloaded_sequences(filename):
-    with open(filename, "r") as f:
-        preloaded_sequences = json.load(f)
-    # Convert back to tensors
-    preloaded_sequences = [
-        torch.tensor(g, dtype=torch.long) for g in preloaded_sequences
-    ]
-    return preloaded_sequences
-
-
 # Define the function to parse command-line arguments
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate text sequences.")
