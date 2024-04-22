@@ -13,3 +13,8 @@ python global_decoding.py \
   --output_dir output \
   --rate 1
 ```
+
+Running tests:
+```
+python -m unittest
+```

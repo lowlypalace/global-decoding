@@ -36,6 +36,7 @@ def save_args(args, output_dir):
         json.dump(args_dict, f, indent=4)
     logging.info(f"Arguments saved to {json_path}")
 
+
 def get_timestamp():
     # Get the current time
     current_time = datetime.now()
@@ -43,6 +44,7 @@ def get_timestamp():
     time_str = current_time.strftime("%d-%m-%Y_%H-%M-%S")
 
     return time_str
+
 
 def create_filename(name, extension, directory):
     # Create the filename
