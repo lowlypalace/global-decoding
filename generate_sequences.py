@@ -123,12 +123,6 @@ def parse_args():
         help="Maximum sequence length. If not provided, it will be set to the maximum model length minus the length of the input text.",
     )
     parser.add_argument(
-        "--burnin",
-        type=float,
-        default=0.2,
-        help="Burn-in period as a fraction of the total number of samples.",
-    )
-    parser.add_argument(
         "--preload_sequences",
         action="store_true",
         help="Use preloaded sequences instead of generating new ones.",
@@ -157,12 +151,6 @@ def parse_args():
         type=int,
         default=16,
         help="Batch size for computing probabilities.",
-    )
-    parser.add_argument(
-        "--rate",
-        type=int,
-        default=1,
-        help="Rate at which to sample sequences after the burn-in period.",
     )
     parser.add_argument(
         "--seed",
