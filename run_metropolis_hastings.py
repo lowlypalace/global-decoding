@@ -11,7 +11,7 @@ from utils import (
 
 
 from plots import plot_mcmc_distribution, plot_chain
-from utils import setup_logging, save_args, get_timestamp
+from utils import setup_logging, save_args, get_timestamp, timer
 
 
 def indicator_top_k(sequence):
@@ -204,26 +204,21 @@ def main():
     logging.info(f"Loaded {sequence_count} sequences.")
 
     # Run the Independent Metropolis-Hastings algorithm
-    start_time = time.time()
-    logging.info("Running Independent Metropolis-Hastings algorithm...")
-    (
-        sampled_sequences,
-        sampled_decoded_sequences,
-        sampled_logprobs,
-    ) = metropolis_hastings(
-        sequence_count=sequence_count,
-        burnin=burnin,
-        sequences_ids=sequences_ids,
-        sequences_decoded=sequences_decoded,
-        target_logprobs=target_logprobs,
-        proposal_logprobs=proposal_logprobs,
-        rate=rate,
-        output_dir=output_dir,
-    )
-    end_time = time.time()
-    logging.info(
-        f"Finished running the algorithm in {end_time - start_time:.2f} seconds."
-    )
+    with timer("Running MCMC algorithm"):
+        (
+            sampled_sequences,
+            sampled_decoded_sequences,
+            sampled_logprobs,
+        ) = metropolis_hastings(
+            sequence_count=sequence_count,
+            burnin=burnin,
+            sequences_ids=sequences_ids,
+            sequences_decoded=sequences_decoded,
+            target_logprobs=target_logprobs,
+            proposal_logprobs=proposal_logprobs,
+            rate=rate,
+            output_dir=output_dir,
+        )
 
     # Plot the distribution of the generated probabilities
     logging.info("Plotting the results...")

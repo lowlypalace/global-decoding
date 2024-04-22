@@ -1,8 +1,17 @@
 import os
 import json
 import logging
+import contextlib
+import time
 import logging.handlers
 from datetime import datetime
+
+@contextlib.contextmanager
+def timer(description: str):
+    start = time.perf_counter()
+    yield
+    end = time.perf_counter()
+    logging.info(f"{description} completed in {end - start:.2f} seconds.")
 
 
 def setup_logging(log_file):

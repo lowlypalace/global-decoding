@@ -18,7 +18,7 @@ from utils import (
 )
 
 from sequence_probability import get_sequence_probs
-from utils import setup_logging, save_args, get_timestamp
+from utils import setup_logging, save_args, get_timestamp, timer
 
 
 # Set the environment variable for memory allocation strategy
@@ -47,6 +47,7 @@ def generate_sequences(
 
     for _ in range(num_batches):
         # Generate a batch of sequences
+        # TODO: get logits from generate method
         batch_sequences = model.generate(
             input_ids=input_ids,
             max_length=max_length,
@@ -84,6 +85,7 @@ def generate_sequences(
         json.dump(decoded_sequences, f)
 
     return torch.stack(all_generated_sequences), decoded_sequences
+
 
 # Define the function to parse command-line arguments
 def parse_args():
@@ -200,6 +202,7 @@ def main():
         model = GPT2LMHeadModel.from_pretrained(model_name)
 
     # Set the padding side to the left
+    tokenizer.padding = True
     tokenizer.padding_side = "left"
     # Set the model to evaluation mode
     model.eval()
@@ -217,47 +220,38 @@ def main():
         text = tokenizer.eos_token
 
     # Encode the input text to tensor
-    input_ids = tokenizer.encode(
-        text, add_special_tokens=True, return_tensors="pt"
-    ).to(device)
+    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
+        device
+    )
     # Calculate the max_length so it is bound by the model context length
     max_length = max_length if max_length is not None else max_model_length
+
     # Generate sequences
-    start_time = time.time()
-    logging.info("Generating new sequences...")
-    # TODO: get logits from generate method
-    sequences, decoded_sequences = generate_sequences(
-        model=model,
-        tokenizer=tokenizer,
-        input_ids=input_ids,
-        max_length=max_length,
-        top_k=top_k,
-        sequence_count=sequence_count,
-        batch_size=batch_size_seq,
-        output_dir=os.path.join(output_dir),
-    )
-    end_time = time.time()
-    logging.info(
-        f"Generated {sequence_count} sequences in {end_time - start_time:.2f} seconds."
-    )
+    with timer("Generating new sequences"):
+        sequences, decoded_sequences = generate_sequences(
+            model=model,
+            tokenizer=tokenizer,
+            input_ids=input_ids,
+            max_length=max_length,
+            top_k=top_k,
+            sequence_count=sequence_count,
+            batch_size=batch_size_seq,
+            output_dir=os.path.join(output_dir),
+        )
 
     # Get the probabilities for the generated sequences
-    start_time = time.time()
-    logging.info("Computing probabilities for the generated sequences...")
+    with timer("Computing probabilities"):
+        target_logprobs, proposal_logprobs = get_sequence_probs(
+            model=model,
+            sequences=sequences,
+            top_k=top_k,
+            pad_token_id=tokenizer.pad_token_id,
+            input_ids=input_ids,
+            batch_size=batch_size_prob,
+            output_dir=os.path.join(output_dir),
+        )
     # target_logpropbs are probabilities sampled from the global unnormalized distribution
     # proposal_logprobs are probabilities sampled from the local normalized distribution
-    target_logprobs, proposal_logprobs = get_sequence_probs(
-        model=model,
-        sequences=sequences,
-        top_k=top_k,
-        pad_token_id=tokenizer.pad_token_id,
-        input_ids=input_ids,
-        batch_size=batch_size_prob,
-        output_dir=os.path.join(output_dir),
-    )
-    end_time = time.time()
-    logging.info(f"Computed probabilities in {end_time - start_time:.2f} seconds.")
-
 
 if __name__ == "__main__":
     main()
