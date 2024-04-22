@@ -60,6 +60,7 @@ def get_logits(model, sequences):
 def sum_logprobs(logprobs):
     return torch.sum(logprobs, dim=-1)
 
+
 def save_logprobs(logprobs, filename):
     # Convert tensors to lists for JSON serialization
     logprobs_list = logprobs.tolist()
@@ -124,8 +125,11 @@ def get_sequence_probs(
             )
 
     logging.info("Saving the log probabilities...")
-    save_logprobs(target_logprob_sums, create_filename("logprobs_target", "json", output_dir))
-    save_logprobs(proposal_logprob_sums, create_filename("logprobs_proposal", "json", output_dir))
-
+    save_logprobs(
+        target_logprob_sums, create_filename("logprobs_target", "json", output_dir)
+    )
+    save_logprobs(
+        proposal_logprob_sums, create_filename("logprobs_proposal", "json", output_dir)
+    )
 
     return target_logprob_sums, proposal_logprob_sums

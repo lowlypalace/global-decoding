@@ -21,40 +21,41 @@ def indicator_top_k(sequence):
 
 
 def metropolis_hastings(
-    # tokenizer,
     sequence_count,
     burnin,
-    sequences,
+    sequences_ids,
+    sequences_decoded,
     target_logprobs,
     proposal_logprobs,
     rate,
-    save_to_file,
     output_dir,
 ):
     # List to store the generated samples
     sampled_sequences = []
-    # sampled_decoded_sequences = []
+    sampled_decoded_sequences = []
     sampled_target_logprobs = []
-    # proposal_logprobs = []
 
     # Calculate the number of burn-in samples
     burnin_index = int(burnin * sequence_count)
 
     # Get the first sequence and its probabilities
-    current_sequence = sequences[0]
+    current_sequence = sequences_ids[0]
+    current_decoded_seq = sequences_decoded[0]
     logprob_target_current, logprob_proposal_current = (
-        target_logprobs[0].item(),
-        proposal_logprobs[0].item(),
+        target_logprobs[0],
+        proposal_logprobs[0],
     )
 
     # This is a top-level loop to generate multiple sequences
     for i in range(1, sequence_count):
         # Get the sequence to propose
-        proposed_sequence = sequences[i]
+        proposed_sequence = sequences_ids[i]
         # Get the probabilities for the proposed sequences
         logprob_target_proposed, logprob_proposal_proposed = (
-            target_logprobs[i].item(),
-            proposal_logprobs[i].item(),
+            # target_logprobs[i].item(),
+            # proposal_logprobs[i].item(),
+            target_logprobs[i],
+            proposal_logprobs[i],
         )
 
         # Calculate the acceptance ratio
@@ -79,28 +80,20 @@ def metropolis_hastings(
         # After the burn-in period, add the current state to the list of samples at the specified rate
         if i >= burnin_index and i % rate == 0:
             sampled_sequences.append(current_sequence)
-            # Decode the generated sequence
-            # current_decoded_seq = tokenizer.decode(
-            #     current_sequence, skip_special_tokens=True
-            # )
             # Append the decoded sequence and its probabilities to samples
-            # sampled_decoded_sequences.append(current_decoded_seq)
+            sampled_decoded_sequences.append(current_decoded_seq)
             sampled_target_logprobs.append(logprob_target_current)
 
     with open(create_filename("sampled_sequences", "pt", output_dir), "wb") as f:
-        torch.save(sampled_sequences, f)
-    # with open(
-    #     create_filename("sampled_decoded_sequences", "json", output_dir), "w"
-    # ) as f:
-    #     json.dump(sampled_decoded_sequences, f)
+        json.dump(sampled_sequences, f)
     with open(
-        create_filename("sampled_target_logprobs", "json", output_dir), "w"
+        create_filename("sampled_decoded_sequences", "json", output_dir), "w"
     ) as f:
+        json.dump(sampled_decoded_sequences, f)
+    with open(create_filename("sampled_target_logprobs", "json", output_dir), "w") as f:
         json.dump(sampled_target_logprobs, f)
 
-    # return sampled_sequences, sampled_decoded_sequences, sampled_target_logprobs
-
-    return sampled_sequences, sampled_target_logprobs
+    return sampled_sequences, sampled_decoded_sequences, sampled_target_logprobs
 
 
 # Define the function to parse command-line arguments
@@ -128,42 +121,54 @@ def parse_args():
     parser.add_argument(
         "--input_dir",
         type=str,
-        default=os.path.join("output", "seq"),
+        default=os.path.join("output", "sequences"),
         help="Directory to load the input files.",
     )
     parser.add_argument(
         "--output_dir",
         type=str,
-        default="output",
+        default=os.path.join("output", "mcmc"),
         help="Directory to save the output files.",
     )
     parser.add_argument(
         "--dirs",
         nargs="+",
-        help = "Directories inside of the input folder to load the sequences and probabilities from. If multiple are provided, the algorithm will sample from multiple."
+        help="Directories inside the input folder to load the sequences from.",
     )
 
     args = parser.parse_args()
     return args
 
+
 def load_sequences(input_dir, directories):
     sequences = []
+    sequences_decoded = []
     target_logprobs = []
     proposal_logprobs = []
 
     for directory in directories:
-        sequences_filename = os.path.join(input_dir, directory, "sampled_sequences.pt")
-        target_logprobs_filename = os.path.join(input_dir, directory, "sampled_target_logprobs.json")
-        proposal_logprobs_filename = os.path.join(input_dir, directory, "sampled_proposal_logprobs.json")
+        sequences_filename = os.path.join(input_dir, directory, "sequences_ids.json")
+        sequences_decoded_filename = os.path.join(
+            input_dir, directory, "sequences_decoded.json"
+        )
+        target_logprobs_filename = os.path.join(
+            input_dir, directory, "logprobs_target.json"
+        )
+        proposal_logprobs_filename = os.path.join(
+            input_dir, directory, "logprobs_proposal.json"
+        )
 
         with open(sequences_filename, "rb") as f:
-            sequences.append(torch.load(f))
+            sequences.extend(json.load(f))
+        with open(sequences_decoded_filename, "r") as f:
+            sequences_decoded.extend(json.load(f))
         with open(target_logprobs_filename, "r") as f:
-            target_logprobs.append(json.load(f))
+            target_logprobs.extend(json.load(f))
         with open(proposal_logprobs_filename, "r") as f:
-            proposal_logprobs.append(json.load(f))
+            proposal_logprobs.extend(json.load(f))
 
-    return sequences, target_logprobs, proposal_logprobs
+    return sequences, sequences_decoded, target_logprobs, proposal_logprobs
+
 
 def main():
     # Parse command-line arguments
@@ -184,33 +189,37 @@ def main():
     # Save command-line arguments to JSON
     save_args(args, output_dir)
 
-    # TODO: Load sequences, target_logprobs, proposal_logprobs
-    sequences, target_logprobs, proposal_logprobs = load_sequences(input_dir, dirs)
-
-    # TODO: get sequence count from all loaded sequences
-    sequence_count = len(sequences[0])
-
-    logging.info(f"Loaded {sequence_count} sequences.")
-
     # Set random seed for reproducibility numpy
     np.random.seed(seed)
+
+    # Load the sequences and their probabilities
+    (
+        sequences_ids,
+        sequences_decoded,
+        target_logprobs,
+        proposal_logprobs,
+    ) = load_sequences(input_dir, dirs)
+
+    # Get the number of sequences
+    sequence_count = len(sequences_ids)
+    logging.info(f"Loaded {sequence_count} sequences.")
 
     # Run the Independent Metropolis-Hastings algorithm
     start_time = time.time()
     logging.info("Running Independent Metropolis-Hastings algorithm...")
     (
         sampled_sequences,
-        # sampled_decoded_sequences,
+        sampled_decoded_sequences,
         sampled_logprobs,
     ) = metropolis_hastings(
-        # tokenizer=tokenizer,
         sequence_count=sequence_count,
         burnin=burnin,
-        sequences=sequences,
+        sequences_ids=sequences_ids,
+        sequences_decoded=sequences_decoded,
         target_logprobs=target_logprobs,
         proposal_logprobs=proposal_logprobs,
         rate=rate,
-        output_dir=os.path.join(output_dir, "mh"),
+        output_dir=output_dir,
     )
     end_time = time.time()
     logging.info(

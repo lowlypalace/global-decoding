@@ -34,7 +34,7 @@ def generate_sequences(
     top_k,
     batch_size,
     sequence_count,
-    output_dir
+    output_dir,
 ):
     # Calculate number of batches needed to generate the desired sequence_count
     num_batches = sequence_count // batch_size + (sequence_count % batch_size > 0)
@@ -70,7 +70,9 @@ def generate_sequences(
     logging.info(f"Generated {len(all_generated_sequences)} sequences in total.")
 
     # Decode sequences to text
-    decoded_sequences = [tokenizer.decode(g, skip_special_tokens=True) for g in all_generated_sequences]
+    decoded_sequences = [
+        tokenizer.decode(g, skip_special_tokens=True) for g in all_generated_sequences
+    ]
 
     # Save the encoded sequences
     logging.info("Saving the generated sequences...")
@@ -80,7 +82,6 @@ def generate_sequences(
     # Save the decoded sequences
     with open(create_filename("sequences_decoded", "json", output_dir), "w") as f:
         json.dump(decoded_sequences, f)
-
 
     return torch.stack(all_generated_sequences), decoded_sequences
 
@@ -93,7 +94,6 @@ def load_preloaded_sequences(filename):
         torch.tensor(g, dtype=torch.long) for g in preloaded_sequences
     ]
     return preloaded_sequences
-
 
 
 # Define the function to parse command-line arguments
@@ -168,7 +168,7 @@ def parse_args():
     parser.add_argument(
         "--output_dir",
         type=str,
-        default=os.path.join("output", "seq"),
+        default=os.path.join("output", "sequences"),
         help="Directory to save the output files.",
     )
 
@@ -250,7 +250,7 @@ def main():
         # TODO: get logits from generate method
         sequences, decoded_sequences = generate_sequences(
             model=model,
-            tokenizer = tokenizer,
+            tokenizer=tokenizer,
             input_ids=input_ids,
             max_length=max_length,
             top_k=top_k,
@@ -279,6 +279,7 @@ def main():
     )
     end_time = time.time()
     logging.info(f"Computed probabilities in {end_time - start_time:.2f} seconds.")
+
 
 if __name__ == "__main__":
     main()

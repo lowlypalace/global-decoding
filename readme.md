@@ -8,7 +8,7 @@ python generate_sequences.py \
   --max_length 10 \
   --batch_size_prob 16 \
   --model gpt2 \
-  --seed 0 \
+  --seed 0
 ```
 
 Example usage to run Metropolis-Hastings with the generated sequences:
