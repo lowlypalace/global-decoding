@@ -83,6 +83,11 @@ def generate_sequences(
     with open(create_filename("sequences_decoded", "json", output_dir), "w") as f:
         json.dump(decoded_sequences, f)
 
+    # print the length of all generated sequence in all_generated_sequences
+    for i in range(len(all_generated_sequences)):
+        print(len(all_generated_sequences[i]))
+
+
     return torch.stack(all_generated_sequences), decoded_sequences
 
 
@@ -167,6 +172,9 @@ def parse_args():
 
 
 def main():
+    # Save log messages to a file
+    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
+
     # Parse command-line arguments
     args = parse_args()
     top_k = args.top_k
@@ -184,8 +192,6 @@ def main():
     output_dir = os.path.join(output_dir, get_timestamp())
     # Create a directory to save the output files
     os.makedirs(output_dir, exist_ok=True)
-    # Save log messages to a file
-    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
     # Save command-line arguments to JSON
     save_args(args, output_dir)
 
@@ -201,8 +207,9 @@ def main():
         model = GPT2LMHeadModel.from_pretrained(model_name)
 
     # Set the padding side to the left
-    tokenizer.padding = True
     tokenizer.padding_side = "left"
+    # Pad sequences to the maximum length
+    tokenizer.padding = 'max_length'
     # Set the model to evaluation mode
     model.eval()
     # Move the model to the specified device

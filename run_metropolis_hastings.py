@@ -177,6 +177,9 @@ def find_sequences(input_dir, top_k, model_name):
 
 
 def main():
+    # Save log messages to a file
+    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
+
     # Parse command-line arguments
     args = parse_args()
     burnin = args.burnin
@@ -191,8 +194,6 @@ def main():
     output_dir = os.path.join(output_dir, get_timestamp())
     # Create a directory to save the output files
     os.makedirs(output_dir, exist_ok=True)
-    # Save log messages to a file
-    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
     # Save command-line arguments to JSON
     save_args(args, output_dir)
 
@@ -229,26 +230,26 @@ def main():
         )
 
     # Plot the distribution of the generated probabilities
-    logging.info("Plotting the results...")
-    plot_mcmc_distribution(
-        sampled_logprobs,
-        plot_type="histogram",
-        show=False,
-        output_dir=os.path.join(output_dir, "plots"),
-    )
-    plot_mcmc_distribution(
-        sampled_logprobs,
-        plot_type="kde",
-        show=False,
-        output_dir=os.path.join(output_dir, "plots"),
-    )
-    # Plot the chain of generated samples
-    plot_chain(
-        sampled_logprobs,
-        burnin=burnin,
-        show=False,
-        output_dir=os.path.join(output_dir, "plots"),
-    )
+    with timer("Plotting the results"):
+        plot_mcmc_distribution(
+            sampled_logprobs,
+            plot_type="histogram",
+            show=False,
+            output_dir=os.path.join(output_dir, "plots"),
+        )
+        plot_mcmc_distribution(
+            sampled_logprobs,
+            plot_type="kde",
+            show=False,
+            output_dir=os.path.join(output_dir, "plots"),
+        )
+        # Plot the chain of generated samples
+        plot_chain(
+            sampled_logprobs,
+            burnin=burnin,
+            show=False,
+            output_dir=os.path.join(output_dir, "plots"),
+        )
 
 
 if __name__ == "__main__":
