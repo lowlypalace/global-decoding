@@ -10,7 +10,7 @@ from utils import (
 
 
 from plots import plot_mcmc_distribution, plot_chain
-from utils import setup_logging, save_args, get_timestamp, timer
+from utils import setup_logging, save_args, get_timestamp, timer, read_json_file
 
 
 def indicator_top_k(sequence):
@@ -107,7 +107,7 @@ def parse_args():
     parser.add_argument(
         "--rate",
         type=int,
-        default=1,
+        default=10,
         help="Rate at which to sample sequences after the burn-in period.",
     )
     parser.add_argument(
@@ -154,11 +154,9 @@ def find_sequences(input_dir, top_k, model_name):
     directories = [d for d in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, d))]
 
     for directory in directories:
-        metadata_file = os.path.join(input_dir, directory, "metadata.json")
-
         # Read metadata.json to check if the directory matches the criteria
-        with open(metadata_file, "r") as f:
-            metadata = json.load(f)
+        metadata_file = os.path.join(input_dir, directory, "metadata.json")
+        metadata = read_json_file(metadata_file)
 
         if metadata['top_k'] == top_k and metadata['model_name'] == model_name:
             sequences_filename = os.path.join(input_dir, directory, "sequences_ids.json")

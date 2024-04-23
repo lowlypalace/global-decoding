@@ -65,3 +65,7 @@ def create_filename(name, extension, directory):
     full_path = os.path.join(directory, filename)
 
     return full_path
+
+def read_json_file(file_path):
+    with open(file_path, "r") as file:
+        return json.load(file)
