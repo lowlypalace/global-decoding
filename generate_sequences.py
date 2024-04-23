@@ -172,9 +172,6 @@ def parse_args():
 
 
 def main():
-    # Save log messages to a file
-    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
-
     # Parse command-line arguments
     args = parse_args()
     top_k = args.top_k
@@ -188,6 +185,8 @@ def main():
     output_dir = args.output_dir
     device = torch.device(args.device)
 
+    # Save log messages to a file
+    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
     # Add a directory with a timestamp to the output directory
     output_dir = os.path.join(output_dir, get_timestamp())
     # Create a directory to save the output files
@@ -231,6 +230,8 @@ def main():
     )
     # Calculate the max_length so it is bound by the model context length
     max_length = max_length if max_length is not None else max_model_length
+
+    print(f"Max length: {max_length}")
 
     # Generate sequences
     with timer("Generating new sequences"):

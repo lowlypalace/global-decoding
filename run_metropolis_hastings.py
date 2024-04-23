@@ -177,9 +177,6 @@ def find_sequences(input_dir, top_k, model_name):
 
 
 def main():
-    # Save log messages to a file
-    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
-
     # Parse command-line arguments
     args = parse_args()
     burnin = args.burnin
@@ -190,6 +187,8 @@ def main():
     input_dir = args.input_dir
     output_dir = args.output_dir
 
+    # Save log messages to a file
+    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
     # Add a directory with a timestamp to the output directory
     output_dir = os.path.join(output_dir, get_timestamp())
     # Create a directory to save the output files
