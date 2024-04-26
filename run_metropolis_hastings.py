@@ -144,6 +144,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 def find_sequences(input_dir, top_k, model_name):
     sequences = []
     sequences_decoded = []
@@ -151,18 +152,28 @@ def find_sequences(input_dir, top_k, model_name):
     proposal_logprobs = []
 
     # List all directories in the input directory
-    directories = [d for d in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, d))]
+    directories = [
+        d for d in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, d))
+    ]
 
     for directory in directories:
         # Read metadata.json to check if the directory matches the criteria
         metadata_file = os.path.join(input_dir, directory, "metadata.json")
         metadata = read_json_file(metadata_file)
 
-        if metadata['top_k'] == top_k and metadata['model_name'] == model_name:
-            sequences_filename = os.path.join(input_dir, directory, "sequences_ids.json")
-            sequences_decoded_filename = os.path.join(input_dir, directory, "sequences_decoded.json")
-            target_logprobs_filename = os.path.join(input_dir, directory, "logprobs_target.json")
-            proposal_logprobs_filename = os.path.join(input_dir, directory, "logprobs_proposal.json")
+        if metadata["top_k"] == top_k and metadata["model_name"] == model_name:
+            sequences_filename = os.path.join(
+                input_dir, directory, "sequences_ids.json"
+            )
+            sequences_decoded_filename = os.path.join(
+                input_dir, directory, "sequences_decoded.json"
+            )
+            target_logprobs_filename = os.path.join(
+                input_dir, directory, "logprobs_target.json"
+            )
+            proposal_logprobs_filename = os.path.join(
+                input_dir, directory, "logprobs_proposal.json"
+            )
 
             with open(sequences_filename, "r") as f:
                 sequences.extend(json.load(f))
