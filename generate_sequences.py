@@ -57,8 +57,15 @@ def generate_sequences(
                 num_return_sequences=batch_size,
             )
 
+            # Pad sequences in the batch to max_length
+            batch_sequences_padded = torch.nn.functional.pad(
+                batch_sequences,
+                (0, max_length - batch_sequences.shape[1]),  # Pad the second dimension to max_length
+                value=tokenizer.pad_token_id
+            )
+
             # Collect the generated sequences
-            all_generated_sequences.extend(batch_sequences)
+            all_generated_sequences.extend(batch_sequences_padded)
 
             # If we've generated enough sequences, stop
             if len(all_generated_sequences) >= sequence_count:
@@ -82,10 +89,6 @@ def generate_sequences(
     # Save the decoded sequences
     with open(create_filename("sequences_decoded", "json", output_dir), "w") as f:
         json.dump(decoded_sequences, f)
-
-    # print the length of all generated sequence in all_generated_sequences
-    for i in range(len(all_generated_sequences)):
-        print(len(all_generated_sequences[i]))
 
 
     return torch.stack(all_generated_sequences), decoded_sequences
@@ -230,8 +233,6 @@ def main():
     )
     # Calculate the max_length so it is bound by the model context length
     max_length = max_length if max_length is not None else max_model_length
-
-    print(f"Max length: {max_length}")
 
     # Generate sequences
     with timer("Generating new sequences"):
