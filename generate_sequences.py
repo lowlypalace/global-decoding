@@ -24,13 +24,6 @@ from utils import setup_logging, save_args, get_timestamp, timer
 # TODO: Check if this is needed
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
-def pad_sequences(sequences, pad_token_id, max_length):
-    return torch.nn.functional.pad(
-                    sequences,
-                    (0, max_length - sequences.shape[1]),  # Pad the second dimension to max_length
-                    value=pad_token_id
-                )
-
 def generate_sequences(
     model,
     tokenizer,
@@ -63,14 +56,8 @@ def generate_sequences(
                 num_return_sequences=batch_size,
             )
 
-            # Pad sequences in the batch to max_length
-            batch_sequences_padded = pad_sequences(batch_sequences, tokenizer.pad_token_id, max_length)
-
-
-            print([len(seq) for seq in batch_sequences_padded])
-
             # Collect the generated sequences
-            all_generated_sequences.extend(batch_sequences_padded)
+            all_generated_sequences.extend(batch_sequences)
 
             # If we've generated enough sequences, stop
             if len(all_generated_sequences) >= sequence_count:
