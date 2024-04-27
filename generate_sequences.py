@@ -63,7 +63,7 @@ def generate_sequences(
                 padding="max_length",  # Pads to a maximum length specified by the max_length parameter
                 max_length=max_length,  # Define the total maximum length
                 return_tensors="pt",
-            )
+            ).to(input_ids.device)
 
             # Collect the generated sequences
             all_generated_sequences.extend(padded_sequences["input_ids"])
