@@ -62,9 +62,8 @@ def generate_sequences(
                 {"input_ids": generated_ids},
                 padding="max_length",  # Pads to a maximum length specified by the max_length parameter
                 max_length=max_length,  # Define the total maximum length
-                return_tensors="pt"
+                return_tensors="pt",
             )
-
 
             # Collect the generated sequences
             all_generated_sequences.extend(padded_sequences["input_ids"])
@@ -79,7 +78,9 @@ def generate_sequences(
     logging.info(f"Generated {len(all_generated_sequences)} sequences in total.")
 
     # Decode sequences to text
-    decoded_sequences = tokenizer.batch_decode(all_generated_sequences, skip_special_tokens=True)
+    decoded_sequences = tokenizer.batch_decode(
+        all_generated_sequences, skip_special_tokens=True
+    )
 
     # Save the encoded sequences
     logging.info("Saving the generated sequences...")
@@ -89,7 +90,6 @@ def generate_sequences(
     # Save the decoded sequences
     with open(create_filename("sequences_decoded", "json", output_dir), "w") as f:
         json.dump(decoded_sequences, f)
-
 
     return torch.stack(all_generated_sequences), decoded_sequences
 
@@ -226,10 +226,9 @@ def main():
         text = tokenizer.eos_token
 
     # Encode the input text to tensor
-    # input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
-    #     device
-    # )
-    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(device)
+    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
+        device
+    )
     # Calculate the max_length so it is bound by the model context length
     max_length = max_length if max_length is not None else max_model_length
 
@@ -259,6 +258,7 @@ def main():
         )
     # target_logpropbs are probabilities sampled from the global unnormalized distribution
     # proposal_logprobs are probabilities sampled from the local normalized distribution
+
 
 if __name__ == "__main__":
     main()
