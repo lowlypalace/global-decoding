@@ -188,10 +188,10 @@ def main():
     output_dir = args.output_dir
     device = torch.device(args.device)
 
-    # Save log messages to a file
-    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
     # Add a directory with a timestamp to the output directory
     output_dir = os.path.join(output_dir, get_timestamp())
+    # Save log messages to a file
+    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
     # Create a directory to save the output files
     os.makedirs(output_dir, exist_ok=True)
     # Save command-line arguments to JSON
