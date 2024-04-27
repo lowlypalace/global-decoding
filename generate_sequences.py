@@ -123,17 +123,6 @@ def parse_args():
         help="Maximum sequence length. If not provided, it will be set to the maximum model length minus the length of the input text.",
     )
     parser.add_argument(
-        "--preload_sequences",
-        action="store_true",
-        help="Use preloaded sequences instead of generating new ones.",
-    )
-    parser.add_argument(
-        "--sequences_filename",
-        type=str,
-        default="generated_sequences",
-        help="Filename for preloaded sequences.",
-    )
-    parser.add_argument(
         "--device",
         type=str,
         choices=["cpu", "cuda"],
