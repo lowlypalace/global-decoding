@@ -210,13 +210,6 @@ def main():
 
     # # Set the padding side to the left
     tokenizer.padding_side = "left"
-    # # Pad sequences to the maximum length
-    # tokenizer.padding = "max_length"
-    # # Pad to the max length
-    # tokenizer.pad_to_max_length = True
-
-    # tokenizer.truncation=True
-
     # Set the model to evaluation mode
     model.eval()
     # Move the model to the specified device
