@@ -20,11 +20,6 @@ from sequence_probability import get_sequence_probs
 from utils import setup_logging, save_args, get_timestamp, timer
 
 
-# Set the environment variable for memory allocation strategy
-# # TODO: Check if this is needed
-# os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
-
-
 def generate_sequences(
     model,
     tokenizer,
@@ -42,12 +37,12 @@ def generate_sequences(
     )
 
     # Container for all generated sequences
-    all_generated_sequences = []
+    sequences = []
 
     with torch.no_grad():
         for _ in range(num_batches):
             # Generate a batch of sequences
-            generated_ids = model.generate(
+            sequences_batch = model.generate(
                 input_ids=input_ids,
                 max_length=max_length,
                 pad_token_id=tokenizer.pad_token_id,
@@ -58,40 +53,40 @@ def generate_sequences(
             )
 
             # Pad sequences in the batch to max_length
-            padded_sequences = tokenizer.pad(
-                {"input_ids": generated_ids},
+            padded_sequences_batch = tokenizer.pad(
+                {"input_ids": sequences_batch},
                 padding="max_length",  # Pads to a maximum length specified by the max_length parameter
                 max_length=max_length,  # Define the total maximum length
                 return_tensors="pt",
             ).to(input_ids.device)
 
             # Collect the generated sequences
-            all_generated_sequences.extend(padded_sequences["input_ids"])
+            sequences.extend(padded_sequences_batch["input_ids"])
 
             # If we've generated enough sequences, stop
-            if len(all_generated_sequences) >= sequence_count:
+            if len(sequences) >= sequence_count:
                 break
 
     # If we have more sequences than needed due to the last batch, truncate the list
-    all_generated_sequences = all_generated_sequences[:sequence_count]
+    sequences = sequences[:sequence_count]
 
-    logging.info(f"Generated {len(all_generated_sequences)} sequences in total.")
+    logging.info(f"Generated {len(sequences)} sequences in total.")
 
     # Decode sequences to text
     decoded_sequences = tokenizer.batch_decode(
-        all_generated_sequences, skip_special_tokens=True
+        sequences, skip_special_tokens=True
     )
 
     # Save the encoded sequences
     logging.info("Saving the generated sequences...")
     with open(create_filename("sequences_ids", "json", output_dir), "w") as f:
-        json.dump([g.tolist() for g in all_generated_sequences], f)
+        json.dump([g.tolist() for g in sequences], f)
 
     # Save the decoded sequences
     with open(create_filename("sequences_decoded", "json", output_dir), "w") as f:
         json.dump(decoded_sequences, f)
 
-    return torch.stack(all_generated_sequences), decoded_sequences
+    return torch.stack(sequences), decoded_sequences
 
 
 # Define the function to parse command-line arguments
@@ -190,10 +185,10 @@ def main():
 
     # Add a directory with a timestamp to the output directory
     output_dir = os.path.join(output_dir, get_timestamp())
-    # Save log messages to a file
-    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
     # Create a directory to save the output files
     os.makedirs(output_dir, exist_ok=True)
+    # Save log messages to a file
+    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
     # Save command-line arguments to JSON
     save_args(args, output_dir)
 
