@@ -21,8 +21,8 @@ from utils import setup_logging, save_args, get_timestamp, timer
 
 
 # Set the environment variable for memory allocation strategy
-# TODO: Check if this is needed
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+# # TODO: Check if this is needed
+# os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 
 def generate_sequences(
