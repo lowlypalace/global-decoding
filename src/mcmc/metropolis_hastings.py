@@ -1,14 +1,9 @@
 import numpy as np
 import json
-import os
 
 from utils import (
     create_filename,
 )
-
-
-from plots import plot_mcmc_distribution, plot_chain
-from utils import timer
 
 
 def indicator_top_k(sequence):

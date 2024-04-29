@@ -109,7 +109,7 @@ def main():
     )
 
     # MCMC
-   run_mcmc(args=args, output_dir=os.path(output_dir, "mcmc"), sequences_ids=sequences_ids, sequences_decoded=sequences_decoded, target_logprobs=target_logprobs, proposal_logprobs=proposal_logprobs)
+    sampled_sequences, sampled_decoded_sequences, sampled_logprobs = run_mcmc(args=args, output_dir=os.path(output_dir, "mcmc"), sequences_ids=sequences_ids, sequences_decoded=sequences_decoded, target_logprobs=target_logprobs, proposal_logprobs=proposal_logprobs)
 
     # TODO: Evaluate
 
