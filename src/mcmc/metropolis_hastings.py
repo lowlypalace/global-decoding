@@ -23,7 +23,7 @@ def metropolis_hastings(
 ):
     # List to store the generated samples
     sampled_sequences = []
-    sampled_decoded_sequences = []
+    sampled_sequences_decoded = []
     sampled_target_logprobs = []
 
     # Calculate the number of burn-in samples
@@ -72,7 +72,7 @@ def metropolis_hastings(
         if i >= burnin_index and i % rate == 0:
             sampled_sequences.append(current_sequence)
             # Append the decoded sequence and its probabilities to samples
-            sampled_decoded_sequences.append(current_decoded_seq)
+            sampled_sequences_decoded.append(current_decoded_seq)
             sampled_target_logprobs.append(logprob_target_current)
 
     with open(create_filename("sampled_sequences", "json", output_subdir), "w") as f:
@@ -80,10 +80,10 @@ def metropolis_hastings(
     with open(
         create_filename("sampled_decoded_sequences", "json", output_subdir), "w"
     ) as f:
-        json.dump(sampled_decoded_sequences, f)
+        json.dump(sampled_sequences_decoded, f)
     with open(
         create_filename("sampled_target_logprobs", "json", output_subdir), "w"
     ) as f:
         json.dump(sampled_target_logprobs, f)
 
-    return sampled_sequences, sampled_decoded_sequences, sampled_target_logprobs
+    return sampled_sequences, sampled_sequences_decoded, sampled_target_logprobs

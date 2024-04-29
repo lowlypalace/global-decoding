@@ -3,6 +3,7 @@ import os
 from evaluate import load
 import argparse
 
+from download_dataset import download_dataset
 
 def load_data_from_jsonl(file_path):
     """Load data from a JSON Lines file."""
@@ -22,10 +23,22 @@ def parse_args():
         description="Evaluate text generation quality using MAUVE metric."
     )
     parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="data",
+        help="Base directory to save and load the dataset.",
+    )
+    parser.add_argument(
         "--dataset_name",
         type=str,
         default="webtext",
-        help="Name of the dataset to evaluate.",
+        help="Name of the dataset to use as reference.",
+    )
+    parser.add_argument(
+        "--split",
+        type=str,
+        default="test",
+        help="Split of the dataset to use as reference.",
     )
 
     return parser.parse_args()
@@ -35,8 +48,11 @@ def main():
     # Parse command-line arguments
     args = parse_args()
 
+    # Download the dataset
+    download_dataset(subdir="data", dataset=args.dataset_name, splits=[args.split])
+
     # Path to the dataset file
-    file_path = os.path.join("data", "webtext.test.jsonl")
+    file_path = os.path.join(args.output_dir, f"{args.dataset_name}.{args.split}.jsonl")
     data = load_data_from_jsonl(file_path)
 
     # Load the reference texts

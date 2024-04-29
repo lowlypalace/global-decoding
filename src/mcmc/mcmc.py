@@ -28,7 +28,7 @@ def run_mcmc(
     with timer("Running MCMC algorithm"):
         (
             sampled_sequences,
-            sampled_decoded_sequences,
+            sampled_sequences_decoded,
             sampled_logprobs,
         ) = metropolis_hastings(
             sequence_count=sequence_count,
@@ -63,4 +63,4 @@ def run_mcmc(
             output_dir=os.path.join(output_subdir, "plots"),
         )
 
-    return sampled_sequences, sampled_decoded_sequences, sampled_logprobs
+    return sampled_sequences, sampled_sequences_decoded, sampled_logprobs
