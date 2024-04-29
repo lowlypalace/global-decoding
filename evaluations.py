@@ -1,7 +1,6 @@
 import json
 import os
 from evaluate import load
-from datasets import Dataset
 import argparse
 
 
@@ -58,8 +57,6 @@ def main():
     # Initialize MAUVE metric
     mauve = load("mauve")
 
-    # TODO: Do we need to truncate the lengths of the sequences to match the reference texts?
-
     # Load the locally decoded strings
     local_decoding_texts = load_json_file(
         os.path.join(
@@ -75,12 +72,12 @@ def main():
     )
 
     # Get the minimum length of the texts arrays and reference arrays and slice all of the arrays to that length
-    min_length = min(
+    min_num_sequences = min(
         len(reference_texts), len(local_decoding_texts), len(global_decoding_texts)
     )
-    reference_texts = reference_texts[:min_length]
-    local_decoding_texts = local_decoding_texts[:min_length]
-    global_decoding_texts = global_decoding_texts[:min_length]
+    reference_texts = reference_texts[:min_num_sequences]
+    local_decoding_texts = local_decoding_texts[:min_num_sequences]
+    global_decoding_texts = global_decoding_texts[:min_num_sequences]
 
     # Compute MAUVE results for locally decoded strings
     mauve_results_local = mauve.compute(
