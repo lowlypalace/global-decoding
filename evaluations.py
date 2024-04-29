@@ -41,7 +41,6 @@ def parse_args():
         help="Directory containing globally decoded sequences.",
     )
 
-
     return parser.parse_args()
 
 
@@ -56,8 +55,6 @@ def main():
     # Load the reference texts
     reference_texts = [item["text"] for item in data]
 
-    # Convert generated texts and reference texts
-
     # Initialize MAUVE metric
     mauve = load("mauve")
 
@@ -65,20 +62,25 @@ def main():
 
     # Load the locally decoded strings
     local_decoding_texts = load_json_file(
-        os.path.join(args.input_dir, "sequences", args.local_dir, "sequences_decoded.json")
+        os.path.join(
+            args.input_dir, "sequences", args.local_dir, "sequences_decoded.json"
+        )
     )
 
     # Load the globally decoded strings
     global_decoding_texts = load_json_file(
-        os.path.join(args.input_dir, "mcmc", args.global_dir, "sampled_decoded_sequences.json")
+        os.path.join(
+            args.input_dir, "mcmc", args.global_dir, "sampled_decoded_sequences.json"
+        )
     )
 
     # Get the minimum length of the texts arrays and reference arrays and slice all of the arrays to that length
-    min_length = min(len(reference_texts), len(local_decoding_texts), len(global_decoding_texts))
+    min_length = min(
+        len(reference_texts), len(local_decoding_texts), len(global_decoding_texts)
+    )
     reference_texts = reference_texts[:min_length]
     local_decoding_texts = local_decoding_texts[:min_length]
     global_decoding_texts = global_decoding_texts[:min_length]
-
 
     # Compute MAUVE results for locally decoded strings
     mauve_results_local = mauve.compute(
