@@ -1,19 +1,13 @@
-import json
 import torch
-import logging
 import argparse
-import logging
 import torch
 import os
-from transformers import (
-    GPT2Tokenizer,
-    GPT2LMHeadModel,
-    AutoTokenizer,
-    AutoModelForCausalLM,
-)
 
-from sequence_probability import get_sequence_probs
-from utils import setup_logging, save_args, get_timestamp, timer, create_filename
+
+# from sequence_probability import get_sequence_probs
+from utils import setup_logging, save_args, get_timestamp
+from sequences import generate_sequences_and_probs
+from mcmc import run_mcmc
 
 
 # Define the function to parse command-line arguments
@@ -110,10 +104,14 @@ def main():
     save_args(args, output_dir)
 
     # Generate sequences
+    sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = generate_sequences_and_probs(
+        args, output_dir=os.path(output_dir, "sequences")
+    )
 
     # MCMC
+   run_mcmc(args=args, output_dir=os.path(output_dir, "mcmc"), sequences_ids=sequences_ids, sequences_decoded=sequences_decoded, target_logprobs=target_logprobs, proposal_logprobs=proposal_logprobs)
 
-    # Evaluate
+    # TODO: Evaluate
 
 
 if __name__ == "__main__":

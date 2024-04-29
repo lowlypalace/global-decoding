@@ -69,7 +69,7 @@ def save_logprobs(logprobs, filename):
         json.dump(logprobs_list, f)
 
 
-def get_sequence_probs(
+def get_sequences_probs(
     model,
     sequences,
     top_k,
