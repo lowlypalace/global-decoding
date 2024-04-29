@@ -73,9 +73,7 @@ def generate_sequences(
     logging.info(f"Generated {len(sequences)} sequences in total.")
 
     # Decode sequences to text
-    decoded_sequences = tokenizer.batch_decode(
-        sequences, skip_special_tokens=True
-    )
+    decoded_sequences = tokenizer.batch_decode(sequences, skip_special_tokens=True)
 
     # Save the encoded sequences
     logging.info("Saving the generated sequences...")
@@ -192,8 +190,6 @@ def main():
         tokenizer = GPT2Tokenizer.from_pretrained(model_name)
         model = GPT2LMHeadModel.from_pretrained(model_name)
 
-    # # Set the padding side to the left
-    tokenizer.padding_side = "left"
     # Set the model to evaluation mode
     model.eval()
     # Move the model to the specified device
@@ -205,6 +201,8 @@ def main():
     # Set the padding token to the EOS token
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    # Set the padding side to the right
+    tokenizer.padding_side = "right"
     # Set the text to the EOS token if it is not set
     if text is None:
         text = tokenizer.eos_token
