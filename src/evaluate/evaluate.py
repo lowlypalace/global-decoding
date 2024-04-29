@@ -21,6 +21,12 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Evaluate text generation quality using MAUVE metric."
     )
+    parser.add_argument(
+        "--dataset_name",
+        type=str,
+        default="webtext",
+        help="Name of the dataset to evaluate.",
+    )
 
     return parser.parse_args()
 

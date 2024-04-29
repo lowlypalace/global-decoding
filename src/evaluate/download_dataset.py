@@ -2,10 +2,6 @@ import os
 import requests
 from tqdm import tqdm
 
-import os
-import requests
-from tqdm import tqdm
-
 def download_dataset(
     subdir="data",
     dataset="webtext",
