@@ -44,7 +44,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     # Parse command-line arguments
     args = parse_args()
 
@@ -60,20 +60,6 @@ def main():
 
     # Initialize MAUVE metric
     mauve = load("mauve")
-
-    # Load the locally decoded strings
-    local_decoding_texts = load_json_file(
-        os.path.join(
-            args.input_dir, "sequences", args.local_dir, "sequences_decoded.json"
-        )
-    )
-
-    # Load the globally decoded strings
-    global_decoding_texts = load_json_file(
-        os.path.join(
-            args.input_dir, "mcmc", args.global_dir, "sampled_decoded_sequences.json"
-        )
-    )
 
     # Get the minimum length of the texts arrays and reference arrays and slice all of the arrays to that length
     min_num_sequences = min(
