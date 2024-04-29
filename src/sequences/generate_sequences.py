@@ -9,15 +9,11 @@ from transformers import (
     GPT2Tokenizer,
     GPT2LMHeadModel,
     AutoTokenizer,
-    AutoModelForCausalLM,
-)
-
-from utils import (
-    create_filename,
+    GPTNeoXForCausalLM,
 )
 
 from sequence_probability import get_sequence_probs
-from utils import setup_logging, save_args, get_timestamp, timer
+from utils import setup_logging, save_args, get_timestamp, timer, create_filename
 
 
 def generate_sequences(
@@ -95,7 +91,7 @@ def parse_args():
         "--model_name",
         type=str,
         default="gpt2",
-        choices=["gpt2", "gpt2-medium", "gpt2-large", "gpt2-xl", "pythia"],
+        choices=["gpt2", "gpt2-medium", "gpt2-large", "gpt2-xl", "pythia-6.9b", "pythia-12b"],
         help="Model to use for text generation. Supports GPT-2 and Pythia.",
     )
 
@@ -183,9 +179,9 @@ def main():
     torch.manual_seed(seed)
 
     # Load model and tokenizer based on the selected model
-    if args.model_name == "pythia":
-        tokenizer = AutoTokenizer.from_pretrained("facebook/pythia")
-        model = AutoModelForCausalLM.from_pretrained("facebook/pythia")
+    if model_name == "pythia-6.9b" or "pythia-12b":
+        tokenizer = AutoTokenizer.from_pretrained(f"EleutherAI/{model_name}")
+        model = GPTNeoXForCausalLM.from_pretrained(f"EleutherAI/{model_name}")
     else:  # Default to gpt2 or gpt2-large
         tokenizer = GPT2Tokenizer.from_pretrained(model_name)
         model = GPT2LMHeadModel.from_pretrained(model_name)
@@ -238,6 +234,7 @@ def main():
             batch_size=batch_size_prob,
             output_dir=os.path.join(output_dir),
         )
+
     # target_logpropbs are probabilities sampled from the global unnormalized distribution
     # proposal_logprobs are probabilities sampled from the local normalized distribution
 
