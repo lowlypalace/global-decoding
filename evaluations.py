@@ -31,21 +31,17 @@ def parse_args():
     parser.add_argument(
         "--local_dir",
         type=str,
-        default="sequences",
-        help="Subdirectory name for locally decoded sequences.",
+        required=True,
+        help="Directory containing locally decoded sequences.",
     )
     parser.add_argument(
         "--global_dir",
         type=str,
-        default="mcmc",
-        help="Subdirectory name for globally decoded sequences.",
+        required=True,
+        help="Directory containing globally decoded sequences.",
     )
-    parser.add_argument(
-        "--ref_file",
-        type=str,
-        default="webtext.test.jsonl",
-        help="Filename for the reference strings data.",
-    )
+
+
     return parser.parse_args()
 
 
@@ -57,26 +53,32 @@ def main():
     file_path = os.path.join("data", "webtext.test.jsonl")
     data = load_data_from_jsonl(file_path)
 
-    # Let's assume each line in JSON has a key 'text' that contains the textual data.
-    texts = [item["text"] for item in data]
-    dataset = Dataset.from_dict({"text": texts})
+    # Load the reference texts
+    reference_texts = [item["text"] for item in data]
 
     # Convert generated texts and reference texts
-    generated_texts = [text.strip() for text in generated_texts]
-    reference_texts = [text["text"].strip() for text in dataset[:10]["text"]]
 
     # Initialize MAUVE metric
     mauve = load("mauve")
 
+    # TODO: Do we need to truncate the lengths of the sequences to match the reference texts?
+
     # Load the locally decoded strings
     local_decoding_texts = load_json_file(
-        os.path.join(args.input_dir, args.local_dir, "sequences_decoded.json")
+        os.path.join(args.input_dir, "sequences", args.local_dir, "sequences_decoded.json")
     )
 
     # Load the globally decoded strings
     global_decoding_texts = load_json_file(
-        os.path.join(args.input_dir, args.global_dir, "sampled_decoded_sequences.json")
+        os.path.join(args.input_dir, "mcmc", args.global_dir, "sampled_decoded_sequences.json")
     )
+
+    # Get the minimum length of the texts arrays and reference arrays and slice all of the arrays to that length
+    min_length = min(len(reference_texts), len(local_decoding_texts), len(global_decoding_texts))
+    reference_texts = reference_texts[:min_length]
+    local_decoding_texts = local_decoding_texts[:min_length]
+    global_decoding_texts = global_decoding_texts[:min_length]
+
 
     # Compute MAUVE results for locally decoded strings
     mauve_results_local = mauve.compute(
