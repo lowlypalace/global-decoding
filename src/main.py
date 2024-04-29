@@ -120,6 +120,11 @@ def main():
         args, output_subdir=os.path.join(output_dir, "sequences")
     )
 
+    # Convert tensors to lists
+    sequences_ids = [sequence_ids.tolist() for sequence_ids in sequences_ids]
+    target_logprobs = [logprob.item() for logprob in target_logprobs]
+    proposal_logprobs = [logprob.item() for logprob in proposal_logprobs]
+
     # MCMC
     sampled_sequences, sampled_sequences_decoded, sampled_logprobs = run_mcmc(
         args=args,
