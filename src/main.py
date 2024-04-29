@@ -18,7 +18,14 @@ def parse_args():
         "--model_name",
         type=str,
         default="gpt2",
-        choices=["gpt2", "gpt2-medium", "gpt2-large", "gpt2-xl", "pythia-6.9b", "pythia-12b"],
+        choices=[
+            "gpt2",
+            "gpt2-medium",
+            "gpt2-large",
+            "gpt2-xl",
+            "pythia-6.9b",
+            "pythia-12b",
+        ],
         help="Model to use for text generation. Supports GPT-2 and Pythia.",
     )
 
@@ -104,12 +111,22 @@ def main():
     save_args(args, output_dir)
 
     # Generate sequences
-    sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = generate_sequences_and_probs(
-        args, output_dir=os.path(output_dir, "sequences")
-    )
+    (
+        sequences_ids,
+        sequences_decoded,
+        target_logprobs,
+        proposal_logprobs,
+    ) = generate_sequences_and_probs(args, output_dir=os.path(output_dir, "sequences"))
 
     # MCMC
-    sampled_sequences, sampled_decoded_sequences, sampled_logprobs = run_mcmc(args=args, output_dir=os.path(output_dir, "mcmc"), sequences_ids=sequences_ids, sequences_decoded=sequences_decoded, target_logprobs=target_logprobs, proposal_logprobs=proposal_logprobs)
+    sampled_sequences, sampled_decoded_sequences, sampled_logprobs = run_mcmc(
+        args=args,
+        output_dir=os.path(output_dir, "mcmc"),
+        sequences_ids=sequences_ids,
+        sequences_decoded=sequences_decoded,
+        target_logprobs=target_logprobs,
+        proposal_logprobs=proposal_logprobs,
+    )
 
     # TODO: Evaluate
 

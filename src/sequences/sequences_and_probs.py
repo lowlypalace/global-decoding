@@ -11,6 +11,7 @@ from sequences_probs import get_sequences_probs
 from generate_sequences import generate_sequences
 from utils import timer
 
+
 def generate_sequences_and_probs(args, output_dir):
     # Parse command-line arguments
     top_k = args.top_k

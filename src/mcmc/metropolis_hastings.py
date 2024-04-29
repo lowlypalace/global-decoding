@@ -85,4 +85,3 @@ def metropolis_hastings(
         json.dump(sampled_target_logprobs, f)
 
     return sampled_sequences, sampled_decoded_sequences, sampled_target_logprobs
-

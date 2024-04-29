@@ -1,4 +1,3 @@
-
 import numpy as np
 import os
 
@@ -8,8 +7,14 @@ from plots import plot_mcmc_distribution, plot_chain
 from utils import timer
 
 
-
-def run_mcmc(args, output_dir, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs):
+def run_mcmc(
+    args,
+    output_dir,
+    sequences_ids,
+    sequences_decoded,
+    target_logprobs,
+    proposal_logprobs,
+):
     # Parse command-line arguments
     burnin = args.burnin
     rate = args.rate
@@ -59,4 +64,3 @@ def run_mcmc(args, output_dir, sequences_ids, sequences_decoded, target_logprobs
         )
 
     return sampled_sequences, sampled_decoded_sequences, sampled_logprobs
-
