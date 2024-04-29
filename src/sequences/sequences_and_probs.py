@@ -1,5 +1,4 @@
 import torch
-import torch
 from transformers import (
     GPT2Tokenizer,
     GPT2LMHeadModel,
@@ -7,8 +6,8 @@ from transformers import (
     GPTNeoXForCausalLM,
 )
 
-from sequences_probs import get_sequences_probs
-from generate_sequences import generate_sequences
+from .sequences_probs import get_sequences_probs
+from .generate_sequences import generate_sequences
 from utils import timer
 
 

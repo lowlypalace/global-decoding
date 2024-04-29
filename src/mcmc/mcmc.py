@@ -1,9 +1,9 @@
 import numpy as np
 import os
 
-from metropolis_hastings import metropolis_hastings
+from .metropolis_hastings import metropolis_hastings
+from .plots import plot_mcmc_distribution, plot_chain
 
-from plots import plot_mcmc_distribution, plot_chain
 from utils import timer
 
 
