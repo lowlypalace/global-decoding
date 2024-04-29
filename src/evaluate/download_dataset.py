@@ -48,7 +48,3 @@ def download_dataset(
                 print(f"Failed to download {filename}: {e}")
                 if os.path.exists(file_path):
                     os.remove(file_path)  # Remove partial files on failure
-
-
-if __name__ == "__main__":
-    download_dataset()

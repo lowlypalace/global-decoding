@@ -116,12 +116,14 @@ def main():
         sequences_decoded,
         target_logprobs,
         proposal_logprobs,
-    ) = generate_sequences_and_probs(args, output_dir=os.path(output_dir, "sequences"))
+    ) = generate_sequences_and_probs(
+        args, output_subdir=os.path(output_dir, "sequences")
+    )
 
     # MCMC
     sampled_sequences, sampled_decoded_sequences, sampled_logprobs = run_mcmc(
         args=args,
-        output_dir=os.path(output_dir, "mcmc"),
+        output_subdir=os.path(output_dir, "mcmc"),
         sequences_ids=sequences_ids,
         sequences_decoded=sequences_decoded,
         target_logprobs=target_logprobs,

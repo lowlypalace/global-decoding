@@ -19,7 +19,7 @@ def metropolis_hastings(
     target_logprobs,
     proposal_logprobs,
     rate,
-    output_dir,
+    output_subdir,
 ):
     # List to store the generated samples
     sampled_sequences = []
@@ -75,13 +75,15 @@ def metropolis_hastings(
             sampled_decoded_sequences.append(current_decoded_seq)
             sampled_target_logprobs.append(logprob_target_current)
 
-    with open(create_filename("sampled_sequences", "json", output_dir), "w") as f:
+    with open(create_filename("sampled_sequences", "json", output_subdir), "w") as f:
         json.dump(sampled_sequences, f)
     with open(
-        create_filename("sampled_decoded_sequences", "json", output_dir), "w"
+        create_filename("sampled_decoded_sequences", "json", output_subdir), "w"
     ) as f:
         json.dump(sampled_decoded_sequences, f)
-    with open(create_filename("sampled_target_logprobs", "json", output_dir), "w") as f:
+    with open(
+        create_filename("sampled_target_logprobs", "json", output_subdir), "w"
+    ) as f:
         json.dump(sampled_target_logprobs, f)
 
     return sampled_sequences, sampled_decoded_sequences, sampled_target_logprobs

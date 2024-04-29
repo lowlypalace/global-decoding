@@ -12,7 +12,7 @@ from generate_sequences import generate_sequences
 from utils import timer
 
 
-def generate_sequences_and_probs(args, output_dir):
+def generate_sequences_and_probs(args, output_subdir):
     # Parse command-line arguments
     top_k = args.top_k
     sequence_count = args.sequence_count
@@ -69,7 +69,7 @@ def generate_sequences_and_probs(args, output_dir):
             top_k=top_k,
             sequence_count=sequence_count,
             batch_size=batch_size_seq,
-            output_dir=output_dir,
+            output_subdir=output_subdir,
         )
 
     # Get the probabilities for the generated sequences
@@ -81,7 +81,7 @@ def generate_sequences_and_probs(args, output_dir):
             pad_token_id=tokenizer.pad_token_id,
             input_ids=input_ids,
             batch_size=batch_size_prob,
-            output_dir=output_dir,
+            output_subdir=output_subdir,
         )
 
     # target_logpropbs are probabilities sampled from the global unnormalized distribution

@@ -9,7 +9,7 @@ from utils import timer
 
 def run_mcmc(
     args,
-    output_dir,
+    output_subdir,
     sequences_ids,
     sequences_decoded,
     target_logprobs,
@@ -38,7 +38,7 @@ def run_mcmc(
             target_logprobs=target_logprobs,
             proposal_logprobs=proposal_logprobs,
             rate=rate,
-            output_dir=output_dir,
+            output_subdir=output_subdir,
         )
 
     # Plot the distribution of the generated probabilities
@@ -47,20 +47,20 @@ def run_mcmc(
             sampled_logprobs,
             plot_type="histogram",
             show=False,
-            output_dir=os.path.join(output_dir, "plots"),
+            output_dir=os.path.join(output_subdir, "plots"),
         )
         plot_mcmc_distribution(
             sampled_logprobs,
             plot_type="kde",
             show=False,
-            output_dir=os.path.join(output_dir, "plots"),
+            output_dir=os.path.join(output_subdir, "plots"),
         )
         # Plot the chain of generated samples
         plot_chain(
             sampled_logprobs,
             burnin=burnin,
             show=False,
-            output_dir=os.path.join(output_dir, "plots"),
+            output_dir=os.path.join(output_subdir, "plots"),
         )
 
     return sampled_sequences, sampled_decoded_sequences, sampled_logprobs

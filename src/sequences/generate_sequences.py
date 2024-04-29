@@ -15,7 +15,7 @@ def generate_sequences(
     top_k,
     batch_size,
     sequence_count,
-    output_dir,
+    output_subdir,
 ):
     # Calculate number of batches needed to generate the desired sequence_count
     num_batches = sequence_count // batch_size + (sequence_count % batch_size > 0)
@@ -64,11 +64,11 @@ def generate_sequences(
 
     # Save the encoded sequences
     logging.info("Saving the generated sequences...")
-    with open(create_filename("sequences_ids", "json", output_dir), "w") as f:
+    with open(create_filename("sequences_ids", "json", output_subdir), "w") as f:
         json.dump([g.tolist() for g in sequences], f)
 
     # Save the decoded sequences
-    with open(create_filename("sequences_decoded", "json", output_dir), "w") as f:
+    with open(create_filename("sequences_decoded", "json", output_subdir), "w") as f:
         json.dump(decoded_sequences, f)
 
     return torch.stack(sequences), decoded_sequences

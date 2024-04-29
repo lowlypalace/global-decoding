@@ -21,24 +21,6 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Evaluate text generation quality using MAUVE metric."
     )
-    parser.add_argument(
-        "--input_dir",
-        type=str,
-        default="output",
-        help="Base directory containing the datasets and decoded outputs.",
-    )
-    parser.add_argument(
-        "--local_dir",
-        type=str,
-        required=True,
-        help="Directory containing locally decoded sequences.",
-    )
-    parser.add_argument(
-        "--global_dir",
-        type=str,
-        required=True,
-        help="Directory containing globally decoded sequences.",
-    )
 
     return parser.parse_args()
 
