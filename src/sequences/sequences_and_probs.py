@@ -27,7 +27,7 @@ def generate_sequences_and_probs(args, output_subdir):
     torch.manual_seed(seed)
 
     # Load model and tokenizer based on the selected model
-    if model_name == "pythia-6.9b" or "pythia-12b":
+    if model_name == "pythia-6.9b" or model_name == "pythia-12b":
         tokenizer = AutoTokenizer.from_pretrained(f"EleutherAI/{model_name}")
         model = GPTNeoXForCausalLM.from_pretrained(f"EleutherAI/{model_name}")
     else:  # Default to gpt2 or gpt2-large
