@@ -84,7 +84,4 @@ def generate_sequences_and_probs(args, output_subdir):
             output_subdir=output_subdir,
         )
 
-    # target_logpropbs are probabilities sampled from the global unnormalized distribution
-    # proposal_logprobs are probabilities sampled from the local normalized distribution
-
     return sequences, decoded_sequences, target_logprobs, proposal_logprobs
