@@ -1,12 +1,10 @@
 import json
 import os
 from evaluate import load
-import argparse
 
 from utils import save_to_json
 
 from .download_dataset import download_dataset
-
 
 
 def load_data_from_jsonl(file_path):
@@ -22,51 +20,20 @@ def load_json_file(file_path):
         return json.load(file)
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Evaluate text generation quality using MAUVE metric."
-    )
-    parser.add_argument(
-        "--output_dir",
-        type=str,
-        default="data",
-        help="Base directory to save and load the dataset.",
-    )
-    parser.add_argument(
-        "--dataset_name",
-        type=str,
-        default="webtext",
-        help="Name of the dataset to use as reference.",
-    )
-    parser.add_argument(
-        "--split",
-        type=str,
-        default="test",
-        help="Split of the dataset to use as reference.",
-    )
-    parser.add_argument(
-        "--num_sequences",
-        type=int,
-        default=1000,
-        help="Number of sequences to evaluate.",
-    )
-
-    return parser.parse_args()
-
-
 def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     # Parse command-line arguments
-    args = parse_args()
-    dataset_name = args.dataset_name
-    split = args.split
-    num_sequences = args.num_sequences
-    output_subdir = args.output_subdir
+    eval_dataset_name = args.eval_dataset_name
+    eval_split = args.eval_split
+    eval_num_sequences = args.eval_num_sequences
+
+    # Set the output subdirectory
+    subdir = "data"
 
     # Download the dataset
-    download_dataset(subdir="data", dataset=dataset_name, splits=[split])
+    download_dataset(subdir="data", dataset=eval_dataset_name, splits=[eval_split])
 
     # Path to the dataset file
-    file_path = os.path.join(output_subdir, f"{dataset_name}.{split}.jsonl")
+    file_path = os.path.join(subdir, f"{eval_dataset_name}.{eval_split}.jsonl")
     data = load_data_from_jsonl(file_path)
 
     # Load the reference texts
@@ -75,10 +42,14 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     # Initialize MAUVE metric
     mauve = load("mauve")
 
-    # Trim the sequences to the desired number of sequences
-    reference_texts = reference_texts[:num_sequences]
-    local_decoding_texts = local_decoding_texts[:num_sequences]
-    global_decoding_texts = global_decoding_texts[:num_sequences]
+    # Trim the sequences to the specified number of sequences
+    reference_texts = reference_texts[:eval_num_sequences]
+    local_decoding_texts = local_decoding_texts[:eval_num_sequences]
+    global_decoding_texts = global_decoding_texts[:eval_num_sequences]
+
+    print(reference_texts)
+    print(local_decoding_texts)
+    print(global_decoding_texts)
 
     # Compute MAUVE results for locally decoded strings
     mauve_results_local = mauve.compute(

@@ -3,6 +3,7 @@ import logging
 import json
 from torch.nn.functional import log_softmax
 
+
 def top_k_filtering(logits, top_k):
     # Retrieve the top_k logits and their indices for each sequence in the batch
     _, topk_indices = torch.topk(logits, top_k, dim=-1)

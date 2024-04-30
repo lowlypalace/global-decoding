@@ -92,6 +92,8 @@ def parse_args():
         default="output",
         help="Directory to save the output files.",
     )
+
+    # MCMC arguments
     parser.add_argument(
         "--burnin",
         type=float,
@@ -104,11 +106,26 @@ def parse_args():
         default=10,
         help="Rate at which to sample sequences after the burn-in period.",
     )
-    # parser.add_argument(
-    #     "--preload_sequences",
-    #     default = None,
-    #     help="Preload sequences from a file.",
-    # )
+
+    # Evaluation arguments
+    parser.add_argument(
+        "--eval_dataset_name",
+        type=str,
+        default="webtext",
+        help="Name of the dataset to use as reference.",
+    )
+    parser.add_argument(
+        "--eval_split",
+        type=str,
+        default="test",
+        help="Split of the dataset to use as reference.",
+    )
+    parser.add_argument(
+        "--eval_num_sequences",
+        type=int,
+        default=1000,
+        help="Number of sequences to evaluate.",
+    )
 
     args = parser.parse_args()
     return args
@@ -126,7 +143,6 @@ def main():
     # Save command-line arguments to JSON
     save_args(args, output_dir)
 
-    # Generate sequences
     (
         sequences_ids,
         sequences_decoded,
@@ -136,7 +152,6 @@ def main():
         args, output_subdir=os.path.join(output_dir, "sequences")
     )
 
-    # MCMC
     sampled_sequences_ids, sampled_sequences_decoded, sampled_logprobs = run_mcmc(
         args=args,
         output_subdir=os.path.join(output_dir, "mcmc"),
@@ -146,13 +161,11 @@ def main():
         proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
     )
 
-    # TODO: Evaluate
-
     evaluate(
         args,
         output_subdir=os.path.join(output_dir, "evaluate"),
-        local_decoding_texts=sequences_decoded, # sequences_decoded are the sequences sampled from the local normalized distribution
-        global_decoding_texts=sampled_sequences_decoded, # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
+        local_decoding_texts=sequences_decoded,  # sequences_decoded are the sequences sampled from the local normalized distribution
+        global_decoding_texts=sampled_sequences_decoded,  # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
     )
 
     # TODO: get total time
