@@ -1,8 +1,7 @@
 import unittest
 import torch
 
-from sequence_probability import (
-    top_k_filtering,
+from src.sequences.sequences_probs import (
     create_index_tensor,
     sum_logprobs,
     mask_out_pad_token,

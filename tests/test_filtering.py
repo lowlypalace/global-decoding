@@ -1,7 +1,7 @@
 import unittest
 import torch
 
-from sequence_probability import (
+from src.sequences.sequences_probs import (
     top_k_filtering,
 )
 

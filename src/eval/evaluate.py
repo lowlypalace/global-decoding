@@ -2,10 +2,10 @@ import json
 import os
 from evaluate import load
 import argparse
+from src.utils import save_to_json
 
 from .download_dataset import download_dataset
 
-from utils import save_to_json
 
 
 def load_data_from_jsonl(file_path):

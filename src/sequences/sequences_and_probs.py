@@ -1,5 +1,4 @@
 import torch
-import json
 import logging
 
 from transformers import (
@@ -9,11 +8,11 @@ from transformers import (
     GPTNeoXForCausalLM,
 )
 
+from src.utils import timer, save_to_json
 
 from .sequences_probs import get_sequences_probs
 from .generate_sequences import generate_sequences
 
-from utils import timer, save_to_json
 
 
 def generate_sequences_and_probs(args, output_subdir):
