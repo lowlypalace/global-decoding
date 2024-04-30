@@ -24,12 +24,12 @@ def generate_sequences(
     )
 
     # Container for all generated sequences
-    sequences = []
+    sequences_ids = []
 
     with torch.no_grad():
         for _ in range(num_batches):
             # Generate a batch of sequences
-            sequences_batch = model.generate(
+            sequences_ids_batch = model.generate(
                 input_ids=input_ids,
                 max_length=max_length,
                 pad_token_id=tokenizer.pad_token_id,
@@ -40,35 +40,37 @@ def generate_sequences(
             )
 
             # Pad sequences in the batch to max_length
-            padded_sequences_batch = tokenizer.pad(
-                {"input_ids": sequences_batch},
+            padded_sequences_ids_batch = tokenizer.pad(
+                {"input_ids": sequences_ids_batch},
                 padding="max_length",  # Pads to a maximum length specified by the max_length parameter
                 max_length=max_length,  # Define the total maximum length
                 return_tensors="pt",
             ).to(input_ids.device)
 
             # Collect the generated sequences
-            sequences.extend(padded_sequences_batch["input_ids"])
+            sequences_ids.extend(padded_sequences_ids_batch["input_ids"])
 
             # If we've generated enough sequences, stop
-            if len(sequences) >= sequence_count:
+            if len(sequences_ids) >= sequence_count:
                 break
 
     # If we have more sequences than needed due to the last batch, truncate the list
-    sequences = sequences[:sequence_count]
+    sequences_ids = sequences_ids[:sequence_count]
 
-    logging.info(f"Generated {len(sequences)} sequences in total.")
+    logging.info(f"Generated {len(sequences_ids)} sequences in total.")
 
     # Decode sequences to text
-    decoded_sequences = tokenizer.batch_decode(sequences, skip_special_tokens=True)
+    sequences_decoded = tokenizer.batch_decode(sequences_ids, skip_special_tokens=True)
 
+    # Convert the sequences to lists
+    sequences_ids = [sequence_ids.tolist() for sequence_ids in sequences_ids]
     # Save the encoded sequences
     logging.info("Saving the generated sequences...")
     with open(create_filename("sequences_ids", "json", output_subdir), "w") as f:
-        json.dump([g.tolist() for g in sequences], f)
+        json.dump([g.tolist() for g in sequences_ids], f)
 
     # Save the decoded sequences
     with open(create_filename("sequences_decoded", "json", output_subdir), "w") as f:
-        json.dump(decoded_sequences, f)
+        json.dump(sequences_decoded, f)
 
-    return torch.stack(sequences), decoded_sequences
+    return torch.stack(sequences_ids), sequences_decoded
