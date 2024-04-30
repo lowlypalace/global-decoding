@@ -41,6 +41,12 @@ def parse_args():
         default="test",
         help="Split of the dataset to use as reference.",
     )
+    parser.add_argument(
+        "--num_sequences",
+        type=int,
+        default=1000,
+        help="Number of sequences to evaluate.",
+    )
 
     return parser.parse_args()
 
@@ -48,12 +54,16 @@ def parse_args():
 def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     # Parse command-line arguments
     args = parse_args()
+    dataset_name = args.dataset_name
+    split = args.split
+    num_sequences = args.num_sequences
+    output_subdir = args.output_subdir
 
     # Download the dataset
-    download_dataset(subdir="data", dataset=args.dataset_name, splits=[args.split])
+    download_dataset(subdir="data", dataset=dataset_name, splits=[split])
 
     # Path to the dataset file
-    file_path = os.path.join(args.output_dir, f"{args.dataset_name}.{args.split}.jsonl")
+    file_path = os.path.join(output_subdir, f"{dataset_name}.{split}.jsonl")
     data = load_data_from_jsonl(file_path)
 
     # Load the reference texts
@@ -62,13 +72,10 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     # Initialize MAUVE metric
     mauve = load("mauve")
 
-    # Get the minimum length of the texts arrays and reference arrays and slice all of the arrays to that length
-    min_num_sequences = min(
-        len(reference_texts), len(local_decoding_texts), len(global_decoding_texts)
-    )
-    reference_texts = reference_texts[:min_num_sequences]
-    local_decoding_texts = local_decoding_texts[:min_num_sequences]
-    global_decoding_texts = global_decoding_texts[:min_num_sequences]
+    # Trim the sequences to the desired number of sequences
+    reference_texts = reference_texts[:num_sequences]
+    local_decoding_texts = local_decoding_texts[:num_sequences]
+    global_decoding_texts = global_decoding_texts[:num_sequences]
 
     # Compute MAUVE results for locally decoded strings
     mauve_results_local = mauve.compute(
