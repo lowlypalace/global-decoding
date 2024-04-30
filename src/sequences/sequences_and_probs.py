@@ -75,13 +75,6 @@ def generate_sequences_and_probs(args, output_subdir):
             batch_size=batch_size_seq,
         )
 
-    # Convert tensors to lists
-    sequences_ids = [sequence_ids.tolist() for sequence_ids in sequences_ids]
-    # Save the encoded and decodedsequences
-    logging.info("Saving the generated sequences...")
-    save_to_json(sequences_ids, "sequences_ids", output_subdir)
-    save_to_json(sequences_decoded, "sequences_decoded", output_subdir)
-
     # Get the probabilities for the generated sequences
     with timer("Computing probabilities"):
         target_logprobs, proposal_logprobs = get_sequences_probs(
@@ -94,10 +87,16 @@ def generate_sequences_and_probs(args, output_subdir):
         )
 
     # Convert tensors to lists
-    target_logprobs = [logprob.item() for logprob in target_logprobs]
-    proposal_logprobs = [logprob.item() for logprob in proposal_logprobs]
+    logging.info("Saving the generated sequences...")
+    sequences_ids = [sequence_ids.tolist() for sequence_ids in sequences_ids]
+    # Save the encoded and decoded sequences
+    save_to_json(sequences_ids, "sequences_ids", output_subdir)
+    save_to_json(sequences_decoded, "sequences_decoded", output_subdir)
 
     logging.info("Saving the log probabilities...")
+    # Convert tensors to lists
+    target_logprobs = [logprob.item() for logprob in target_logprobs]
+    proposal_logprobs = [logprob.item() for logprob in proposal_logprobs]
     save_to_json(target_logprobs, "logprobs_target", output_subdir)
     save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
 
