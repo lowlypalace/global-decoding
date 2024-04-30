@@ -5,6 +5,8 @@ import argparse
 
 from .download_dataset import download_dataset
 
+from utils import save_to_json
+
 
 def load_data_from_jsonl(file_path):
     """Load data from a JSON Lines file."""
@@ -95,12 +97,5 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     print("Global:", mauve_results_global["mauve"])
 
     # Save the MAUVE results to a JSON file
-    with open(os.path.join(output_subdir, "mauve_results.json"), "w") as file:
-        json.dump(
-            {
-                "mauve_results_local": mauve_results_local,
-                "mauve_results_global": mauve_results_global,
-            },
-            file,
-            indent=4,
-        )
+    save_to_json(mauve_results_local, "mauve_results_local", output_subdir)
+    save_to_json(mauve_results_global, "mauve_results_global", output_subdir)
