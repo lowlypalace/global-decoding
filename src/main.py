@@ -137,7 +137,7 @@ def main():
     )
 
     # MCMC
-    sampled_sequences, sampled_sequences_decoded, sampled_logprobs = run_mcmc(
+    sampled_sequences_ids, sampled_sequences_decoded, sampled_logprobs = run_mcmc(
         args=args,
         output_subdir=os.path.join(output_dir, "mcmc"),
         sequences_ids=sequences_ids,
@@ -148,12 +148,12 @@ def main():
 
     # TODO: Evaluate
 
-    # evaluate(
-    #     args,
-    #     output_subdir=os.path.join(output_dir, "evaluate"),
-    #     local_decoding_texts=sequences_decoded, # sequences_decoded are the sequences sampled from the local normalized distribution
-    #     global_decoding_texts=sampled_sequences_decoded, # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
-    # )
+    evaluate(
+        args,
+        output_subdir=os.path.join(output_dir, "evaluate"),
+        local_decoding_texts=sequences_decoded, # sequences_decoded are the sequences sampled from the local normalized distribution
+        global_decoding_texts=sampled_sequences_decoded, # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
+    )
 
     # TODO: get total time
 
