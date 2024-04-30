@@ -3,6 +3,7 @@ import logging
 import logging
 import torch
 
+
 def generate_sequences(
     model,
     tokenizer,
