@@ -35,8 +35,18 @@ def parse_args():
         default=None,
         help="Text to use as a prompt. Defaults to the EOS token.",
     )
-    parser.add_argument(
-        "--top_k", type=int, default=100, help="Top-k value for text generation."
+    # Mutually exclusive group for top-k and top-p
+    decoding_group = parser.add_mutually_exclusive_group()
+    decoding_group.add_argument(
+        "--top_k",
+        type=int,
+        default=100,
+        help="Top-k value for text generation. Defaults to 100 if neither top-k nor top-p is provided."
+    )
+    decoding_group.add_argument(
+        "--top_p",
+        type=float,
+        help="Top-p value for text generation. No default value; must be specified if used."
     )
     parser.add_argument(
         "--sequence_count",
