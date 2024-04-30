@@ -90,13 +90,13 @@ def get_sequences_probs(
             end_idx = min(start_idx + batch_size, num_sequences)
 
             # Slice the sequences to obtain the current batch
-            sequences_batch = sequences_ids[start_idx:end_idx]
+            sequences_ids_batch = sequences_ids[start_idx:end_idx]
 
             # Get the logits from the model for the current batch
-            logits = get_logits(model, sequences_batch)
+            logits = get_logits(model, sequences_ids_batch)
 
             # Get the index tensor for the generated tokens in the current batch
-            index = create_index_tensor(sequences_batch, input_ids)
+            index = create_index_tensor(sequences_ids_batch, input_ids)
 
             # Get the log probabilities for the original sequence in the current batch
             target_logprobs = get_logprobs(
