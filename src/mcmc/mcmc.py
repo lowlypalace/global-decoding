@@ -1,11 +1,10 @@
 import numpy as np
 import os
-import json
 
 from .metropolis_hastings import metropolis_hastings
 from .plots import plot_mcmc_distribution, plot_chain
 
-from utils import timer, create_filename, save_to_json
+from utils import timer, save_to_json
 
 
 def run_mcmc(
@@ -39,7 +38,6 @@ def run_mcmc(
             target_logprobs=target_logprobs,
             proposal_logprobs=proposal_logprobs,
             rate=rate,
-            output_subdir=output_subdir,
         )
 
     # Save the sampled sequences and their probabilities to JSON files
