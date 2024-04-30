@@ -13,7 +13,7 @@ from transformers import (
 from .sequences_probs import get_sequences_probs
 from .generate_sequences import generate_sequences
 
-from utils import timer, create_filename
+from utils import timer, save_to_json
 
 
 def generate_sequences_and_probs(args, output_subdir):
@@ -77,15 +77,10 @@ def generate_sequences_and_probs(args, output_subdir):
 
     # Convert tensors to lists
     sequences_ids = [sequence_ids.tolist() for sequence_ids in sequences_ids]
-
-    # Save the encoded sequences
+    # Save the encoded and decodedsequences
     logging.info("Saving the generated sequences...")
-    with open(create_filename("sequences_ids", "json", output_subdir), "w") as f:
-        json.dump(sequences_ids, f)
-
-    # Save the decoded sequences
-    with open(create_filename("sequences_decoded", "json", output_subdir), "w") as f:
-        json.dump(sequences_decoded, f)
+    save_to_json(sequences_ids, "sequences_ids", output_subdir)
+    save_to_json(sequences_decoded, "sequences_decoded", output_subdir)
 
     # Get the probabilities for the generated sequences
     with timer("Computing probabilities"):
@@ -103,10 +98,7 @@ def generate_sequences_and_probs(args, output_subdir):
     proposal_logprobs = [logprob.item() for logprob in proposal_logprobs]
 
     logging.info("Saving the log probabilities...")
-    with open(create_filename("logprobs_target", "json", output_subdir), "w") as f:
-        json.dump(target_logprobs, f)
-
-    with open(create_filename("logprobs_proposal", "json", output_subdir), "w") as f:
-        json.dump(proposal_logprobs, f)
+    save_to_json(target_logprobs, "logprobs_target", output_subdir)
+    save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
 
     return sequences, sequences_decoded, target_logprobs, proposal_logprobs

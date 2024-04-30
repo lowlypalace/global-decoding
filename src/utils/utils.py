@@ -67,7 +67,7 @@ def create_filename(name, extension, directory):
 
     return full_path
 
-
-def read_json_file(file_path):
-    with open(file_path, "r") as file:
-        return json.load(file)
+def save_to_json(data, base_name, subdir):
+    filename = create_filename(base_name, "json", subdir)
+    with open(filename, 'w') as f:
+        json.dump(data, f)

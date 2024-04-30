@@ -1,11 +1,7 @@
-import json
 import torch
 import logging
 import logging
 import torch
-
-from utils import create_filename
-
 
 def generate_sequences(
     model,

@@ -5,7 +5,7 @@ import json
 from .metropolis_hastings import metropolis_hastings
 from .plots import plot_mcmc_distribution, plot_chain
 
-from utils import timer, create_filename
+from utils import timer, create_filename, save_to_json
 
 
 def run_mcmc(
@@ -43,16 +43,9 @@ def run_mcmc(
         )
 
     # Save the sampled sequences and their probabilities to JSON files
-    with open(create_filename("sampled_sequences", "json", output_subdir), "w") as f:
-        json.dump(sampled_sequences, f)
-    with open(
-        create_filename("sampled_sequences_decoded", "json", output_subdir), "w"
-    ) as f:
-        json.dump(sampled_sequences_decoded, f)
-    with open(
-        create_filename("sampled_target_logprobs", "json", output_subdir), "w"
-    ) as f:
-        json.dump(sampled_target_logprobs, f)
+    save_to_json(sampled_sequences, "sampled_sequences", output_subdir)
+    save_to_json(sampled_sequences_decoded, "sampled_sequences_decoded", output_subdir)
+    save_to_json(sampled_target_logprobs, "sampled_target_logprobs", output_subdir)
 
     # Plot the distribution of the generated probabilities
     with timer("Plotting the results"):
