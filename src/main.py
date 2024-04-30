@@ -8,7 +8,7 @@ import os
 from utils import setup_logging, save_args, get_timestamp
 from sequences import generate_sequences_and_probs
 from mcmc import run_mcmc
-from evaluate import evaluate
+from eval import evaluate
 
 
 # Define the function to parse command-line arguments

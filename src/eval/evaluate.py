@@ -3,7 +3,7 @@ import os
 from evaluate import load
 import argparse
 
-from download_dataset import download_dataset
+from .download_dataset import download_dataset
 
 
 def load_data_from_jsonl(file_path):
