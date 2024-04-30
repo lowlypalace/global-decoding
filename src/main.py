@@ -104,6 +104,11 @@ def parse_args():
         default=10,
         help="Rate at which to sample sequences after the burn-in period.",
     )
+    parser.add_argument(
+        "--preload_sequences",
+        default = None,
+        help="Preload sequences from a file.",
+    )
 
     args = parser.parse_args()
     return args

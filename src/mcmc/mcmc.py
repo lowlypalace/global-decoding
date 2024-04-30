@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-from src.utils import timer, save_to_json
+from utils import timer, save_to_json
 
 from .metropolis_hastings import metropolis_hastings
 from .plots import plot_mcmc_distribution, plot_chain

@@ -8,7 +8,7 @@ from transformers import (
     GPTNeoXForCausalLM,
 )
 
-from src.utils import timer, save_to_json
+from utils import timer, save_to_json
 
 from .sequences_probs import get_sequences_probs
 from .generate_sequences import generate_sequences

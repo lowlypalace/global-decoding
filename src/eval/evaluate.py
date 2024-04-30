@@ -2,7 +2,8 @@ import json
 import os
 from evaluate import load
 import argparse
-from src.utils import save_to_json
+
+from utils import save_to_json
 
 from .download_dataset import download_dataset
 
