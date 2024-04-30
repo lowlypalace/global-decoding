@@ -86,6 +86,13 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     print("Local:", mauve_results_local["mauve"])
     print("Global:", mauve_results_global["mauve"])
 
-
-if __name__ == "__main__":
-    main()
+    # Save the MAUVE results to a JSON file
+    with open(os.path.join(output_subdir, "mauve_results.json"), "w") as file:
+        json.dump(
+            {
+                "mauve_results_local": mauve_results_local,
+                "mauve_results_global": mauve_results_global,
+            },
+            file,
+            indent=4,
+        )
