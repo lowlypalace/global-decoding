@@ -43,7 +43,7 @@ def run_mcmc(
         )
 
     # Save the sampled sequences and their probabilities to JSON files
-    save_to_json(sampled_sequences, "sampled_sequences", output_subdir)
+    save_to_json(sampled_sequences_ids, "sampled_sequences_ids", output_subdir)
     save_to_json(sampled_sequences_decoded, "sampled_sequences_decoded", output_subdir)
     save_to_json(sampled_target_logprobs, "sampled_target_logprobs", output_subdir)
 
