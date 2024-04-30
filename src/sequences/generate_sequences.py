@@ -56,14 +56,11 @@ def generate_sequences(
 
     # If we have more sequences than needed due to the last batch, truncate the list
     sequences_ids = sequences_ids[:sequence_count]
-
     logging.info(f"Generated {len(sequences_ids)} sequences in total.")
 
     # Decode sequences to text
     sequences_decoded = tokenizer.batch_decode(sequences_ids, skip_special_tokens=True)
 
-    # Convert the sequences to lists
-    sequences_ids = [sequence_ids.tolist() for sequence_ids in sequences_ids]
     # Save the encoded sequences
     logging.info("Saving the generated sequences...")
     with open(create_filename("sequences_ids", "json", output_subdir), "w") as f:
