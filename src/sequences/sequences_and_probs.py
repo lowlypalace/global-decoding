@@ -1,4 +1,7 @@
 import torch
+import json
+import logging
+
 from transformers import (
     GPT2Tokenizer,
     GPT2LMHeadModel,
@@ -6,10 +9,11 @@ from transformers import (
     GPTNeoXForCausalLM,
 )
 
+
 from .sequences_probs import get_sequences_probs
 from .generate_sequences import generate_sequences
 
-from utils import timer
+from utils import timer, create_filename
 
 
 def generate_sequences_and_probs(args, output_subdir):
@@ -61,7 +65,7 @@ def generate_sequences_and_probs(args, output_subdir):
 
     # Generate sequences
     with timer("Generating new sequences"):
-        sequences, decoded_sequences = generate_sequences(
+        sequences, sequences_decoded = generate_sequences(
             model=model,
             tokenizer=tokenizer,
             input_ids=input_ids,
@@ -69,8 +73,19 @@ def generate_sequences_and_probs(args, output_subdir):
             top_k=top_k,
             sequence_count=sequence_count,
             batch_size=batch_size_seq,
-            output_subdir=output_subdir,
         )
+
+    # Convert tensors to lists
+    sequences_ids = [sequence_ids.tolist() for sequence_ids in sequences_ids]
+
+    # Save the encoded sequences
+    logging.info("Saving the generated sequences...")
+    with open(create_filename("sequences_ids", "json", output_subdir), "w") as f:
+        json.dump(sequences_ids, f)
+
+    # Save the decoded sequences
+    with open(create_filename("sequences_decoded", "json", output_subdir), "w") as f:
+        json.dump(sequences_decoded, f)
 
     # Get the probabilities for the generated sequences
     with timer("Computing probabilities"):
@@ -81,7 +96,17 @@ def generate_sequences_and_probs(args, output_subdir):
             pad_token_id=tokenizer.pad_token_id,
             input_ids=input_ids,
             batch_size=batch_size_prob,
-            output_subdir=output_subdir,
         )
 
-    return sequences, decoded_sequences, target_logprobs, proposal_logprobs
+    # Convert tensors to lists
+    target_logprobs = [logprob.item() for logprob in target_logprobs]
+    proposal_logprobs = [logprob.item() for logprob in proposal_logprobs]
+
+    logging.info("Saving the log probabilities...")
+    with open(create_filename("logprobs_target", "json", output_subdir), "w") as f:
+        json.dump(target_logprobs, f)
+
+    with open(create_filename("logprobs_proposal", "json", output_subdir), "w") as f:
+        json.dump(proposal_logprobs, f)
+
+    return sequences, sequences_decoded, target_logprobs, proposal_logprobs

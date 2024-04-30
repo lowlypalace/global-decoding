@@ -15,7 +15,6 @@ def generate_sequences(
     top_k,
     batch_size,
     sequence_count,
-    output_subdir,
 ):
     # Calculate number of batches needed to generate the desired sequence_count
     num_batches = sequence_count // batch_size + (sequence_count % batch_size > 0)
@@ -60,14 +59,5 @@ def generate_sequences(
 
     # Decode sequences to text
     sequences_decoded = tokenizer.batch_decode(sequences_ids, skip_special_tokens=True)
-
-    # Save the encoded sequences
-    logging.info("Saving the generated sequences...")
-    with open(create_filename("sequences_ids", "json", output_subdir), "w") as f:
-        json.dump([g.tolist() for g in sequences_ids], f)
-
-    # Save the decoded sequences
-    with open(create_filename("sequences_decoded", "json", output_subdir), "w") as f:
-        json.dump(sequences_decoded, f)
 
     return torch.stack(sequences_ids), sequences_decoded

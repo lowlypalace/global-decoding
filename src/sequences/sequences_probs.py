@@ -76,7 +76,6 @@ def get_sequences_probs(
     pad_token_id,
     input_ids,
     batch_size,
-    output_subdir,
 ):
     # Calculate the number of batches
     num_sequences = sequences.size(0)
@@ -124,12 +123,5 @@ def get_sequences_probs(
                 (proposal_logprob_sums, proposal_logprob_sum)
             )
 
-    logging.info("Saving the log probabilities...")
-    save_logprobs(
-        target_logprob_sums, create_filename("logprobs_target", "json", output_subdir)
-    )
-    save_logprobs(
-        proposal_logprob_sums, create_filename("logprobs_proposal", "json", output_subdir)
-    )
 
     return target_logprob_sums, proposal_logprob_sums
