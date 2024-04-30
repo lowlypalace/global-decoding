@@ -1,9 +1,4 @@
 import numpy as np
-import json
-
-from utils import (
-    create_filename,
-)
 
 
 def indicator_top_k(sequence):
@@ -19,7 +14,6 @@ def metropolis_hastings(
     target_logprobs,
     proposal_logprobs,
     rate,
-    output_subdir,
 ):
     # List to store the generated samples
     sampled_sequences = []
@@ -74,16 +68,5 @@ def metropolis_hastings(
             # Append the decoded sequence and its probabilities to samples
             sampled_sequences_decoded.append(current_decoded_seq)
             sampled_target_logprobs.append(logprob_target_current)
-
-    with open(create_filename("sampled_sequences", "json", output_subdir), "w") as f:
-        json.dump(sampled_sequences, f)
-    with open(
-        create_filename("sampled_decoded_sequences", "json", output_subdir), "w"
-    ) as f:
-        json.dump(sampled_sequences_decoded, f)
-    with open(
-        create_filename("sampled_target_logprobs", "json", output_subdir), "w"
-    ) as f:
-        json.dump(sampled_target_logprobs, f)
 
     return sampled_sequences, sampled_sequences_decoded, sampled_target_logprobs

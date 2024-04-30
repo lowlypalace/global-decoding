@@ -8,6 +8,7 @@ import os
 from utils import setup_logging, save_args, get_timestamp
 from sequences import generate_sequences_and_probs
 from mcmc import run_mcmc
+from evaluate import evaluate
 
 
 # Define the function to parse command-line arguments
@@ -130,8 +131,6 @@ def main():
         args, output_subdir=os.path.join(output_dir, "sequences")
     )
 
-    # target_logpropbs are probabilities sampled from the global unnormalized distribution
-    # proposal_logprobs are probabilities sampled from the local normalized distribution
 
     # MCMC
     sampled_sequences, sampled_sequences_decoded, sampled_logprobs = run_mcmc(
@@ -139,8 +138,8 @@ def main():
         output_subdir=os.path.join(output_dir, "mcmc"),
         sequences_ids=sequences_ids,
         sequences_decoded=sequences_decoded,
-        target_logprobs=target_logprobs,
-        proposal_logprobs=proposal_logprobs,
+        target_logprobs=target_logprobs, # target_logpropbs are probabilities sampled from the global unnormalized distribution
+        proposal_logprobs=proposal_logprobs, # proposal_logprobs are probabilities sampled from the local normalized distribution
     )
 
     # TODO: Evaluate
@@ -148,7 +147,7 @@ def main():
     # sequences_decoded are the sequences sampled from the local normalized distribution
     # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
 
-    # evaluate(args, output_subdir=os.path.join(output_dir, "evaluate"), local_decoding_texts=sequences_decoded, global_decoding_texts=sampled_sequences_decoded)
+    evaluate(args, output_subdir=os.path.join(output_dir, "evaluate"), local_decoding_texts=sequences_decoded, global_decoding_texts=sampled_sequences_decoded)
 
     # TODO: get total time
 
