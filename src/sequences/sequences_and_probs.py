@@ -65,7 +65,7 @@ def generate_sequences_and_probs(args, output_subdir):
 
     # Generate sequences
     with timer("Generating new sequences"):
-        sequences, sequences_decoded = generate_sequences(
+        sequences_ids, sequences_decoded = generate_sequences(
             model=model,
             tokenizer=tokenizer,
             input_ids=input_ids,
@@ -86,7 +86,7 @@ def generate_sequences_and_probs(args, output_subdir):
     with timer("Computing probabilities"):
         target_logprobs, proposal_logprobs = get_sequences_probs(
             model=model,
-            sequences=sequences,
+            sequences_ids=sequences_ids,
             top_k=top_k,
             pad_token_id=tokenizer.pad_token_id,
             input_ids=input_ids,
@@ -101,4 +101,4 @@ def generate_sequences_and_probs(args, output_subdir):
     save_to_json(target_logprobs, "logprobs_target", output_subdir)
     save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
 
-    return sequences, sequences_decoded, target_logprobs, proposal_logprobs
+    return sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs

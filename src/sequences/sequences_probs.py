@@ -3,11 +3,6 @@ import logging
 import json
 from torch.nn.functional import log_softmax
 
-from utils import (
-    create_filename,
-)
-
-
 def top_k_filtering(logits, top_k):
     # Retrieve the top_k logits and their indices for each sequence in the batch
     _, topk_indices = torch.topk(logits, top_k, dim=-1)
@@ -71,19 +66,19 @@ def save_logprobs(logprobs, filename):
 
 def get_sequences_probs(
     model,
-    sequences,
+    sequences_ids,
     top_k,
     pad_token_id,
     input_ids,
     batch_size,
 ):
     # Calculate the number of batches
-    num_sequences = sequences.size(0)
+    num_sequences = sequences_ids.size(0)
     num_batches = (num_sequences + batch_size - 1) // batch_size
 
     # Placeholder for the log probability sums
-    target_logprob_sums = torch.tensor([], device=sequences.device)
-    proposal_logprob_sums = torch.tensor([], device=sequences.device)
+    target_logprob_sums = torch.tensor([], device=sequences_ids.device)
+    proposal_logprob_sums = torch.tensor([], device=sequences_ids.device)
 
     logging.info(
         f"Computing probabilities for {num_sequences} sequences in {num_batches} batches of size {batch_size}..."
@@ -95,7 +90,7 @@ def get_sequences_probs(
             end_idx = min(start_idx + batch_size, num_sequences)
 
             # Slice the sequences to obtain the current batch
-            sequences_batch = sequences[start_idx:end_idx]
+            sequences_batch = sequences_ids[start_idx:end_idx]
 
             # Get the logits from the model for the current batch
             logits = get_logits(model, sequences_batch)
