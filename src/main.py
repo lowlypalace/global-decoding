@@ -42,12 +42,12 @@ def parse_args():
         "--top_k",
         type=int,
         default=100,
-        help="Top-k value for text generation. Defaults to 100 if neither top-k nor top-p is provided."
+        help="Top-k value for text generation. Defaults to 100 if neither top-k nor top-p is provided.",
     )
     decoding_group.add_argument(
         "--top_p",
         type=float,
-        help="Top-p value for text generation. No default value; must be specified if used."
+        help="Top-p value for text generation. No default value; must be specified if used.",
     )
     parser.add_argument(
         "--sequence_count",
@@ -131,25 +131,27 @@ def main():
         args, output_subdir=os.path.join(output_dir, "sequences")
     )
 
-
     # MCMC
     sampled_sequences, sampled_sequences_decoded, sampled_logprobs = run_mcmc(
         args=args,
         output_subdir=os.path.join(output_dir, "mcmc"),
         sequences_ids=sequences_ids,
         sequences_decoded=sequences_decoded,
-        target_logprobs=target_logprobs, # target_logpropbs are probabilities sampled from the global unnormalized distribution
-        proposal_logprobs=proposal_logprobs, # proposal_logprobs are probabilities sampled from the local normalized distribution
+        target_logprobs=target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
+        proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
     )
 
     # TODO: Evaluate
 
-    # sequences_decoded are the sequences sampled from the local normalized distribution
-    # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
-
-    evaluate(args, output_subdir=os.path.join(output_dir, "evaluate"), local_decoding_texts=sequences_decoded, global_decoding_texts=sampled_sequences_decoded)
+    # evaluate(
+    #     args,
+    #     output_subdir=os.path.join(output_dir, "evaluate"),
+    #     local_decoding_texts=sequences_decoded, # sequences_decoded are the sequences sampled from the local normalized distribution
+    #     global_decoding_texts=sampled_sequences_decoded, # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
+    # )
 
     # TODO: get total time
+
 
 if __name__ == "__main__":
     main()

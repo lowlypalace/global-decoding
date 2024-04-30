@@ -5,6 +5,7 @@ import argparse
 
 from download_dataset import download_dataset
 
+
 def load_data_from_jsonl(file_path):
     """Load data from a JSON Lines file."""
     with open(file_path, "r", encoding="utf-8") as file:

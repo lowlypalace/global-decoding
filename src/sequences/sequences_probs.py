@@ -123,5 +123,4 @@ def get_sequences_probs(
                 (proposal_logprob_sums, proposal_logprob_sum)
             )
 
-
     return target_logprob_sums, proposal_logprob_sums
