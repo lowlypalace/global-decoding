@@ -69,5 +69,5 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     logging.info("Saving the evaluation results...")
     mauve_results_local_dict = convert_to_dict(mauve_results_local)
     mauve_results_global_dict = convert_to_dict(mauve_results_global)
-    save_to_json(mauve_results_local, "mauve_results_local", output_subdir)
-    save_to_json(mauve_results_global, "mauve_results_global", output_subdir)
+    save_to_json(mauve_results_local_dict, "mauve_results_local", output_subdir)
+    save_to_json(mauve_results_global_dict, "mauve_results_global", output_subdir)
