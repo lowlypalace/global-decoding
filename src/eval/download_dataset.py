@@ -1,5 +1,6 @@
 import os
 import requests
+import logging
 from tqdm import tqdm
 
 
@@ -21,11 +22,11 @@ def download_dataset(
 
         # Check if file already exists to potentially skip download
         if os.path.exists(file_path):
-            print(f"{filename} already exists. Skipping download.")
+            logging.info(f"{filename} already exists. Skipping download.")
             continue
 
         # Start download
-        print(f"Starting download of {filename}")
+        logging.info(f"Starting download of {filename}")
         try:
             response = requests.get(url, stream=True)
             response.raise_for_status()  # Check that the request was successful
@@ -44,6 +45,6 @@ def download_dataset(
                     progress.update(size)
                 progress.close()
         except requests.RequestException as e:
-            print(f"Failed to download {filename}: {e}")
+            logging.info(f"Failed to download {filename}: {e}")
             if os.path.exists(file_path):
                 os.remove(file_path)  # Remove partial files on failure

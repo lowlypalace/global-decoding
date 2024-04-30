@@ -1,5 +1,6 @@
 import json
 import os
+import logging
 from evaluate import load
 
 from utils import save_to_json
@@ -30,6 +31,7 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     subdir = "data"
 
     # Download the dataset
+    logging.info(f"Downloading the {eval_dataset_name} dataset...")
     download_dataset(subdir="data", dataset=eval_dataset_name, splits=[eval_split])
 
     # Path to the dataset file
@@ -39,6 +41,7 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     # Load the reference texts
     reference_texts = [item["text"] for item in data]
 
+    logging.info("Evaluating the generated sequences...")
     # Initialize MAUVE metric
     mauve = load("mauve")
 
@@ -47,27 +50,17 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     local_decoding_texts = local_decoding_texts[:eval_num_sequences]
     global_decoding_texts = global_decoding_texts[:eval_num_sequences]
 
-    print(reference_texts)
-    print(local_decoding_texts)
-    print(global_decoding_texts)
-
     # Compute MAUVE results for locally decoded strings
     mauve_results_local = mauve.compute(
         predictions=local_decoding_texts, references=reference_texts
     )
-    print("MAUVE Results for Locally Decoded Strings:", mauve_results_local)
 
     # Compute MAUVE results for globally decoded strings
     mauve_results_global = mauve.compute(
         predictions=global_decoding_texts, references=reference_texts
     )
-    print("MAUVE Results for Globally Decoded Strings:", mauve_results_global)
-
-    # Compare scores
-    print("Comparison of Local and Global MAUVE Scores:")
-    print("Local:", mauve_results_local["mauve"])
-    print("Global:", mauve_results_global["mauve"])
 
     # Save the MAUVE results to a JSON file
+    logging.info("Saving the evaluation results...")
     save_to_json(mauve_results_local, "mauve_results_local", output_subdir)
     save_to_json(mauve_results_global, "mauve_results_global", output_subdir)
