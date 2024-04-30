@@ -138,6 +138,7 @@ def main():
     # TODO: Evaluate
     # evaluate(args, output_subdir=os.path.join(output_dir, "evaluate"), local_decoding_texts=sequences_decoded, global_decoding_texts=sampled_sequences_decoded)
 
+    # TODO: get total time
 
 if __name__ == "__main__":
     main()

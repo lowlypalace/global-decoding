@@ -52,8 +52,6 @@ def generate_sequences_and_probs(args, output_subdir):
     if text is None:
         text = tokenizer.eos_token
 
-    print(f"max_model_length: {max_model_length}")
-
     # Encode the input text to tensor
     input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
         device
