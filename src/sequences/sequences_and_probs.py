@@ -28,19 +28,19 @@ def generate_sequences_and_probs(args, output_subdir):
     torch.manual_seed(seed)
 
     # Load model and tokenizer based on the selected model
-    if model_name == "pythia-6.9b" or model_name == "pythia-12b":
+    if model_name.startswith("pythia"):
         tokenizer = AutoTokenizer.from_pretrained(f"EleutherAI/{model_name}")
         model = GPTNeoXForCausalLM.from_pretrained(f"EleutherAI/{model_name}")
     else:  # Default to gpt2 or gpt2-large
         tokenizer = GPT2Tokenizer.from_pretrained(model_name)
         model = GPT2LMHeadModel.from_pretrained(model_name)
+        # Convert the model to double precision to avoid floating point discrepancies
+        model.double()
 
     # Set the model to evaluation mode
     model.eval()
     # Move the model to the specified device
     model.to(device)
-    # Convert the model to double precision to avoid floating point discrepancies
-    model.double()
     # Assume max_model_length is the maximum sequence length the model can handle
     max_model_length = model.config.max_position_embeddings
     # Set the padding token to the EOS token
@@ -51,6 +51,8 @@ def generate_sequences_and_probs(args, output_subdir):
     # Set the text to the EOS token if it is not set
     if text is None:
         text = tokenizer.eos_token
+
+    print(f"max_model_length: {max_model_length}")
 
     # Encode the input text to tensor
     input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
