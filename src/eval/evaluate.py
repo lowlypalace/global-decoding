@@ -2,6 +2,7 @@ import json
 import os
 import logging
 from evaluate import load
+from types import SimpleNamespace
 
 from utils import save_to_json
 
@@ -19,6 +20,10 @@ def load_data_from_jsonl(file_path):
 def load_json_file(file_path):
     with open(file_path, "r") as file:
         return json.load(file)
+
+def convert_to_dict(obj):
+    if isinstance(obj, SimpleNamespace):
+        return {k: convert_to_dict(v) for k, v in vars(obj).items()}
 
 
 def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
@@ -62,5 +67,7 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
 
     # Save the MAUVE results to a JSON file
     logging.info("Saving the evaluation results...")
+    mauve_results_local_dict = convert_to_dict(mauve_results_local)
+    mauve_results_global_dict = convert_to_dict(mauve_results_global)
     save_to_json(mauve_results_local, "mauve_results_local", output_subdir)
     save_to_json(mauve_results_global, "mauve_results_global", output_subdir)
