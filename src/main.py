@@ -135,6 +135,9 @@ def main():
     target_logprobs = [logprob.item() for logprob in target_logprobs]
     proposal_logprobs = [logprob.item() for logprob in proposal_logprobs]
 
+    # target_logpropbs are probabilities sampled from the global unnormalized distribution
+    # proposal_logprobs are probabilities sampled from the local normalized distribution
+
     # MCMC
     sampled_sequences, sampled_sequences_decoded, sampled_logprobs = run_mcmc(
         args=args,
@@ -146,6 +149,10 @@ def main():
     )
 
     # TODO: Evaluate
+
+    # sequences_decoded are the sequences sampled from the local normalized distribution
+    # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
+
     # evaluate(args, output_subdir=os.path.join(output_dir, "evaluate"), local_decoding_texts=sequences_decoded, global_decoding_texts=sampled_sequences_decoded)
 
     # TODO: get total time
