@@ -1,3 +1,4 @@
+import os
 import torch
 import logging
 
@@ -12,6 +13,8 @@ from utils import timer, save_to_json
 
 from .sequences_probs import get_sequences_probs
 from .generate_sequences import generate_sequences
+
+from mcmc.plots import plot_distribution
 
 
 def generate_sequences_and_probs(args, output_subdir):
@@ -97,5 +100,23 @@ def generate_sequences_and_probs(args, output_subdir):
     proposal_logprobs = [logprob.item() for logprob in proposal_logprobs]
     save_to_json(target_logprobs, "logprobs_target", output_subdir)
     save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
+
+    logging.info("Plotting the log probabilities distributions...")
+    # Plot the distribution of the target log-probabilities
+    plot_distribution(
+            target_logprobs,
+            plot_type="histogram",
+            prefix="target_logprobs",
+            show=False,
+            output_dir=output_subdir,
+        )
+     # Plot the distribution of the proposal log-probabilities
+    plot_distribution(
+            proposal_logprobs,
+            plot_type="histogram",
+            prefix="proposal_logprobs",
+            show=False,
+            output_dir=os.path.join(output_subdir, "plots"),
+        )
 
     return sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs

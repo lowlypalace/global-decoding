@@ -11,7 +11,7 @@ from utils import (
 )
 
 
-def plot_mcmc_distribution(samples, plot_type, show, output_dir):
+def plot_distribution(samples, plot_type, prefix, show, output_dir):
     if plot_type == "histogram":
         # Create the histogram data
         trace = go.Histogram(
@@ -20,7 +20,7 @@ def plot_mcmc_distribution(samples, plot_type, show, output_dir):
             nbinsx=30,
         )
         layout = go.Layout(
-            title="Probability Distribution of MCMC Samples",
+            title="Probability Distribution of Samples",
             xaxis=dict(title="Sample Value"),
             yaxis=dict(title="Probability Density"),
             bargap=0.2,
@@ -37,14 +37,14 @@ def plot_mcmc_distribution(samples, plot_type, show, output_dir):
             show_rug=False,
         )
         fig.update_layout(
-            title="Kernel Density Estimate of MCMC Samples",
+            title="Kernel Density Estimate of Samples",
             xaxis=dict(title="Sample Value"),
             yaxis=dict(title="Density"),
         )
     else:
         raise ValueError("Invalid plot_type. Use 'histogram' or 'kde'.")
     # Write the plot to an HTML file
-    fig.write_html(create_filename(f"mcmc_{plot_type}", "html", output_dir))
+    fig.write_html(create_filename(f"{prefix}_{plot_type}", "html", output_dir))
     # Plot the figure
     if show:
         fig.show()

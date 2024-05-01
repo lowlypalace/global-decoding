@@ -4,7 +4,7 @@ import os
 from utils import timer, save_to_json
 
 from .metropolis_hastings import metropolis_hastings
-from .plots import plot_mcmc_distribution, plot_chain
+from .plots import plot_distribution, plot_chain
 
 
 def run_mcmc(
@@ -47,15 +47,17 @@ def run_mcmc(
 
     # Plot the distribution of the generated probabilities
     with timer("Plotting the results"):
-        plot_mcmc_distribution(
+        plot_distribution(
             sampled_target_logprobs,
             plot_type="histogram",
+            prefix="mcmc",
             show=False,
             output_dir=os.path.join(output_subdir, "plots"),
         )
-        plot_mcmc_distribution(
+        plot_distribution(
             sampled_target_logprobs,
             plot_type="kde",
+            prefix="mcmc",
             show=False,
             output_dir=os.path.join(output_subdir, "plots"),
         )
