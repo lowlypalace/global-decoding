@@ -17,7 +17,7 @@ def plot_distribution(samples, plot_type, prefix, show, output_dir):
         trace = go.Histogram(
             x=samples,
             histnorm="probability",
-            nbinsx=30,
+            nbinsx=100,
         )
         layout = go.Layout(
             title="Probability Distribution of Samples",
@@ -89,7 +89,7 @@ def plot_chain(
     num_samples = len(samples)
 
     idx_burnin = int(num_samples * burnin)
-    idx_initial = int(num_samples * initial) + 1
+    # idx_initial = int(num_samples * initial) + 1
 
     sample_steps = np.arange(num_samples)
 
@@ -112,7 +112,7 @@ def plot_chain(
 
     samples_posterior = samples[idx_burnin:]
     samples_burnin = samples[:idx_burnin]
-    samples_initial = samples[:idx_initial]
+    # samples_initial = samples[:idx_initial]
 
     if y_range is None:
         std_post = np.std(samples_posterior)
@@ -120,7 +120,7 @@ def plot_chain(
 
     x_kde_posterior, y_kde_posterior = compute_kde(samples_posterior)
     x_kde_burnin, y_kde_burnin = compute_kde(samples_burnin, x_range=y_range)
-    x_kde_initial, y_kde_initial = compute_kde(samples_initial, x_range=y_range)
+    # x_kde_initial, y_kde_initial = compute_kde(samples_initial, x_range=y_range)
 
     kde_trace_posterior = go.Scatter(
         x=y_kde_posterior,
@@ -146,20 +146,20 @@ def plot_chain(
         fillcolor="rgba(100, 0, 100, 0.20)",
     )
 
-    kde_trace_initial = go.Scatter(
-        x=y_kde_initial,
-        y=x_kde_initial,
-        mode="lines",
-        line={"color": plasma[1], "width": 2},
-        name="Initial Distribution",
-        xaxis="x2",
-        yaxis="y2",
-        fill="tozerox",
-        fillcolor="rgba(100, 0, 100, 0.20)",
-    )
+    # kde_trace_initial = go.Scatter(
+    #     x=y_kde_initial,
+    #     y=x_kde_initial,
+    #     mode="lines",
+    #     line={"color": plasma[1], "width": 2},
+    #     name="Initial Distribution",
+    #     xaxis="x2",
+    #     yaxis="y2",
+    #     fill="tozerox",
+    #     fillcolor="rgba(100, 0, 100, 0.20)",
+    # )
 
     plots = [
-        kde_trace_initial,
+        # kde_trace_initial,
         kde_trace_burnin,
         kde_trace_posterior,
         go.Scatter(
@@ -189,12 +189,12 @@ def plot_chain(
             name="Burn-in Region",
             line={"color": plasma[6]},
         ),
-        go.Scatter(
-            x=sample_steps[:idx_initial],
-            y=samples_initial,
-            name="Initial Condition Dominated Region",
-            line={"color": plasma[1]},
-        ),
+        # go.Scatter(
+        #     x=sample_steps[:idx_initial],
+        #     y=samples_initial,
+        #     name="Initial Condition Dominated Region",
+        #     line={"color": plasma[1]},
+        # ),
     ]
 
     layout = go.Layout(
