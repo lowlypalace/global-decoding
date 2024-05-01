@@ -108,7 +108,7 @@ def generate_sequences_and_probs(args, output_subdir):
             plot_type="histogram",
             prefix="target_logprobs",
             show=False,
-            output_dir=output_subdir,
+            output_dir=os.path.join(output_subdir, "plots"),
         )
      # Plot the distribution of the proposal log-probabilities
     plot_distribution(
