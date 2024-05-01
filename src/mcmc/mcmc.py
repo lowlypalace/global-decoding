@@ -17,7 +17,7 @@ def run_mcmc(
 ):
     # Parse command-line arguments
     burnin = args.burnin
-    rate = args.rate
+    sample_rate = args.sample_rate
     seed = args.seed
     sequence_count = args.sequence_count
 
@@ -37,7 +37,7 @@ def run_mcmc(
             sequences_decoded=sequences_decoded,
             target_logprobs=target_logprobs,
             proposal_logprobs=proposal_logprobs,
-            rate=rate,
+            sample_rate=sample_rate,
         )
 
     # Save the sampled sequences and their probabilities to JSON files
@@ -46,25 +46,25 @@ def run_mcmc(
     save_to_json(sampled_target_logprobs, "sampled_target_logprobs", output_subdir)
 
     # Plot the distribution of the generated probabilities
-    # with timer("Plotting the results"):
-    #     plot_mcmc_distribution(
-    #         sampled_target_logprobs,
-    #         plot_type="histogram",
-    #         show=False,
-    #         output_dir=os.path.join(output_subdir, "plots"),
-    #     )
-    #     plot_mcmc_distribution(
-    #         sampled_target_logprobs,
-    #         plot_type="kde",
-    #         show=False,
-    #         output_dir=os.path.join(output_subdir, "plots"),
-    #     )
-    #     # Plot the chain of generated samples
-    #     plot_chain(
-    #         sampled_target_logprobs,
-    #         burnin=burnin,
-    #         show=False,
-    #         output_dir=os.path.join(output_subdir, "plots"),
-    #     )
+    with timer("Plotting the results"):
+        plot_mcmc_distribution(
+            sampled_target_logprobs,
+            plot_type="histogram",
+            show=False,
+            output_dir=os.path.join(output_subdir, "plots"),
+        )
+        plot_mcmc_distribution(
+            sampled_target_logprobs,
+            plot_type="kde",
+            show=False,
+            output_dir=os.path.join(output_subdir, "plots"),
+        )
+        # Plot the chain of generated samples
+        plot_chain(
+            sampled_target_logprobs,
+            burnin=burnin,
+            show=False,
+            output_dir=os.path.join(output_subdir, "plots"),
+        )
 
     return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs

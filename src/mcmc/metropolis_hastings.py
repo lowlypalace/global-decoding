@@ -13,7 +13,7 @@ def metropolis_hastings(
     sequences_decoded,
     target_logprobs,
     proposal_logprobs,
-    rate,
+    sample_rate,
 ):
     # List to store the generated samples
     sampled_sequences_ids = []
@@ -63,7 +63,7 @@ def metropolis_hastings(
             logprob_proposal_current = logprob_proposal_proposed
 
         # After the burn-in period, add the current state to the list of samples at the specified rate
-        if i >= burnin_index and i % rate == 0:
+        if i >= burnin_index and i % sample_rate == 0:
             sampled_sequences_ids.append(current_sequence)
             # Append the decoded sequence and its probabilities to samples
             sampled_sequences_decoded.append(current_decoded_seq)

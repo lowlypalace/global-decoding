@@ -101,7 +101,7 @@ def parse_args():
         help="Burn-in period as a fraction of the total number of samples.",
     )
     parser.add_argument(
-        "--rate",
+        "--sample_rate",
         type=int,
         default=10,
         help="Rate at which to sample sequences after the burn-in period.",
