@@ -104,19 +104,19 @@ def generate_sequences_and_probs(args, output_subdir):
     logging.info("Plotting the log probabilities distributions...")
     # Plot the distribution of the target log-probabilities
     plot_distribution(
-            target_logprobs,
-            plot_type="histogram",
-            prefix="target_logprobs",
-            show=False,
-            output_dir=os.path.join(output_subdir, "plots"),
-        )
-     # Plot the distribution of the proposal log-probabilities
+        target_logprobs,
+        plot_type="histogram",
+        prefix="target_logprobs",
+        show=False,
+        output_dir=os.path.join(output_subdir, "plots"),
+    )
+    # Plot the distribution of the proposal log-probabilities
     plot_distribution(
-            proposal_logprobs,
-            plot_type="histogram",
-            prefix="proposal_logprobs",
-            show=False,
-            output_dir=os.path.join(output_subdir, "plots"),
-        )
+        proposal_logprobs,
+        plot_type="histogram",
+        prefix="proposal_logprobs",
+        show=False,
+        output_dir=os.path.join(output_subdir, "plots"),
+    )
 
     return sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs

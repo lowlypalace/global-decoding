@@ -3,14 +3,13 @@ import os
 import logging
 from evaluate import load
 from types import SimpleNamespace
-
+import numpy as np
 from utils import save_to_json
 
 from .download_dataset import download_dataset
 
 
 def load_data_from_jsonl(file_path):
-    """Load data from a JSON Lines file."""
     with open(file_path, "r", encoding="utf-8") as file:
         lines = file.readlines()
         data = [json.loads(line) for line in lines]
@@ -21,9 +20,13 @@ def load_json_file(file_path):
     with open(file_path, "r") as file:
         return json.load(file)
 
+
 def convert_to_dict(obj):
     if isinstance(obj, SimpleNamespace):
         return {k: convert_to_dict(v) for k, v in vars(obj).items()}
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()  # Convert numpy arrays to list
+    return obj
 
 
 def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
@@ -64,6 +67,9 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     mauve_results_global = mauve.compute(
         predictions=global_decoding_texts, references=reference_texts
     )
+
+    logging.info(f"MAUVE score for locally decoded strings: {mauve_results_local.mauve}")
+    logging.info(f"MAUVE score for globally decoded strings: {mauve_results_global.mauve}")
 
     # Save the MAUVE results to a JSON file
     logging.info("Saving the evaluation results...")
