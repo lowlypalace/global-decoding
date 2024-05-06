@@ -71,6 +71,11 @@ def run_mcmc(
             output_dir=os.path.join(output_subdir, "plots"),
         )
         # Plot the deltas for the acceptance ratio
-        plot_deltas(log_prob_diff_proposed, log_prob_diff_current, show=False, output_dir=os.path.join(output_subdir, "plots"))
+        plot_deltas(
+            log_prob_diff_proposed,
+            log_prob_diff_current,
+            show=False,
+            output_dir=os.path.join(output_subdir, "plots"),
+        )
 
     return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs

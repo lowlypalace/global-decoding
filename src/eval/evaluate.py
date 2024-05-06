@@ -71,8 +71,12 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
         predictions=global_decoding_texts, references=reference_texts
     )
 
-    logging.info(f"MAUVE score for locally decoded strings: {mauve_results_local.mauve}")
-    logging.info(f"MAUVE score for globally decoded strings: {mauve_results_global.mauve}")
+    logging.info(
+        f"MAUVE score for locally decoded strings: {mauve_results_local.mauve}"
+    )
+    logging.info(
+        f"MAUVE score for globally decoded strings: {mauve_results_global.mauve}"
+    )
 
     # Save the MAUVE results to a JSON file
     logging.info("Saving the evaluation results...")

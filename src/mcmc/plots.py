@@ -216,28 +216,29 @@ def plot_chain(
     if show:
         fig.show()
 
+
 def plot_deltas(deltas, deltas_2, show, output_dir):
     # Create traces for the plot
     trace1 = go.Scatter(
         x=list(range(len(deltas))),
         y=deltas,
-        mode='lines',
-        name='Delta (logprob target proposed - logprob proposal proposed)'
+        mode="lines",
+        name="Delta (logprob target proposed - logprob proposal proposed)",
     )
     trace2 = go.Scatter(
         x=list(range(len(deltas_2))),
         y=deltas_2,
-        mode='lines',
-        name='Delta 2 (logprob target current - logprob proposal current)',
-        line=dict(dash='dash')
+        mode="lines",
+        name="Delta 2 (logprob target current - logprob proposal current)",
+        line=dict(dash="dash"),
     )
 
     # Create a layout and figure object
     layout = go.Layout(
-        title='Differences in Log Probabilities During Metropolis-Hastings Sampling',
-        xaxis_title='Iteration',
-        yaxis_title='Log Probability Difference',
-        hovermode='closest'
+        title="Differences in Log Probabilities During Metropolis-Hastings Sampling",
+        xaxis_title="Iteration",
+        yaxis_title="Log Probability Difference",
+        hovermode="closest",
     )
     fig = go.Figure(data=[trace1, trace2], layout=layout)
 
@@ -245,5 +246,3 @@ def plot_deltas(deltas, deltas_2, show, output_dir):
     # Display the figure
     if show:
         fig.show()
-
-

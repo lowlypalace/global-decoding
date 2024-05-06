@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def indicator_top_k(sequence):
     # In our case, we can simply return 1 as we are using top-k sampling
     return 1
@@ -45,7 +46,9 @@ def metropolis_hastings(
             proposal_logprobs[i],
         )
 
-        log_prob_diff_proposed.append(logprob_target_proposed - logprob_proposal_proposed)
+        log_prob_diff_proposed.append(
+            logprob_target_proposed - logprob_proposal_proposed
+        )
         log_prob_diff_current.append(logprob_target_current - logprob_proposal_current)
 
         # Calculate the acceptance ratio
@@ -74,5 +77,10 @@ def metropolis_hastings(
             sampled_sequences_decoded.append(current_decoded_seq)
             sampled_target_logprobs.append(logprob_target_current)
 
-
-    return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs, log_prob_diff_proposed, log_prob_diff_current
+    return (
+        sampled_sequences_ids,
+        sampled_sequences_decoded,
+        sampled_target_logprobs,
+        log_prob_diff_proposed,
+        log_prob_diff_current,
+    )
