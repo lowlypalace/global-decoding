@@ -20,7 +20,6 @@ def metropolis_hastings(
     sampled_sequences_ids = []
     sampled_sequences_decoded = []
     sampled_target_logprobs = []
-
     # Lists to store the deltas for the acceptance ratio
     log_prob_diff_proposed = []
     log_prob_diff_current = []
