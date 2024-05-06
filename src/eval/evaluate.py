@@ -1,9 +1,12 @@
 import json
 import os
 import logging
-from evaluate import load
-from types import SimpleNamespace
 import numpy as np
+
+from types import SimpleNamespace
+
+from evaluate import load
+
 from utils import save_to_json
 
 from .download_dataset import download_dataset
