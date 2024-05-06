@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 from evaluate import load
 
-from utils import save_to_json
+from utils import save_to_json, timer
 
 from .download_dataset import download_dataset
 
@@ -52,24 +52,22 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     # Load the reference texts
     reference_texts = [item["text"] for item in data]
 
-    logging.info("Evaluating the generated sequences...")
-    # Initialize MAUVE metric
-    mauve = load("mauve")
-
     # Trim the sequences to the specified number of sequences
     reference_texts = reference_texts[:eval_num_sequences]
     local_decoding_texts = local_decoding_texts[:eval_num_sequences]
     global_decoding_texts = global_decoding_texts[:eval_num_sequences]
 
-    # Compute MAUVE results for locally decoded strings
-    mauve_results_local = mauve.compute(
-        predictions=local_decoding_texts, references=reference_texts
-    )
-
-    # Compute MAUVE results for globally decoded strings
-    mauve_results_global = mauve.compute(
-        predictions=global_decoding_texts, references=reference_texts
-    )
+    with timer("Evaluating the generated sequences..."):
+        # Initialize MAUVE metric
+        mauve = load("mauve")
+        # Compute MAUVE results for locally decoded strings
+        mauve_results_local = mauve.compute(
+            predictions=local_decoding_texts, references=reference_texts
+        )
+        # Compute MAUVE results for globally decoded strings
+        mauve_results_global = mauve.compute(
+            predictions=global_decoding_texts, references=reference_texts
+        )
 
     logging.info(
         f"MAUVE score for locally decoded strings: {mauve_results_local.mauve}"
