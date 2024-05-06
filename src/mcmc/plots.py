@@ -223,13 +223,13 @@ def plot_deltas(logprob_diff_proposed, logprob_diff_current, show, output_dir):
         x=list(range(len(logprob_diff_proposed))),
         y=logprob_diff_proposed,
         mode="lines",
-        name="logprob_diff_proposed (logprob target proposed - logprob proposal proposed)",
+        name="logprob_diff_proposed (target proposed - proposal proposed)",
     )
     trace2 = go.Scatter(
         x=list(range(len(logprob_diff_current))),
         y=logprob_diff_current,
         mode="lines",
-        name="logprob_diff_current (logprob target current - logprob proposal current)",
+        name="logprob_diff_current (target current - proposal current)",
         line=dict(dash="dash"),
     )
 
