@@ -19,11 +19,6 @@ def load_data_from_jsonl(file_path):
     return data
 
 
-def load_json_file(file_path):
-    with open(file_path, "r") as file:
-        return json.load(file)
-
-
 def convert_to_dict(obj):
     if isinstance(obj, SimpleNamespace):
         return {k: convert_to_dict(v) for k, v in vars(obj).items()}
