@@ -217,7 +217,7 @@ def plot_chain(
         fig.show()
 
 
-def plot_deltas(logprob_diff_proposed, logprob_diff_current, show, output_dir):
+def plot_logprob_diff(logprob_diff_proposed, logprob_diff_current, show, output_dir):
     # Create traces for the plot
     trace1 = go.Scatter(
         x=list(range(len(logprob_diff_proposed))),

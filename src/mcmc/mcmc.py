@@ -4,7 +4,7 @@ import os
 from utils import timer, save_to_json
 
 from .metropolis_hastings import metropolis_hastings
-from .plots import plot_distribution, plot_chain, plot_deltas
+from .plots import plot_distribution, plot_chain, plot_logprob_diff
 
 
 def run_mcmc(
@@ -71,7 +71,7 @@ def run_mcmc(
             output_dir=os.path.join(output_subdir, "plots"),
         )
         # Plot the deltas for the acceptance ratio
-        plot_deltas(
+        plot_logprob_diff(
             logprob_diff_proposed,
             logprob_diff_current,
             show=False,
