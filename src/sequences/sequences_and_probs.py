@@ -96,15 +96,15 @@ def generate_sequences_and_probs(args, output_subdir):
 
     logging.info("Saving the log probabilities...")
     # Convert tensors to lists
-    target_logprobs = [logprob.item() for logprob in target_logprobs]
-    proposal_logprobs = [logprob.item() for logprob in proposal_logprobs]
-    save_to_json(target_logprobs, "logprobs_target", output_subdir)
-    save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
+    target_logprobs_list = [logprob.item() for logprob in target_logprobs]
+    proposal_logprobs_list = [logprob.item() for logprob in proposal_logprobs]
+    save_to_json(target_logprobs_list, "logprobs_target", output_subdir)
+    save_to_json(proposal_logprobs_list, "logprobs_proposal", output_subdir)
 
     logging.info("Plotting the log probabilities distributions...")
     # Plot the distribution of the target log-probabilities
     plot_distribution(
-        target_logprobs,
+        target_logprobs_list,
         plot_type="histogram",
         prefix="target_logprobs",
         show=False,
@@ -112,7 +112,7 @@ def generate_sequences_and_probs(args, output_subdir):
     )
     # Plot the distribution of the proposal log-probabilities
     plot_distribution(
-        proposal_logprobs,
+        proposal_logprobs_list,
         plot_type="histogram",
         prefix="proposal_logprobs",
         show=False,
