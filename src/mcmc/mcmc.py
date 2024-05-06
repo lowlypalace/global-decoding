@@ -30,8 +30,8 @@ def run_mcmc(
             sampled_sequences_ids,
             sampled_sequences_decoded,
             sampled_target_logprobs,
-            deltas,
-            deltas_2,
+            log_prob_diff_proposed,
+            log_prob_diff_current,
         ) = metropolis_hastings(
             sequence_count=sequence_count,
             burnin=burnin,
@@ -71,6 +71,6 @@ def run_mcmc(
             output_dir=os.path.join(output_subdir, "plots"),
         )
         # Plot the deltas for the acceptance ratio
-        plot_deltas(deltas, deltas_2, show=False, output_dir=os.path.join(output_subdir, "plots"))
+        plot_deltas(log_prob_diff_proposed, log_prob_diff_current, show=False, output_dir=os.path.join(output_subdir, "plots"))
 
     return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
