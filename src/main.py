@@ -161,14 +161,12 @@ def main():
         proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
     )
 
-    evaluate(
+    mauve_results_local, mauve_results_global = evaluate(
         args,
         output_subdir=os.path.join(output_dir, "evaluate"),
         local_decoding_texts=sequences_decoded,  # sequences_decoded are the sequences sampled from the local normalized distribution
         global_decoding_texts=sampled_sequences_decoded,  # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
     )
-
-    # TODO: get total time
 
 
 if __name__ == "__main__":
