@@ -35,11 +35,9 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
 
     # Set the output subdirectory
     subdir = "data"
-
     # Download the dataset
     logging.info(f"Downloading the {eval_dataset_name} dataset...")
-    download_dataset(subdir="data", dataset=eval_dataset_name, splits=[eval_split])
-
+    download_dataset(subdir=subdir, dataset=eval_dataset_name, splits=[eval_split])
     # Path to the dataset file
     file_path = os.path.join(subdir, f"{eval_dataset_name}.{eval_split}.jsonl")
     data = load_data_from_jsonl(file_path)
