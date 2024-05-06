@@ -1,7 +1,5 @@
 import numpy as np
 
-from .plots import plot_deltas
-
 def indicator_top_k(sequence):
     # In our case, we can simply return 1 as we are using top-k sampling
     return 1
