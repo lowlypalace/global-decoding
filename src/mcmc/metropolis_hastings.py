@@ -1,5 +1,6 @@
 import numpy as np
 
+from .plots import plot_deltas
 
 def indicator_top_k(sequence):
     # In our case, we can simply return 1 as we are using top-k sampling
@@ -19,6 +20,10 @@ def metropolis_hastings(
     sampled_sequences_ids = []
     sampled_sequences_decoded = []
     sampled_target_logprobs = []
+
+    # Lists to store the deltas for the acceptance ratio
+    deltas = []
+    deltas_2 = []
 
     # Calculate the number of burn-in samples
     burnin_index = int(burnin * sequence_count)
@@ -42,6 +47,11 @@ def metropolis_hastings(
             target_logprobs[i],
             proposal_logprobs[i],
         )
+
+        delta = logprob_target_proposed - logprob_proposal_proposed
+        delta_2 = logprob_target_current - logprob_proposal_current
+        deltas.append(delta)
+        deltas_2.append(delta_2)
 
         # Calculate the acceptance ratio
         numerator = (
@@ -69,4 +79,5 @@ def metropolis_hastings(
             sampled_sequences_decoded.append(current_decoded_seq)
             sampled_target_logprobs.append(logprob_target_current)
 
-    return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
+
+    return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs, deltas, deltas_2
