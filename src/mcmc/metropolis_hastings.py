@@ -40,8 +40,6 @@ def metropolis_hastings(
         proposed_sequence = sequences_ids[i]
         # Get the probabilities for the proposed sequences
         logprob_target_proposed, logprob_proposal_proposed = (
-            # target_logprobs[i].item(),
-            # proposal_logprobs[i].item(),
             target_logprobs[i],
             proposal_logprobs[i],
         )
