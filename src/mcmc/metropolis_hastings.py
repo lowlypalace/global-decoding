@@ -20,8 +20,8 @@ def metropolis_hastings(
     sampled_sequences_decoded = []
     sampled_target_logprobs = []
     # Lists to store the deltas for the acceptance ratio
-    log_prob_diff_proposed = []
-    log_prob_diff_current = []
+    logprob_diff_proposed = []
+    logprob_diff_current = []
 
     # Calculate the number of burn-in samples
     burnin_index = int(burnin * sequence_count)
@@ -44,10 +44,10 @@ def metropolis_hastings(
             proposal_logprobs[i],
         )
 
-        log_prob_diff_proposed.append(
+        logprob_diff_proposed.append(
             logprob_target_proposed - logprob_proposal_proposed
         )
-        log_prob_diff_current.append(logprob_target_current - logprob_proposal_current)
+        logprob_diff_current.append(logprob_target_current - logprob_proposal_current)
 
         # Calculate the acceptance ratio
         numerator = (
@@ -79,6 +79,6 @@ def metropolis_hastings(
         sampled_sequences_ids,
         sampled_sequences_decoded,
         sampled_target_logprobs,
-        log_prob_diff_proposed,
-        log_prob_diff_current,
+        logprob_diff_proposed,
+        logprob_diff_current,
     )
