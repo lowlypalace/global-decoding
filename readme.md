@@ -8,8 +8,9 @@ python src/main.py \
   --batch_size_prob 8 \
   --model gpt2 \
   --seed 0 \
-  --rate 10 \
-  --burnin 0.2
+  --mcmc_rate 10 \
+  --mcmc_burnin 0.2 \
+  --eval_num_sequences 10 \
 ```
 
 Running tests:
