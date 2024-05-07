@@ -123,8 +123,8 @@ def parse_args():
     parser.add_argument(
         "--eval_num_sequences",
         type=int,
-        default=1000,
-        help="Number of sequences to evaluate.",
+        default=None,
+        help="Number of sequences to evaluate. If not provided, all generated sequences will be evaluated.",
     )
 
     args = parser.parse_args()
@@ -162,6 +162,10 @@ def main():
         target_logprobs=target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
         proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
     )
+
+    print(len(sequences_decoded))
+    print(len(sampled_sequences_decoded))
+
 
     mauve_results_local, mauve_results_global = evaluate(
         args,

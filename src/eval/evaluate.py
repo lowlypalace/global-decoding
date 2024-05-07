@@ -33,6 +33,10 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     eval_split = args.eval_split
     eval_num_sequences = args.eval_num_sequences
 
+    # If the number of sequences to evaluate is not provided, evaluate all sequences
+    if eval_num_sequences is None:
+        eval_num_sequences = len(global_decoding_texts)
+
     # Set the output subdirectory
     subdir = "data"
     # Download the dataset
