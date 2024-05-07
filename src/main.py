@@ -4,7 +4,6 @@ import torch
 import os
 
 
-# from sequence_probability import get_sequence_probs
 from utils import setup_logging, save_args, get_timestamp, validate_args
 from sequences import generate_sequences_and_probs
 from mcmc import run_mcmc
