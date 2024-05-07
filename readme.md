@@ -52,6 +52,14 @@ To run the tests, use the following command:
 
 Outputs are saved in the specified `--output_dir` directory, including generated sequences, logs, and evaluation results.
 
+## Linting
+
+To lint the code, use the following command:
+
+```bash
+black .
+```
+
 ## Contributing
 
 Contributions to this project are welcome! Please fork the repository, make your changes, and submit a pull request.
