@@ -1,30 +1,12 @@
-import json
 import os
 import logging
-import numpy as np
 
-from types import SimpleNamespace
 
 from evaluate import load
 
-from utils import save_to_json, timer
+from utils import save_to_json, timer, convert_to_dict, load_data_from_jsonl
 
 from .download_dataset import download_dataset
-
-
-def load_data_from_jsonl(file_path):
-    with open(file_path, "r", encoding="utf-8") as file:
-        lines = file.readlines()
-        data = [json.loads(line) for line in lines]
-    return data
-
-
-def convert_to_dict(obj):
-    if isinstance(obj, SimpleNamespace):
-        return {k: convert_to_dict(v) for k, v in vars(obj).items()}
-    elif isinstance(obj, np.ndarray):
-        return obj.tolist()  # Convert numpy arrays to list
-    return obj
 
 
 def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):

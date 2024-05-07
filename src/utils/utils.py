@@ -6,6 +6,9 @@ import time
 import logging.handlers
 from datetime import datetime
 
+import numpy as np
+
+from types import SimpleNamespace
 
 @contextlib.contextmanager
 def timer(description: str):
@@ -72,3 +75,17 @@ def save_to_json(data, base_name, subdir):
     filename = create_filename(base_name, "json", subdir)
     with open(filename, "w") as f:
         json.dump(data, f)
+
+def load_data_from_jsonl(file_path):
+    with open(file_path, "r", encoding="utf-8") as file:
+        lines = file.readlines()
+        data = [json.loads(line) for line in lines]
+    return data
+
+
+def convert_to_dict(obj):
+    if isinstance(obj, SimpleNamespace):
+        return {k: convert_to_dict(v) for k, v in vars(obj).items()}
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()  # Convert numpy arrays to list
+    return obj
