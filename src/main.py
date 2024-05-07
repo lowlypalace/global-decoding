@@ -12,7 +12,7 @@ from eval import evaluate
 
 # Define the function to parse command-line arguments
 def parse_args():
-    parser = argparse.ArgumentParser(description="Generate text sequences.")
+    parser = argparse.ArgumentParser(description="Generate text sequences, run MCMC, and evaluate the results.")
 
     # Sequence generation arguments
     parser.add_argument(
