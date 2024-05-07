@@ -32,7 +32,7 @@ python src/main.py \
   --sequence_count 100 \
   --batch_size_seq 8 \
   --batch_size_prob 8 \
-  --model gpt2 \
+  --model_name gpt2 \
   --seed 0 \
   --mcmc_rate 10 \
   --mcmc_burnin 0.2 \
