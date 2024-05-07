@@ -1,3 +1,4 @@
+import sys
 
 def validate_args(args):
     if args.top_k is not None and args.top_k <= 0:
@@ -11,7 +12,7 @@ def validate_args(args):
     if args.batch_size_seq <= 0 or args.batch_size_seq > args.sequence_count:
         sys.exit("Error: --batch_size_seq must be a positive number")
     if args.batch_size_seq > args.sequence_count:
-        sys.exit("Error: --batch_size_prob must not larger than --sequence_count.")
+        sys.exit("Error: --batch_size_prob must be not larger than --sequence_count.")
     if args.batch_size_prob <= 0 or args.batch_size_prob > args.sequence_count:
         sys.exit("Error: --batch_size_prob must be a positive number.")
     if args.batch_size_prob > args.sequence_count:
