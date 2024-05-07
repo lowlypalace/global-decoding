@@ -6,3 +6,7 @@ from .utils import (
     create_filename,
     save_to_json,
 )
+
+from .validate import (
+    validate_args
+)
