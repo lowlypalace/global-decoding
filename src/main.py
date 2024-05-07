@@ -36,7 +36,9 @@ def parse_args():
         default=None,
         help="Text to use as a prompt. Defaults to the EOS token.",
     )
-    decoding_group = parser.add_mutually_exclusive_group() # Mutually exclusive group for top-k and top-p
+    decoding_group = (
+        parser.add_mutually_exclusive_group()
+    )  # Mutually exclusive group for top-k and top-p
     decoding_group.add_argument(
         "--top_k",
         type=int,
@@ -99,7 +101,17 @@ def parse_args():
         "--eval_dataset_name",
         type=str,
         default="webtext",
-        choices=["webtext", "small-117M", 'small-117M-k40', 'medium-345M', 'medium-345M-k40', 'large-762M',  'large-762M-k40', 'xl-1542M', 'xl-1542M-k40'],
+        choices=[
+            "webtext",
+            "small-117M",
+            "small-117M-k40",
+            "medium-345M",
+            "medium-345M-k40",
+            "large-762M",
+            "large-762M-k40",
+            "xl-1542M",
+            "xl-1542M-k40",
+        ],
         help="Name of the dataset to use as reference.",
     )
     parser.add_argument(
