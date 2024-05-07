@@ -119,4 +119,9 @@ def generate_sequences_and_probs(args, output_subdir):
         output_dir=os.path.join(output_subdir, "plots"),
     )
 
-    return sequences_ids, sequences_decoded, target_logprobs_list, proposal_logprobs_list
+    return (
+        sequences_ids,
+        sequences_decoded,
+        target_logprobs_list,
+        proposal_logprobs_list,
+    )

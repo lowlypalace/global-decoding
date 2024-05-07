@@ -7,6 +7,4 @@ from .utils import (
     save_to_json,
 )
 
-from .validate import (
-    validate_args
-)
+from .validate import validate_args

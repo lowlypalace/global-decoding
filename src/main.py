@@ -166,7 +166,6 @@ def main():
     print(len(sequences_decoded))
     print(len(sampled_sequences_decoded))
 
-
     mauve_results_local, mauve_results_global = evaluate(
         args,
         output_subdir=os.path.join(output_dir, "evaluate"),

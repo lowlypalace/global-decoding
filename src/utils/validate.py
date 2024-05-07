@@ -1,5 +1,6 @@
 import sys
 
+
 def validate_args(args):
     if args.top_k is not None and args.top_k <= 0:
         sys.exit("--top_k must be a positive number.")
@@ -31,5 +32,8 @@ def validate_args(args):
     if args.sample_rate <= 0:
         sys.exit("--sample_rate must be a positive number.")
 
-    if args.eval_num_sequences  is not None and args.eval_num_sequences > args.sequence_count:
+    if (
+        args.eval_num_sequences is not None
+        and args.eval_num_sequences > args.sequence_count
+    ):
         sys.exit("--eval_num_sequences must be equal or less than --sequence_count.")
