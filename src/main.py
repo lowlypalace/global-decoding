@@ -14,6 +14,7 @@ from eval import evaluate
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate text sequences.")
 
+    # Sequence generation arguments
     parser.add_argument(
         "--model_name",
         type=str,
@@ -35,8 +36,7 @@ def parse_args():
         default=None,
         help="Text to use as a prompt. Defaults to the EOS token.",
     )
-    # Mutually exclusive group for top-k and top-p
-    decoding_group = parser.add_mutually_exclusive_group()
+    decoding_group = parser.add_mutually_exclusive_group() # Mutually exclusive group for top-k and top-p
     decoding_group.add_argument(
         "--top_k",
         type=int,
@@ -79,18 +79,6 @@ def parse_args():
         default=16,
         help="Batch size for computing probabilities.",
     )
-    parser.add_argument(
-        "--seed",
-        type=int,
-        default=42,
-        help="Random seed for reproducibility.",
-    )
-    parser.add_argument(
-        "--output_dir",
-        type=str,
-        default="output",
-        help="Directory to save the output files.",
-    )
 
     # MCMC arguments
     parser.add_argument(
@@ -124,6 +112,20 @@ def parse_args():
         type=int,
         default=None,
         help="Number of sequences to evaluate. If not provided, (1 - burnin) * sequence_count * sample_rate * 0.01 sequences will be evaluated.",
+    )
+
+    # Other arguments
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Random seed for reproducibility.",
+    )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="output",
+        help="Directory to save the output files.",
     )
 
     args = parser.parse_args()
