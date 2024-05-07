@@ -136,13 +136,13 @@ def main():
     args = parse_args()
 
     # Add a directory with a timestamp to the output directory
-    output_dir = os.path.join(args.output_dir, get_timestamp())
+    output_subdir = os.path.join(args.output_dir, get_timestamp())
     # Create a directory to save the output files
-    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(output_subdir, exist_ok=True)
     # Save log messages to a file
-    setup_logging(log_file=os.path.join(output_dir, "log.txt"))
+    setup_logging(log_file=os.path.join(output_subdir, "log.txt"))
     # Save command-line arguments to JSON
-    save_args(args, output_dir)
+    save_args(args, output_subdir)
 
     (
         sequences_ids,
@@ -150,12 +150,12 @@ def main():
         target_logprobs,
         proposal_logprobs,
     ) = generate_sequences_and_probs(
-        args, output_subdir=os.path.join(output_dir, "sequences")
+        args, output_subdir=os.path.join(output_subdir, "sequences")
     )
 
     sampled_sequences_ids, sampled_sequences_decoded, sampled_logprobs = run_mcmc(
         args=args,
-        output_subdir=os.path.join(output_dir, "mcmc"),
+        output_subdir=os.path.join(output_subdir, "mcmc"),
         sequences_ids=sequences_ids,
         sequences_decoded=sequences_decoded,
         target_logprobs=target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
@@ -164,7 +164,7 @@ def main():
 
     mauve_results_local, mauve_results_global = evaluate(
         args,
-        output_subdir=os.path.join(output_dir, "evaluate"),
+        output_subdir=os.path.join(output_subdir, "evaluate"),
         local_decoding_texts=sequences_decoded,  # sequences_decoded are the sequences sampled from the local normalized distribution
         global_decoding_texts=sampled_sequences_decoded,  # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
     )
