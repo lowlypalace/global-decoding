@@ -82,13 +82,13 @@ def parse_args():
 
     # MCMC arguments
     parser.add_argument(
-        "--burnin",
+        "--mcmc_burnin",
         type=float,
         default=0.2,
         help="Burn-in period as a fraction of the total number of samples.",
     )
     parser.add_argument(
-        "--sample_rate",
+        "--mcmc_sample_rate",
         type=int,
         default=10,
         help="Rate at which to sample sequences after the burn-in period.",
@@ -99,12 +99,14 @@ def parse_args():
         "--eval_dataset_name",
         type=str,
         default="webtext",
+        choices=["webtext", "small-117M", 'small-117M-k40', 'medium-345M', 'medium-345M-k40', 'large-762M',  'large-762M-k40', 'xl-1542M', 'xl-1542M-k40'],
         help="Name of the dataset to use as reference.",
     )
     parser.add_argument(
         "--eval_split",
         type=str,
-        default="test",
+        default="train",
+        choices=["train", "valid", "test"],
         help="Split of the dataset to use as reference.",
     )
     parser.add_argument(

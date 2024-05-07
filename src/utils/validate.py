@@ -26,11 +26,11 @@ def validate_args(args):
     if args.batch_size_prob > args.sequence_count:
         sys.exit("--batch_size_prob must be not larger than --sequence_count.")
 
-    if args.burnin <= 0:
-        sys.exit("--burnin must be a positive number.")
+    if args.mcmc_burnin <= 0:
+        sys.exit("--mcmc_burnin must be a positive number.")
 
-    if args.sample_rate <= 0:
-        sys.exit("--sample_rate must be a positive number.")
+    if args.mcmc_sample_rate <= 0:
+        sys.exit("--mcmc_sample_rate must be a positive number.")
 
     if (
         args.eval_num_sequences is not None

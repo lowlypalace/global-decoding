@@ -16,10 +16,10 @@ def run_mcmc(
     proposal_logprobs,
 ):
     # Parse command-line arguments
-    burnin = args.burnin
-    sample_rate = args.sample_rate
-    seed = args.seed
+    burnin = args.mcmc_burnin
+    sample_rate = args.mcmc_sample_rate
     sequence_count = args.sequence_count
+    seed = args.seed
 
     # Set random seed for reproducibility numpy
     np.random.seed(seed)

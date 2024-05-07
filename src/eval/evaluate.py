@@ -29,30 +29,30 @@ def convert_to_dict(obj):
 
 def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     # Parse command-line arguments
-    eval_dataset_name = args.eval_dataset_name
-    eval_split = args.eval_split
-    eval_num_sequences = args.eval_num_sequences
+    dataset_name = args.eval_dataset_name
+    split = args.eval_split
+    num_sequences = args.eval_num_sequences
 
-    # If the number of sequences to evaluate is not provided, evaluate all sequences
-    if eval_num_sequences is None:
-        eval_num_sequences = len(global_decoding_texts)
+    # Set the number of evaluated sequnces to the number of sampled sequences
+    if num_sequences is None:
+        num_sequences = len(global_decoding_texts)
 
     # Set the output subdirectory
     subdir = "data"
     # Download the dataset
-    logging.info(f"Downloading the {eval_dataset_name} dataset...")
-    download_dataset(subdir=subdir, dataset=eval_dataset_name, splits=[eval_split])
+    logging.info(f"Downloading the {dataset_name} dataset...")
+    download_dataset(subdir=subdir, dataset=dataset_name, splits=[split])
     # Path to the dataset file
-    file_path = os.path.join(subdir, f"{eval_dataset_name}.{eval_split}.jsonl")
+    file_path = os.path.join(subdir, f"{dataset_name}.{split}.jsonl")
     data = load_data_from_jsonl(file_path)
 
     # Load the reference texts
     reference_texts = [item["text"] for item in data]
 
     # Trim the sequences to the specified number of sequences
-    reference_texts = reference_texts[:eval_num_sequences]
-    local_decoding_texts = local_decoding_texts[:eval_num_sequences]
-    global_decoding_texts = global_decoding_texts[:eval_num_sequences]
+    reference_texts = reference_texts[:num_sequences]
+    local_decoding_texts = local_decoding_texts[:num_sequences]
+    global_decoding_texts = global_decoding_texts[:num_sequences]
 
     with timer("Evaluating the generated sequences..."):
         # Initialize MAUVE metric
