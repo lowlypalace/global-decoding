@@ -33,7 +33,6 @@ def generate_sequences(
                 top_k=top_k,
                 do_sample=True,
                 num_return_sequences=batch_size,
-                seed=seed,
             )
 
             # Pad sequences in the batch to max_length
