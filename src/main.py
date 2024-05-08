@@ -184,7 +184,7 @@ def main():
 
     mauve_results_local, mauve_results_global = evaluate(
         args,
-        output_subdir=os.path.join(output_subdir, "evaluate"),
+        output_subdir=os.path.join(output_subdir, "eval"),
         local_decoding_texts=sequences_decoded,  # sequences_decoded are the sequences sampled from the local normalized distribution
         global_decoding_texts=sampled_sequences_decoded,  # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
     )
