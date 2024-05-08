@@ -14,17 +14,11 @@ def validate_args(args):
     if args.max_length is not None and args.max_length <= 0:
         sys.exit("--max_length must be a positive number.")
 
-    if args.batch_size_seq <= 0 or args.batch_size_seq > args.sequence_count:
+    if args.batch_size_seq <= 0:
         sys.exit("--batch_size_seq must be a positive number")
 
-    if args.batch_size_seq > args.sequence_count:
-        sys.exit("--batch_size_prob must be not larger than --sequence_count.")
-
-    if args.batch_size_prob <= 0 or args.batch_size_prob > args.sequence_count:
+    if args.batch_size_prob <= 0:
         sys.exit("--batch_size_prob must be a positive number.")
-
-    if args.batch_size_prob > args.sequence_count:
-        sys.exit("--batch_size_prob must be not larger than --sequence_count.")
 
     if args.mcmc_burnin <= 0:
         sys.exit("--mcmc_burnin must be a positive number.")
