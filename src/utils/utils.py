@@ -12,6 +12,7 @@ import numpy as np
 
 from types import SimpleNamespace
 
+
 def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)

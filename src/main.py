@@ -12,7 +12,9 @@ from eval import evaluate
 
 # Define the function to parse command-line arguments
 def parse_args():
-    parser = argparse.ArgumentParser(description="Generate text sequences, run MCMC, and evaluate the results.")
+    parser = argparse.ArgumentParser(
+        description="Generate text sequences, run MCMC, and evaluate the results."
+    )
 
     # Sequence generation arguments
     parser.add_argument(
@@ -161,7 +163,6 @@ def main():
     save_args(args, output_subdir)
     # Set the random seed for reproducibility
     set_seed(args.seed)
-
 
     (
         sequences_ids,
