@@ -19,10 +19,6 @@ def run_mcmc(
     burnin = args.mcmc_burnin
     sample_rate = args.mcmc_sample_rate
     sequence_count = args.sequence_count
-    seed = args.seed
-
-    # Set random seed for reproducibility numpy
-    np.random.seed(seed)
 
     # Run the Independent Metropolis-Hastings algorithm
     with timer("Running MCMC algorithm"):

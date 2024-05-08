@@ -4,7 +4,7 @@ import torch
 import os
 
 
-from utils import setup_logging, save_args, get_timestamp, validate_args
+from utils import setup_logging, save_args, get_timestamp, validate_args, set_seed
 from sequences import generate_sequences_and_probs
 from mcmc import run_mcmc
 from eval import evaluate
@@ -159,6 +159,9 @@ def main():
     setup_logging(log_file=os.path.join(output_subdir, "log.txt"))
     # Save command-line arguments to JSON
     save_args(args, output_subdir)
+    # Set the random seed for reproducibility
+    set_seed(args.seed)
+
 
     (
         sequences_ids,

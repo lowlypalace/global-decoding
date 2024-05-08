@@ -26,11 +26,7 @@ def generate_sequences_and_probs(args, output_subdir):
     batch_size_seq = args.batch_size_seq
     batch_size_prob = args.batch_size_prob
     model_name = args.model_name
-    seed = args.seed
     device = torch.device(args.device)
-
-    # Set the random seed for reproducibility
-    torch.manual_seed(seed)
 
     # Load model and tokenizer based on the selected model
     if model_name.startswith("pythia"):
