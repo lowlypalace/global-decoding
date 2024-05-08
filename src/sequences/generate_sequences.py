@@ -12,7 +12,6 @@ def generate_sequences(
     top_k,
     batch_size,
     sequence_count,
-    seed
 ):
     # Calculate number of batches needed to generate the desired sequence_count
     num_batches = sequence_count // batch_size + (sequence_count % batch_size > 0)
