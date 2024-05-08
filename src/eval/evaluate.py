@@ -14,7 +14,9 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     dataset_name = args.eval_dataset_name
     split = args.eval_split
     num_sequences = args.eval_num_sequences
+    max_length = args.max_length
     seed = args.seed
+
 
     # Set the device ID
     device_id = 1 if args.device is "cuda" else 0
@@ -46,11 +48,11 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
         mauve = load("mauve")
         # Compute MAUVE results for locally decoded strings
         mauve_results_local = mauve.compute(
-            predictions=local_decoding_texts, references=reference_texts, device_id=device_id, seed = seed
+            predictions=local_decoding_texts, references=reference_texts, device_id=device_id, max_text_length= max_length, seed = seed
         )
         # Compute MAUVE results for globally decoded strings
         mauve_results_global = mauve.compute(
-            predictions=global_decoding_texts, references=reference_texts, device_id=device_id, seed = seed
+            predictions=global_decoding_texts, references=reference_texts, device_id=device_id, max_text_length= max_length, seed = seed
         )
 
     logging.info(
