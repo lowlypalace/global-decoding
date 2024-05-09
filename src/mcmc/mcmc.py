@@ -28,6 +28,7 @@ def run_mcmc(
             sampled_target_logprobs,
             logprob_diff_proposed,
             logprob_diff_current,
+            sequence_change_indices,
         ) = metropolis_hastings(
             sequence_count=sequence_count,
             burnin=burnin,
@@ -70,6 +71,7 @@ def run_mcmc(
         plot_logprob_diff(
             logprob_diff_proposed,
             logprob_diff_current,
+            sequence_change_indices,
             show=False,
             output_dir=os.path.join(output_subdir, "plots"),
         )
