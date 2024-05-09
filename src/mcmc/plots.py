@@ -217,7 +217,13 @@ def plot_chain(
         fig.show()
 
 
-def plot_logprob_diff(logprob_diff_proposed, logprob_diff_current, sequence_change_indices, show, output_dir):
+def plot_logprob_diff(
+    logprob_diff_proposed,
+    logprob_diff_current,
+    sequence_change_indices,
+    show,
+    output_dir,
+):
     # Create traces for the plot
     trace1 = go.Scatter(
         x=list(range(len(logprob_diff_proposed))),
@@ -237,23 +243,27 @@ def plot_logprob_diff(logprob_diff_proposed, logprob_diff_current, sequence_chan
     trace3 = go.Scatter(
         x=sequence_change_indices,
         y=[logprob_diff_current[i] for i in sequence_change_indices],
-        mode='markers',
-        marker=dict(color='black', size=5),
-        name='Sequence Change Points'
+        mode="markers",
+        marker=dict(color="black", size=5),
+        name="Sequence Change Points",
     )
 
     # Create a list of annotations for each change point
     annotations = []
     for i, idx in enumerate(sequence_change_indices):
-        annotations.append(dict(
-            x=idx, y=logprob_diff_current[idx],
-            xref='x', yref='y',
-            text=str(i + 1), # Displaying the count as 1-based index
-            showarrow=True,
-            arrowhead=7,
-            ax=0,
-            ay=-40
-        ))
+        annotations.append(
+            dict(
+                x=idx,
+                y=logprob_diff_current[idx],
+                xref="x",
+                yref="y",
+                text=str(i + 1),  # Displaying the count as 1-based index
+                showarrow=True,
+                arrowhead=7,
+                ax=0,
+                ay=-40,
+            )
+        )
 
     # Create a layout and figure object
     layout = go.Layout(
@@ -261,7 +271,7 @@ def plot_logprob_diff(logprob_diff_proposed, logprob_diff_current, sequence_chan
         xaxis_title="Iteration",
         yaxis_title="Log Probability Difference",
         hovermode="closest",
-        annotations=annotations
+        annotations=annotations,
     )
     fig = go.Figure(data=[trace1, trace2, trace3], layout=layout)
 
