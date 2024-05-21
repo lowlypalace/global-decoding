@@ -94,7 +94,7 @@ def parse_args():
     parser.add_argument(
         "--mcmc_num_subsets",
         type=int,
-        default=1,
+        default=10,
         help="Number of subsets to split the sequences into for MCMC processing.",
     )
 
