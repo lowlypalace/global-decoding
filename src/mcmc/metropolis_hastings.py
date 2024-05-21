@@ -27,52 +27,44 @@ def metropolis_hastings(
     # Get the first sequence and its probabilities
     current_sequence = sequences_ids[0]
     current_decoded_seq = sequences_decoded[0]
-    logprob_target_current, logprob_proposal_current = (
-        target_logprobs[0],
-        proposal_logprobs[0],
-    )
+    current_target_logprob = target_logprobs[0]
+    current_proposal_logprob = proposal_logprobs[0]
+
+    # Collect the initial sequence
+    collected_sequences_ids.append(current_sequence)
+    collected_sequences_decoded.append(current_decoded_seq)
+    collected_target_logprobs.append(current_target_logprob)
 
     # This is a top-level loop to generate multiple sequences
     for i in range(1, sequence_count):
         # Get the sequence to propose
         proposed_sequence = sequences_ids[i]
         # Get the probabilities for the proposed sequences
-        logprob_target_proposed, logprob_proposal_proposed = (
-            target_logprobs[i],
-            proposal_logprobs[i],
-        )
+        proposed_target_logprob = target_logprobs[i]
+        proposed_proposal_logprob = proposal_logprobs[i]
 
-        logprob_diff_proposed.append(
-            logprob_target_proposed - logprob_proposal_proposed
-        )
-        logprob_diff_current.append(logprob_target_current - logprob_proposal_current)
+        # Calculate differences for diagnostics
+        logprob_diff_proposed.append(proposed_target_logprob - proposed_proposal_logprob)
+        logprob_diff_current.append(current_target_logprob - current_proposal_logprob)
 
         # Calculate the acceptance ratio
-        numerator = (
-            logprob_target_proposed
-            + indicator_top_k(proposed_sequence)
-            + logprob_proposal_current
-        )
-        denominator = (
-            logprob_target_current
-            + indicator_top_k(current_sequence)
-            + logprob_proposal_proposed
-        )
+        numerator = proposed_target_logprob + indicator_top_k(proposed_sequence) + current_proposal_logprob
+        denominator = current_target_logprob + indicator_top_k(current_sequence) + proposed_proposal_logprob
         log_acceptance_ratio = numerator - denominator
 
         # Accept or reject the new sequence based on the acceptance ratio
         if np.log(np.random.uniform(0, 1)) < log_acceptance_ratio:
             current_sequence = proposed_sequence
-            logprob_target_current = logprob_target_proposed
-            logprob_proposal_current = logprob_proposal_proposed
-
+            current_decoded_seq = sequences_decoded[i]
+            current_target_logprob = proposed_target_logprob
+            current_proposal_logprob = proposed_proposal_logprob
             # Record the iteration index where the sequence changes
             sequence_change_indices.append(i)
 
-        # Append the sequence and its probability to samples
+        # Append the current sequence and its probability to samples
         collected_sequences_ids.append(current_sequence)
         collected_sequences_decoded.append(current_decoded_seq)
-        collected_target_logprobs.append(logprob_target_current)
+        collected_target_logprobs.append(current_target_logprob)
 
     return (
         collected_sequences_ids,
