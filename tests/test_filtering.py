@@ -91,9 +91,12 @@ class TestTopPFiltering(unittest.TestCase):
         # Check that the cumulative probability of non--inf values does not exceed top_p
         for i in range(batch_size):
             for j in range(sequence_length):
-                finite_logits = filtered_logits[i, j][torch.isfinite(filtered_logits[i, j])]
+                finite_logits = filtered_logits[i, j][
+                    torch.isfinite(filtered_logits[i, j])
+                ]
                 probs = torch.softmax(finite_logits, dim=0)
                 self.assertTrue(torch.cumsum(probs, dim=0)[-1] <= top_p)
+
 
 if __name__ == "__main__":
     unittest.main()
