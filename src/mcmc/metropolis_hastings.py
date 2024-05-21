@@ -68,9 +68,8 @@ def metropolis_hastings(
             # Record the iteration index where the sequence changes
             sequence_change_indices.append(i)
 
-        # After the burn-in period, add the current state to the list of samples at the specified rate
+        # Append the sequence and its probability to samples
         collected_sequences_ids.append(current_sequence)
-        # Append the decoded sequence and its probabilities to samples
         collected_sequences_decoded.append(current_decoded_seq)
         collected_target_logprobs.append(logprob_target_current)
 
