@@ -23,6 +23,7 @@ def set_seed(seed):
 
 @contextlib.contextmanager
 def timer(description: str):
+    logging.info(f"{description}...")
     start = time.perf_counter()
     yield
     end = time.perf_counter()
