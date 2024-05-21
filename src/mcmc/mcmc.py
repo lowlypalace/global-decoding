@@ -51,36 +51,36 @@ def run_mcmc(
             # Save the sequences and their probabilities to JSON files
             save_to_json(
                 collected_sequences_ids,
-                f"collected_sequences_ids_{i}",
-                os.path.join(output_subdir, "plots", "independent_runs"),
+                f"collected_sequences_ids",
+                os.path.join(output_subdir, "plots", "independent_runs", f"run_{i}"),
             )
             save_to_json(
                 collected_sequences_decoded,
-                f"collected_sequences_decoded_{i}",
-                os.path.join(output_subdir, "plots", "independent_runs"),
+                f"collected_sequences_decoded",
+                os.path.join(output_subdir, "plots", "independent_runs" , f"run_{i}"),
             )
             save_to_json(
                 collected_target_logprobs,
-                f"collected_target_logprobs_{i}",
-                os.path.join(output_subdir, "plots", "independent_runs"),
+                f"collected_target_logprobs",
+                os.path.join(output_subdir, "plots", "independent_runs", f"run_{i}"),
             )
 
             # Plot the chain of generated samples
             plot_chain(
                 collected_target_logprobs,
                 burnin=burnin,
-                prefix=f"mcmc_{i}",
+                prefix=f"mcmc",
                 show=False,
-                output_dir=os.path.join(output_subdir, "plots", "independent_runs"),
+                output_dir=os.path.join(output_subdir, "plots", "independent_runs", f"run_{i}"),
             )
             # Plot the deltas for the acceptance ratio
             plot_logprob_diff(
                 logprob_diff_proposed,
                 logprob_diff_current,
                 sequence_change_indices,
-                prefix=f"mcmc_{i}",
+                prefix=f"mcmc",
                 show=False,
-                output_dir=os.path.join(output_subdir, "plots", "independent_runs"),
+                output_dir=os.path.join(output_subdir, "plots", "independent_runs", f"run_{i}"),
             )
 
             # Take the last sample from each Metropolis iteration and add it to the sampled sequences arrays
