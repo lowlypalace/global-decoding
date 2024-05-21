@@ -1,4 +1,5 @@
 import os
+import logging
 
 from utils import timer, save_to_json
 
@@ -15,7 +16,7 @@ def run_mcmc(
     proposal_logprobs,
 ):
     # sequence_count = args.sequence_count
-    num_subsets = args.num_subsets
+    num_subsets = args.mcmc_num_subsets
 
     # Calculate the number of sequences per subset
     subset_size = len(sequences_ids) // num_subsets
@@ -34,6 +35,8 @@ def run_mcmc(
             subset_sequences_decoded = sequences_decoded[start_idx:end_idx]
             subset_target_logprobs = target_logprobs[start_idx:end_idx]
             subset_proposal_logprobs = proposal_logprobs[start_idx:end_idx]
+
+            logging.info(f"Running MCMC algorithm on subset {i + 1} of {num_subsets}: {start_idx} - {end_idx}...")
 
             (
                 collected_sequences_ids,
