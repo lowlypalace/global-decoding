@@ -61,7 +61,10 @@ def metropolis_hastings(
         log_acceptance_ratio = numerator - denominator
 
         # Accept or reject the new sequence based on the acceptance ratio
-        if np.log(np.random.uniform(0, 1)) < log_acceptance_ratio:
+        random_number = np.log(np.random.uniform(0, 1))
+        if i == 100:
+            print(f"Random number: {random_number}")
+        if random_number < log_acceptance_ratio:
             current_sequence = proposed_sequence
             logprob_target_current = logprob_target_proposed
             logprob_proposal_current = logprob_proposal_proposed

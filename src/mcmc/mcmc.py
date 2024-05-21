@@ -31,8 +31,6 @@ def run_mcmc(
     # Run the Independent Metropolis-Hastings algorithm
     with timer("Running MCMC algorithm"):
         for i in range(independent_runs):
-            # Reset the seed at the start of the function to ensure reproducibility
-            np.random.seed(seed)
 
             (
                 collected_sequences_ids,
@@ -88,9 +86,6 @@ def run_mcmc(
             sampled_sequences_ids.append(sequences_ids[-1])
             sampled_sequences_decoded.append(sequences_decoded[-1])
             sampled_target_logprobs.append(target_logprobs[-1])
-
-            # Increment the seed after each run to ensure variability
-            seed += 1
 
     # Save the sampled sequences and their probabilities to JSON files
     save_to_json(sampled_sequences_ids, "sampled_sequences_ids", output_subdir)
