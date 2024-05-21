@@ -63,6 +63,7 @@ def plot_chain(
     samples,
     output_dir,
     burnin=0.2,
+    prefix="mcmc",
     initial=0.01,
     nsig=1,
     fmt="-",
@@ -212,7 +213,7 @@ def plot_chain(
 
     fig = go.Figure(plots, layout=layout)
     # Write the plot to an HTML file
-    fig.write_html(create_filename(f"mcmc_chain", "html", output_dir))
+    fig.write_html(create_filename(f"{prefix}_chain", "html", output_dir))
     if show:
         fig.show()
 
@@ -221,6 +222,7 @@ def plot_logprob_diff(
     logprob_diff_proposed,
     logprob_diff_current,
     sequence_change_indices,
+    prefix,
     show,
     output_dir,
 ):
@@ -275,6 +277,6 @@ def plot_logprob_diff(
     )
     fig = go.Figure(data=[trace1, trace2, trace3], layout=layout)
 
-    fig.write_html(create_filename("mcmc_deltas", "html", output_dir))
+    fig.write_html(create_filename(f"{prefix}_deltas", "html", output_dir))
     if show:
         fig.show()

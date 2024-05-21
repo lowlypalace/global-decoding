@@ -8,25 +8,20 @@ def indicator_top_k(sequence):
 
 def metropolis_hastings(
     sequence_count,
-    burnin,
     sequences_ids,
     sequences_decoded,
     target_logprobs,
     proposal_logprobs,
-    sample_rate,
 ):
     # List to store the generated samples
-    sampled_sequences_ids = []
-    sampled_sequences_decoded = []
-    sampled_target_logprobs = []
+    collected_sequences_ids = []
+    collected_sequences_decoded = []
+    collected_target_logprobs = []
     # Lists to store the deltas for the acceptance ratio (for plotting)
     logprob_diff_proposed = []
     logprob_diff_current = []
     # List to store the indices where the sequence changes (for plotting)
     sequence_change_indices = []
-
-    # Calculate the number of burn-in samples
-    burnin_index = int(burnin * sequence_count)
 
     # Get the first sequence and its probabilities
     current_sequence = sequences_ids[0]
@@ -69,21 +64,19 @@ def metropolis_hastings(
             current_sequence = proposed_sequence
             logprob_target_current = logprob_target_proposed
             logprob_proposal_current = logprob_proposal_proposed
-
             # Record the iteration index where the sequence changes
             sequence_change_indices.append(i)
 
         # After the burn-in period, add the current state to the list of samples at the specified rate
-        if i >= burnin_index and i % sample_rate == 0:
-            sampled_sequences_ids.append(current_sequence)
-            # Append the decoded sequence and its probabilities to samples
-            sampled_sequences_decoded.append(current_decoded_seq)
-            sampled_target_logprobs.append(logprob_target_current)
+        collected_sequences_ids.append(current_sequence)
+        # Append the decoded sequence and its probabilities to samples
+        collected_sequences_decoded.append(current_decoded_seq)
+        collected_target_logprobs.append(logprob_target_current)
 
     return (
-        sampled_sequences_ids,
-        sampled_sequences_decoded,
-        sampled_target_logprobs,
+        collected_sequences_ids,
+        collected_sequences_decoded,
+        collected_target_logprobs,
         logprob_diff_proposed,
         logprob_diff_current,
         sequence_change_indices,

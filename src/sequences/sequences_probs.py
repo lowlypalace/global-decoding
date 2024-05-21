@@ -13,6 +13,7 @@ def top_k_filtering(logits, top_k):
     logits[mask] = -float("inf")
     return logits
 
+
 def top_p_filtering(logits, top_p):
     sorted_logits, sorted_indices = torch.sort(logits, descending=True, dim=-1)
     cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
@@ -22,8 +23,10 @@ def top_p_filtering(logits, top_p):
     sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
     sorted_indices_to_remove[..., 0] = 0
     # Scatter the indices to remove back to the original indices' locations
-    indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
-    logits[indices_to_remove] = -float('Inf')
+    indices_to_remove = sorted_indices_to_remove.scatter(
+        1, sorted_indices, sorted_indices_to_remove
+    )
+    logits[indices_to_remove] = -float("Inf")
     return logits
 
 
@@ -122,7 +125,11 @@ def get_sequences_probs(
 
             # Get the log probabilities for the proposed sequence in the current batch
             proposal_logprobs = get_logprobs(
-                logits=logits, index=index, pad_token_id=pad_token_id, top_k=top_k, top_p=top_p,
+                logits=logits,
+                index=index,
+                pad_token_id=pad_token_id,
+                top_k=top_k,
+                top_p=top_p,
             )
 
             # Sum the log probabilities for the entire sequence for both distributions

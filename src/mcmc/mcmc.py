@@ -1,4 +1,3 @@
-import numpy as np
 import os
 
 from utils import timer, save_to_json
@@ -20,60 +19,91 @@ def run_mcmc(
     sample_rate = args.mcmc_sample_rate
     sequence_count = args.sequence_count
 
+    # Calculate how many independent runs are needed
+    independent_runs = sequence_count // sample_rate
+
+    sampled_sequences_ids = []
+    sampled_sequences_decoded = []
+    sampled_target_logprobs = []
+
     # Run the Independent Metropolis-Hastings algorithm
     with timer("Running MCMC algorithm"):
-        (
-            sampled_sequences_ids,
-            sampled_sequences_decoded,
-            sampled_target_logprobs,
-            logprob_diff_proposed,
-            logprob_diff_current,
-            sequence_change_indices,
-        ) = metropolis_hastings(
-            sequence_count=sequence_count,
-            burnin=burnin,
-            sequences_ids=sequences_ids,
-            sequences_decoded=sequences_decoded,
-            target_logprobs=target_logprobs,
-            proposal_logprobs=proposal_logprobs,
-            sample_rate=sample_rate,
-        )
+        for i in range(independent_runs):
+            (
+                collected_sequences_ids,
+                collected_sequences_decoded,
+                collected_target_logprobs,
+                logprob_diff_proposed,
+                logprob_diff_current,
+                sequence_change_indices,
+            ) = metropolis_hastings(
+                sequence_count=sequence_count,
+                sequences_ids=sequences_ids,
+                sequences_decoded=sequences_decoded,
+                target_logprobs=target_logprobs,
+                proposal_logprobs=proposal_logprobs,
+            )
+
+            # Save the sequences and their probabilities to JSON files
+            save_to_json(
+                collected_sequences_ids,
+                f"collected_sequences_ids_{i}",
+                os.path.join(output_subdir, "plots", "independent_runs"),
+            )
+            save_to_json(
+                collected_sequences_decoded,
+                f"collected_sequences_decoded_{i}",
+                os.path.join(output_subdir, "plots", "independent_runs"),
+            )
+            save_to_json(
+                collected_target_logprobs,
+                f"collected_target_logprobs_{i}",
+                os.path.join(output_subdir, "plots", "independent_runs"),
+            )
+
+            # Plot the distribution of the generated probabilities
+            # plot_distribution(
+            #     collected_target_logprobs,
+            #     plot_type="histogram",
+            #     prefix=f"{i}_mcmc",
+            #     show=False,
+            #     output_dir=os.path.join(output_subdir, "plots", "independent_runs"),
+            # )
+            # plot_distribution(
+            #     target_logprobs,
+            #     plot_type="kde",
+            #     prefix=f"{i}_mcmc",
+            #     show=False,
+            #     output_dir=os.path.join(output_subdir, "plots", "independent_runs"),
+            # )
+            # Plot the chain of generated samples
+            plot_chain(
+                collected_target_logprobs,
+                burnin=burnin,
+                prefix=f"mcmc_{i}",
+                show=False,
+                output_dir=os.path.join(output_subdir, "plots", "independent_runs"),
+            )
+            # Plot the deltas for the acceptance ratio
+            plot_logprob_diff(
+                logprob_diff_proposed,
+                logprob_diff_current,
+                sequence_change_indices,
+                prefix=f"mcmc_{i}",
+                show=False,
+                output_dir=os.path.join(output_subdir, "plots", "independent_runs"),
+            )
+
+            # Take the last sample from each Metropolis iteration and add it to the sampled sequences arrays
+            sampled_sequences_ids.append(sequences_ids[-1])
+            sampled_sequences_decoded.append(sequences_decoded[-1])
+            sampled_target_logprobs.append(target_logprobs[-1])
 
     # Save the sampled sequences and their probabilities to JSON files
     save_to_json(sampled_sequences_ids, "sampled_sequences_ids", output_subdir)
     save_to_json(sampled_sequences_decoded, "sampled_sequences_decoded", output_subdir)
     save_to_json(sampled_target_logprobs, "sampled_target_logprobs", output_subdir)
 
-    # Plot the distribution of the generated probabilities
-    with timer("Plotting the results"):
-        plot_distribution(
-            sampled_target_logprobs,
-            plot_type="histogram",
-            prefix="mcmc",
-            show=False,
-            output_dir=os.path.join(output_subdir, "plots"),
-        )
-        plot_distribution(
-            sampled_target_logprobs,
-            plot_type="kde",
-            prefix="mcmc",
-            show=False,
-            output_dir=os.path.join(output_subdir, "plots"),
-        )
-        # Plot the chain of generated samples
-        plot_chain(
-            sampled_target_logprobs,
-            burnin=burnin,
-            show=False,
-            output_dir=os.path.join(output_subdir, "plots"),
-        )
-        # Plot the deltas for the acceptance ratio
-        plot_logprob_diff(
-            logprob_diff_proposed,
-            logprob_diff_current,
-            sequence_change_indices,
-            show=False,
-            output_dir=os.path.join(output_subdir, "plots"),
-        )
+    # TODO: plot the distribution of the sampled probabilities
 
     return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
