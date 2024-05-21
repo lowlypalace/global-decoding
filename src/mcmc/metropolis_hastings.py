@@ -73,6 +73,7 @@ def metropolis_hastings(
         collected_sequences_ids.append(current_sequence)
         collected_sequences_decoded.append(current_decoded_seq)
         collected_target_logprobs.append(logprob_target_current)
+
     return (
         collected_sequences_ids,
         collected_sequences_decoded,

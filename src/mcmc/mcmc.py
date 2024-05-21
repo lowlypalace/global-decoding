@@ -19,7 +19,6 @@ def run_mcmc(
     burnin = args.mcmc_burnin
     sample_rate = args.mcmc_sample_rate
     sequence_count = args.sequence_count
-    seed = args.seed
 
     # Calculate how many independent runs are needed
     independent_runs = sequence_count // sample_rate
