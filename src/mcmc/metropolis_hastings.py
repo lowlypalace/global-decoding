@@ -44,12 +44,22 @@ def metropolis_hastings(
         proposed_proposal_logprob = proposal_logprobs[i]
 
         # Calculate differences for diagnostics
-        logprob_diff_proposed.append(proposed_target_logprob - proposed_proposal_logprob)
+        logprob_diff_proposed.append(
+            proposed_target_logprob - proposed_proposal_logprob
+        )
         logprob_diff_current.append(current_target_logprob - current_proposal_logprob)
 
         # Calculate the acceptance ratio
-        numerator = proposed_target_logprob + indicator_top_k(proposed_sequence) + current_proposal_logprob
-        denominator = current_target_logprob + indicator_top_k(current_sequence) + proposed_proposal_logprob
+        numerator = (
+            proposed_target_logprob
+            + indicator_top_k(proposed_sequence)
+            + current_proposal_logprob
+        )
+        denominator = (
+            current_target_logprob
+            + indicator_top_k(current_sequence)
+            + proposed_proposal_logprob
+        )
         log_acceptance_ratio = numerator - denominator
 
         # Accept or reject the new sequence based on the acceptance ratio
