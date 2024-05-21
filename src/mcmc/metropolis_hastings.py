@@ -69,7 +69,7 @@ def metropolis_hastings(
             current_target_logprob = proposed_target_logprob
             current_proposal_logprob = proposed_proposal_logprob
             # Record the iteration index where the sequence changes
-            sequence_change_indices.append(i)
+            sequence_change_indices.append(i - 1)
 
         # Append the current sequence and its probability to samples
         collected_sequences_ids.append(current_sequence)
