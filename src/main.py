@@ -91,7 +91,6 @@ def parse_args():
     )
 
     # MCMC arguments
-    # TODO: Remove this argument
     parser.add_argument(
         "--mcmc_sample_rate",
         type=int,
