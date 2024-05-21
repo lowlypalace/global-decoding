@@ -65,6 +65,7 @@ def metropolis_hastings(
             current_sequence = proposed_sequence
             logprob_target_current = logprob_target_proposed
             logprob_proposal_current = logprob_proposal_proposed
+
             # Record the iteration index where the sequence changes
             sequence_change_indices.append(i)
 
