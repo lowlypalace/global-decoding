@@ -89,7 +89,7 @@ def plot_chain(
 
     num_samples = len(samples)
 
-    idx_burnin = int(num_samples * burnin)
+    # idx_burnin = int(num_samples * burnin)
     # idx_initial = int(num_samples * initial) + 1
 
     sample_steps = np.arange(num_samples)
@@ -111,8 +111,8 @@ def plot_chain(
     stddev = np.std(samples)
     title = f"The estimate over the chain is: {estimate:0.2f} ± {stddev:0.2f}"
 
-    samples_posterior = samples[idx_burnin:]
-    samples_burnin = samples[:idx_burnin]
+    samples_posterior = samples
+    # samples_burnin = samples[:idx_burnin]
     # samples_initial = samples[:idx_initial]
 
     if y_range is None:
@@ -120,7 +120,7 @@ def plot_chain(
         y_range = min(samples) - nsig * std_post, max(samples) + nsig * std_post
 
     x_kde_posterior, y_kde_posterior = compute_kde(samples_posterior)
-    x_kde_burnin, y_kde_burnin = compute_kde(samples_burnin, x_range=y_range)
+    # x_kde_burnin, y_kde_burnin = compute_kde(samples_burnin, x_range=y_range)
     # x_kde_initial, y_kde_initial = compute_kde(samples_initial, x_range=y_range)
 
     kde_trace_posterior = go.Scatter(
@@ -135,17 +135,17 @@ def plot_chain(
         fillcolor="rgba(100, 0, 100, 0.20)",
     )
 
-    kde_trace_burnin = go.Scatter(
-        x=y_kde_burnin,
-        y=x_kde_burnin,
-        mode="lines",
-        line={"color": plasma[6], "width": 2},
-        name="Burnin Distribution",
-        xaxis="x2",
-        yaxis="y2",
-        fill="tozerox",
-        fillcolor="rgba(100, 0, 100, 0.20)",
-    )
+    # kde_trace_burnin = go.Scatter(
+    #     x=y_kde_burnin,
+    #     y=x_kde_burnin,
+    #     mode="lines",
+    #     line={"color": plasma[6], "width": 2},
+    #     name="Burnin Distribution",
+    #     xaxis="x2",
+    #     yaxis="y2",
+    #     fill="tozerox",
+    #     fillcolor="rgba(100, 0, 100, 0.20)",
+    # )
 
     # kde_trace_initial = go.Scatter(
     #     x=y_kde_initial,
@@ -161,7 +161,7 @@ def plot_chain(
 
     plots = [
         # kde_trace_initial,
-        kde_trace_burnin,
+        # kde_trace_burnin,
         kde_trace_posterior,
         go.Scatter(
             x=sample_steps,
@@ -179,17 +179,17 @@ def plot_chain(
             name="Quantile 1 - 99% Region",
         ),
         go.Scatter(
-            x=sample_steps[idx_burnin:],
+            x=sample_steps,
             y=samples_posterior,
             name="Posterior Distribution",
             line={"color": plasma[4]},
         ),
-        go.Scatter(
-            x=sample_steps[:idx_burnin],
-            y=samples_burnin,
-            name="Burn-in Region",
-            line={"color": plasma[6]},
-        ),
+        # go.Scatter(
+        #     x=sample_steps[:idx_burnin],
+        #     y=samples_burnin,
+        #     name="Burn-in Region",
+        #     line={"color": plasma[6]},
+        # ),
         # go.Scatter(
         #     x=sample_steps[:idx_initial],
         #     y=samples_initial,
