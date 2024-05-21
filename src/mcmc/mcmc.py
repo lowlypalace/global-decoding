@@ -1,5 +1,4 @@
 import os
-import numpy as np
 
 from utils import timer, save_to_json
 
