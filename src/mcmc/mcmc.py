@@ -1,5 +1,4 @@
 import os
-import random
 
 from utils import timer, save_to_json
 
@@ -15,12 +14,11 @@ def run_mcmc(
     target_logprobs,
     proposal_logprobs,
 ):
-    # Parse command-line arguments
-    sample_rate = args.mcmc_sample_rate
-    sequence_count = args.sequence_count
+    # sequence_count = args.sequence_count
+    num_subsets = args.num_subsets
 
-    # Calculate how many independent runs are needed
-    independent_runs = sequence_count // sample_rate
+    # Calculate the number of sequences per subset
+    subset_size = len(sequences_ids) // num_subsets
 
     sampled_sequences_ids = []
     sampled_sequences_decoded = []
@@ -28,14 +26,14 @@ def run_mcmc(
 
     # Run the Independent Metropolis-Hastings algorithm
     with timer("Running MCMC algorithm"):
-        for i in range(independent_runs):
-            # Shuffle the sequences and corresponding logprobs in the same order
-            indices = list(range(len(sequences_ids)))
-            random.shuffle(indices)
-            shuffled_sequences_ids = [sequences_ids[ix] for ix in indices]
-            shuffled_sequences_decoded = [sequences_decoded[ix] for ix in indices]
-            shuffled_target_logprobs = [target_logprobs[ix] for ix in indices]
-            shuffled_proposal_logprobs = [proposal_logprobs[ix] for ix in indices]
+        for i in range(num_subsets):
+            start_idx = i * subset_size
+            end_idx = (i + 1) * subset_size if (i + 1) < num_subsets else len(sequences_ids)
+
+            subset_sequences_ids = sequences_ids[start_idx:end_idx]
+            subset_sequences_decoded = sequences_decoded[start_idx:end_idx]
+            subset_target_logprobs = target_logprobs[start_idx:end_idx]
+            subset_proposal_logprobs = proposal_logprobs[start_idx:end_idx]
 
             (
                 collected_sequences_ids,
@@ -45,11 +43,11 @@ def run_mcmc(
                 logprob_diff_current,
                 sequence_change_indices,
             ) = metropolis_hastings(
-                sequence_count=sequence_count,
-                sequences_ids=shuffled_sequences_ids,
-                sequences_decoded=shuffled_sequences_decoded,
-                target_logprobs=shuffled_target_logprobs,
-                proposal_logprobs=shuffled_proposal_logprobs,
+                sequence_count=subset_size,
+                sequences_ids=subset_sequences_ids,
+                sequences_decoded=subset_sequences_decoded,
+                target_logprobs=subset_target_logprobs,
+                proposal_logprobs=subset_proposal_logprobs,
             )
 
             # Save the sequences and their probabilities to JSON files

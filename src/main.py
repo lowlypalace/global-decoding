@@ -29,11 +29,11 @@ def parse_args():
             "pythia-70m",
             "pythia-160m",
             "pythia-410m",
-            "pythia-1b",
+            "pythia-1b", # maybe drop and keep 1.4b
             "pythia-1.4b",
             "pythia-2.8b",
             "pythia-6.9b",
-            "pythia-12b",
+            "pythia-12b", # ommited if not enough time
         ],
         help="Model to use for text generation. Supports GPT-2 and Pythia.",
     )
@@ -92,10 +92,10 @@ def parse_args():
 
     # MCMC arguments
     parser.add_argument(
-        "--mcmc_sample_rate",
+        "--mcmc_num_subsets",
         type=int,
-        default=10,
-        help="Rate at which to sample sequences after the burn-in period.",
+        default=1,
+        help="Number of subsets to split the sequences into for MCMC processing.",
     )
 
     # Evaluation arguments
