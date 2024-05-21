@@ -33,6 +33,7 @@ def run_mcmc(
         for i in range(independent_runs):
             # Reset the seed at the start of the function to ensure reproducibility
             np.random.seed(seed)
+
             (
                 collected_sequences_ids,
                 collected_sequences_decoded,
