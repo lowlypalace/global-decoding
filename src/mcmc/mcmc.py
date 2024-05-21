@@ -1,4 +1,5 @@
 import os
+import random
 
 from utils import timer, save_to_json
 
@@ -28,6 +29,13 @@ def run_mcmc(
     # Run the Independent Metropolis-Hastings algorithm
     with timer("Running MCMC algorithm"):
         for i in range(independent_runs):
+            # Shuffle the sequences and corresponding logprobs in the same order
+            indices = list(range(len(sequences_ids)))
+            random.shuffle(indices)
+            shuffled_sequences_ids = [sequences_ids[ix] for ix in indices]
+            shuffled_sequences_decoded = [sequences_decoded[ix] for ix in indices]
+            shuffled_target_logprobs = [target_logprobs[ix] for ix in indices]
+            shuffled_proposal_logprobs = [proposal_logprobs[ix] for ix in indices]
 
             (
                 collected_sequences_ids,
@@ -38,10 +46,10 @@ def run_mcmc(
                 sequence_change_indices,
             ) = metropolis_hastings(
                 sequence_count=sequence_count,
-                sequences_ids=sequences_ids,
-                sequences_decoded=sequences_decoded,
-                target_logprobs=target_logprobs,
-                proposal_logprobs=proposal_logprobs,
+                sequences_ids=shuffled_sequences_ids,
+                sequences_decoded=shuffled_sequences_decoded,
+                target_logprobs=shuffled_target_logprobs,
+                proposal_logprobs=shuffled_proposal_logprobs,
             )
 
             # Save the sequences and their probabilities to JSON files
