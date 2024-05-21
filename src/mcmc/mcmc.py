@@ -49,17 +49,17 @@ def run_mcmc(
             # Save the sequences and their probabilities to JSON files
             save_to_json(
                 collected_sequences_ids,
-                f"collected_sequences_ids",
+                "collected_sequences_ids",
                 os.path.join(output_subdir, "plots", "independent_runs", f"run_{i}"),
             )
             save_to_json(
                 collected_sequences_decoded,
-                f"collected_sequences_decoded",
+                "collected_sequences_decoded",
                 os.path.join(output_subdir, "plots", "independent_runs", f"run_{i}"),
             )
             save_to_json(
                 collected_target_logprobs,
-                f"collected_target_logprobs",
+                "collected_target_logprobs",
                 os.path.join(output_subdir, "plots", "independent_runs", f"run_{i}"),
             )
 
@@ -67,7 +67,7 @@ def run_mcmc(
             plot_chain(
                 collected_target_logprobs,
                 burnin=burnin,
-                prefix=f"mcmc",
+                prefix="mcmc",
                 show=False,
                 output_dir=os.path.join(
                     output_subdir, "plots", "independent_runs", f"run_{i}"
@@ -78,7 +78,7 @@ def run_mcmc(
                 logprob_diff_proposed,
                 logprob_diff_current,
                 sequence_change_indices,
-                prefix=f"mcmc",
+                prefix="mcmc",
                 show=False,
                 output_dir=os.path.join(
                     output_subdir, "plots", "independent_runs", f"run_{i}"
