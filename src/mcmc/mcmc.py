@@ -46,11 +46,6 @@ def run_mcmc(
                 proposal_logprobs=proposal_logprobs,
             )
 
-            # Print lengths of the collected sequences
-            print(
-                f"Collected sequences: {len(collected_sequences_ids)}, {len(collected_sequences_decoded)}, {len(collected_target_logprobs)}"
-            )
-
             # Save the sequences and their probabilities to JSON files
             save_to_json(
                 collected_sequences_ids,
