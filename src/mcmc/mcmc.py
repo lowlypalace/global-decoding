@@ -48,17 +48,17 @@ def run_mcmc(
             save_to_json(
                 collected_sequences_ids,
                 "collected_sequences_ids",
-                os.path.join(output_subdir, "plots", "independent_runs", f"run_{i}"),
+                os.path.join(output_subdir, "plots", "runs", f"run_{i}"),
             )
             save_to_json(
                 collected_sequences_decoded,
                 "collected_sequences_decoded",
-                os.path.join(output_subdir, "plots", "independent_runs", f"run_{i}"),
+                os.path.join(output_subdir, "plots", "runs", f"run_{i}"),
             )
             save_to_json(
                 collected_target_logprobs,
                 "collected_target_logprobs",
-                os.path.join(output_subdir, "plots", "independent_runs", f"run_{i}"),
+                os.path.join(output_subdir, "plots", "runs", f"run_{i}"),
             )
 
             # Plot the chain of generated samples
@@ -67,7 +67,7 @@ def run_mcmc(
                 prefix="mcmc",
                 show=False,
                 output_dir=os.path.join(
-                    output_subdir, "plots", "independent_runs", f"run_{i}"
+                    output_subdir, "plots", "runs", f"run_{i}"
                 ),
             )
             # Plot the deltas for the acceptance ratio
@@ -78,7 +78,7 @@ def run_mcmc(
                 prefix="mcmc",
                 show=False,
                 output_dir=os.path.join(
-                    output_subdir, "plots", "independent_runs", f"run_{i}"
+                    output_subdir, "plots", "runs", f"run_{i}"
                 ),
             )
 
