@@ -18,6 +18,7 @@ def run_mcmc(
     burnin = args.mcmc_burnin
     sample_rate = args.mcmc_sample_rate
     sequence_count = args.sequence_count
+    seed = args.seed
 
     # Calculate how many independent runs are needed
     independent_runs = sequence_count // sample_rate
@@ -42,6 +43,7 @@ def run_mcmc(
                 sequences_decoded=sequences_decoded,
                 target_logprobs=target_logprobs,
                 proposal_logprobs=proposal_logprobs,
+                seed=seed,
             )
 
             # Save the sequences and their probabilities to JSON files
