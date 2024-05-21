@@ -13,6 +13,19 @@ def top_k_filtering(logits, top_k):
     logits[mask] = -float("inf")
     return logits
 
+def top_p_filtering(logits, top_p):
+    sorted_logits, sorted_indices = torch.sort(logits, descending=True, dim=-1)
+    cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
+    # Remove tokens with cumulative probability above the threshold (top_p)
+    sorted_indices_to_remove = cumulative_probs > top_p
+    # Shift the indices to the right to keep the first token above the threshold
+    sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
+    sorted_indices_to_remove[..., 0] = 0
+    # Scatter the indices to remove back to the original indices' locations
+    indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
+    logits[indices_to_remove] = -float('Inf')
+    return logits
+
 
 def mask_out_pad_token(log_probs, index, pad_token_id):
     # Create a mask that marks all pad_token_ids as True
@@ -25,10 +38,12 @@ def mask_out_pad_token(log_probs, index, pad_token_id):
     return log_probs
 
 
-def get_logprobs(logits, index, pad_token_id, top_k=None):
+def get_logprobs(logits, index, pad_token_id, top_k=None, top_p=None):
     # If top_k is specified, apply top-k filtering
     if top_k is not None:
         logits = top_k_filtering(logits, top_k)
+    elif top_p is not None:
+        logits = top_p_filtering(logits, top_p)
 
     # Convert the (filtered) logits to log probabilities
     log_probs = log_softmax(logits, dim=-1)
@@ -69,6 +84,7 @@ def get_sequences_probs(
     model,
     sequences_ids,
     top_k,
+    top_p,
     pad_token_id,
     input_ids,
     batch_size,
@@ -106,7 +122,7 @@ def get_sequences_probs(
 
             # Get the log probabilities for the proposed sequence in the current batch
             proposal_logprobs = get_logprobs(
-                logits=logits, index=index, pad_token_id=pad_token_id, top_k=top_k
+                logits=logits, index=index, pad_token_id=pad_token_id, top_k=top_k, top_p=top_p,
             )
 
             # Sum the log probabilities for the entire sequence for both distributions
