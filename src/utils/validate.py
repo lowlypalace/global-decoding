@@ -20,9 +20,6 @@ def validate_args(args):
     if args.batch_size_prob <= 0:
         sys.exit("--batch_size_prob must be a positive number.")
 
-    if args.mcmc_burnin <= 0:
-        sys.exit("--mcmc_burnin must be a positive number.")
-
     if args.mcmc_sample_rate <= 0:
         sys.exit("--mcmc_sample_rate must be a positive number.")
 

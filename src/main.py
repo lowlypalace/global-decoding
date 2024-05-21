@@ -91,12 +91,7 @@ def parse_args():
     )
 
     # MCMC arguments
-    parser.add_argument(
-        "--mcmc_burnin",
-        type=float,
-        default=0.2,
-        help="Burn-in period as a fraction of the total number of samples.",
-    )
+    # TODO: Remove this argument
     parser.add_argument(
         "--mcmc_sample_rate",
         type=int,

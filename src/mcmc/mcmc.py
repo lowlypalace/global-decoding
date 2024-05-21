@@ -15,7 +15,6 @@ def run_mcmc(
     proposal_logprobs,
 ):
     # Parse command-line arguments
-    burnin = args.mcmc_burnin
     sample_rate = args.mcmc_sample_rate
     sequence_count = args.sequence_count
 
@@ -65,14 +64,13 @@ def run_mcmc(
             # Plot the chain of generated samples
             plot_chain(
                 collected_target_logprobs,
-                burnin=burnin,
                 prefix="mcmc",
                 show=False,
                 output_dir=os.path.join(
                     output_subdir, "plots", "independent_runs", f"run_{i}"
                 ),
             )
-            # Plot the deltas for the acceptance ratio
+            # # Plot the deltas for the acceptance ratio
             plot_logprob_diff(
                 logprob_diff_proposed,
                 logprob_diff_current,

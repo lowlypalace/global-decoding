@@ -62,7 +62,7 @@ def compute_kde(samples, x_range=None):
 def plot_chain(
     samples,
     output_dir,
-    burnin=0.2,
+    burnin=0.0,
     prefix="mcmc",
     initial=0.01,
     nsig=1,
