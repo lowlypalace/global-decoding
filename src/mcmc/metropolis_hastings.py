@@ -18,10 +18,10 @@ def metropolis_hastings(
     collected_sequences_ids = []
     collected_sequences_decoded = []
     collected_target_logprobs = []
-    # Lists to store the deltas for the acceptance ratio (for plotting)
+    # Lists to store the deltas for the acceptance ratio for plotting
     logprob_diff_proposed = []
     logprob_diff_current = []
-    # List to store the indices where the sequence changes (for plotting)
+    # List to store the indices where the sequence changes for plotting
     sequence_change_indices = []
 
     # Get the first sequence and its probabilities
@@ -43,7 +43,7 @@ def metropolis_hastings(
         proposed_target_logprob = target_logprobs[i]
         proposed_proposal_logprob = proposal_logprobs[i]
 
-        # Calculate differences for diagnostics
+        # Calculate differences for plotting
         logprob_diff_proposed.append(
             proposed_target_logprob - proposed_proposal_logprob
         )
