@@ -12,11 +12,7 @@ def metropolis_hastings(
     sequences_decoded,
     target_logprobs,
     proposal_logprobs,
-    seed,
 ):
-
-    # Reset the seed at the start of the function to ensure reproducibility
-    np.random.seed(seed)
 
     # List to store the generated samples
     collected_sequences_ids = []
@@ -77,9 +73,6 @@ def metropolis_hastings(
         # Append the decoded sequence and its probabilities to samples
         collected_sequences_decoded.append(current_decoded_seq)
         collected_target_logprobs.append(logprob_target_current)
-
-    # Increment the seed after each run to ensure variability
-    seed += 1
 
     return (
         collected_sequences_ids,

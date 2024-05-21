@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 from utils import timer, save_to_json
 
@@ -30,6 +31,8 @@ def run_mcmc(
     # Run the Independent Metropolis-Hastings algorithm
     with timer("Running MCMC algorithm"):
         for i in range(independent_runs):
+            # Reset the seed at the start of the function to ensure reproducibility
+            np.random.seed(seed)
             (
                 collected_sequences_ids,
                 collected_sequences_decoded,
@@ -63,21 +66,6 @@ def run_mcmc(
                 os.path.join(output_subdir, "plots", "independent_runs"),
             )
 
-            # Plot the distribution of the generated probabilities
-            # plot_distribution(
-            #     collected_target_logprobs,
-            #     plot_type="histogram",
-            #     prefix=f"{i}_mcmc",
-            #     show=False,
-            #     output_dir=os.path.join(output_subdir, "plots", "independent_runs"),
-            # )
-            # plot_distribution(
-            #     target_logprobs,
-            #     plot_type="kde",
-            #     prefix=f"{i}_mcmc",
-            #     show=False,
-            #     output_dir=os.path.join(output_subdir, "plots", "independent_runs"),
-            # )
             # Plot the chain of generated samples
             plot_chain(
                 collected_target_logprobs,
@@ -101,11 +89,29 @@ def run_mcmc(
             sampled_sequences_decoded.append(sequences_decoded[-1])
             sampled_target_logprobs.append(target_logprobs[-1])
 
+            # Increment the seed after each run to ensure variability
+            seed += 1
+
     # Save the sampled sequences and their probabilities to JSON files
     save_to_json(sampled_sequences_ids, "sampled_sequences_ids", output_subdir)
     save_to_json(sampled_sequences_decoded, "sampled_sequences_decoded", output_subdir)
     save_to_json(sampled_target_logprobs, "sampled_target_logprobs", output_subdir)
 
     # TODO: plot the distribution of the sampled probabilities
+    # Plot the distribution of the generated probabilities
+    # plot_distribution(
+    #     collected_target_logprobs,
+    #     plot_type="histogram",
+    #     prefix=f"{i}_mcmc",
+    #     show=False,
+    #     output_dir=os.path.join(output_subdir, "plots", "independent_runs"),
+    # )
+    # plot_distribution(
+    #     target_logprobs,
+    #     plot_type="kde",
+    #     prefix=f"{i}_mcmc",
+    #     show=False,
+    #     output_dir=os.path.join(output_subdir, "plots", "independent_runs"),
+    # )
 
     return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
