@@ -46,7 +46,6 @@ def run_mcmc(
                 sequences_decoded=sequences_decoded,
                 target_logprobs=target_logprobs,
                 proposal_logprobs=proposal_logprobs,
-                seed=seed,
             )
 
             # Save the sequences and their probabilities to JSON files
