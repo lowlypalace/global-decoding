@@ -70,7 +70,7 @@ def run_mcmc(
                     output_subdir, "plots", "independent_runs", f"run_{i}"
                 ),
             )
-            # # Plot the deltas for the acceptance ratio
+            # Plot the deltas for the acceptance ratio
             plot_logprob_diff(
                 logprob_diff_proposed,
                 logprob_diff_current,
@@ -83,9 +83,9 @@ def run_mcmc(
             )
 
             # Take the last sample from each Metropolis iteration and add it to the sampled sequences arrays
-            sampled_sequences_ids.append(sequences_ids[-1])
-            sampled_sequences_decoded.append(sequences_decoded[-1])
-            sampled_target_logprobs.append(target_logprobs[-1])
+            sampled_sequences_ids.append(collected_sequences_ids[-1])
+            sampled_sequences_decoded.append(collected_sequences_decoded[-1])
+            sampled_target_logprobs.append(collected_target_logprobs[-1])
 
     # Save the sampled sequences and their probabilities to JSON files
     save_to_json(sampled_sequences_ids, "sampled_sequences_ids", output_subdir)
