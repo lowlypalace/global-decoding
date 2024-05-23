@@ -45,6 +45,7 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
         # Initialize MAUVE metric
         mauve = load("mauve")
         # Compute MAUVE results for locally decoded strings
+        logging.info(f"Evaluating {len(local_decoding_texts)} locally decoded strings and {len(reference_texts)} reference strings")
         mauve_results_local = mauve.compute(
             predictions=local_decoding_texts,
             references=reference_texts,
@@ -52,6 +53,7 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
             max_text_length=max_length,
             seed=seed,
         )
+        logging.info(f"Evaluating {len(global_decoding_texts)} globally decoded strings and {len(reference_texts)} reference strings")
         # Compute MAUVE results for globally decoded strings
         mauve_results_global = mauve.compute(
             predictions=global_decoding_texts,
