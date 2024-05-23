@@ -20,6 +20,7 @@ def run_mcmc(
 
     # Calculate the number of sequences per subset
     subset_size = len(sequences_ids) // num_subsets
+    logging.info(f"Number of sequences for each MCMC iteration: {subset_size}")
 
     sampled_sequences_ids = []
     sampled_sequences_decoded = []
@@ -96,12 +97,14 @@ def run_mcmc(
             sampled_sequences_decoded.append(collected_sequences_decoded[-1])
             sampled_target_logprobs.append(collected_target_logprobs[-1])
 
+    logging.info(f"Sampled {len(sampled_sequences_ids)} sequences from the MCMC algorithm.")
     # Save the sampled sequences and their probabilities to JSON files
     save_to_json(sampled_sequences_ids, "sampled_sequences_ids", output_subdir)
     save_to_json(sampled_sequences_decoded, "sampled_sequences_decoded", output_subdir)
     save_to_json(sampled_target_logprobs, "sampled_target_logprobs", output_subdir)
 
     # Plot the distribution of the generated probabilities
+    logging.info("Plotting the distribution of the sampled sequences...")
     plot_distribution(
         sampled_target_logprobs,
         plot_type="histogram",
