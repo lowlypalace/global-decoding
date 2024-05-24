@@ -20,7 +20,6 @@ from mcmc.plots import plot_distribution
 def generate_sequences_and_probs(args, output_subdir):
     # Parse command-line arguments
     top_k = args.top_k
-    # top_p = args.top_p
     sequence_count = args.sequence_count
     max_length = args.max_length
     text = args.text

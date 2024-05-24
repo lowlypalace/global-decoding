@@ -10,7 +10,6 @@ def generate_sequences(
     input_ids,
     max_length,
     top_k,
-    # top_p,
     batch_size,
     sequence_count,
 ):
@@ -29,10 +28,10 @@ def generate_sequences(
             sequences_ids_batch = model.generate(
                 input_ids=input_ids,
                 max_length=max_length,
+                min_length=1,
                 pad_token_id=tokenizer.pad_token_id,
                 eos_token_id=tokenizer.eos_token_id,
                 top_k=top_k,
-                # top_p=top_p,
                 do_sample=True,
                 num_return_sequences=batch_size,
             )

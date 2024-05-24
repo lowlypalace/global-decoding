@@ -40,6 +40,7 @@ def mask_out_pad_token(log_probs, index, pad_token_id):
     log_probs[pad_mask & ~first_pad_mask] = 0
     return log_probs
 
+
 # def get_logprobs(logits, index, pad_token_id, top_k=None, top_p=None):
 def get_logprobs(logits, index, pad_token_id, top_k=None):
     # If top_k is specified, apply top-k filtering

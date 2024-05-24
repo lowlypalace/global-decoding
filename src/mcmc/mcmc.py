@@ -30,14 +30,18 @@ def run_mcmc(
     with timer("Running MCMC algorithm"):
         for i in range(num_subsets):
             start_idx = i * subset_size
-            end_idx = (i + 1) * subset_size if (i + 1) < num_subsets else len(sequences_ids)
+            end_idx = (
+                (i + 1) * subset_size if (i + 1) < num_subsets else len(sequences_ids)
+            )
 
             subset_sequences_ids = sequences_ids[start_idx:end_idx]
             subset_sequences_decoded = sequences_decoded[start_idx:end_idx]
             subset_target_logprobs = target_logprobs[start_idx:end_idx]
             subset_proposal_logprobs = proposal_logprobs[start_idx:end_idx]
 
-            logging.info(f"Running MCMC algorithm on subset {i + 1} of {num_subsets}...")
+            logging.info(
+                f"Running MCMC algorithm on subset {i + 1} of {num_subsets}..."
+            )
 
             (
                 collected_sequences_ids,
@@ -76,9 +80,7 @@ def run_mcmc(
                 collected_target_logprobs,
                 prefix="mcmc",
                 show=False,
-                output_dir=os.path.join(
-                    output_subdir, "plots", "runs", f"run_{i}"
-                ),
+                output_dir=os.path.join(output_subdir, "plots", "runs", f"run_{i}"),
             )
             # Plot the deltas for the acceptance ratio
             plot_logprob_diff(
@@ -87,9 +89,7 @@ def run_mcmc(
                 sequence_change_indices,
                 prefix="mcmc",
                 show=False,
-                output_dir=os.path.join(
-                    output_subdir, "plots", "runs", f"run_{i}"
-                ),
+                output_dir=os.path.join(output_subdir, "plots", "runs", f"run_{i}"),
             )
 
             # Take the last sample from each Metropolis iteration and add it to the sampled sequences arrays
@@ -97,7 +97,9 @@ def run_mcmc(
             sampled_sequences_decoded.append(collected_sequences_decoded[-1])
             sampled_target_logprobs.append(collected_target_logprobs[-1])
 
-    logging.info(f"Sampled {len(sampled_sequences_ids)} sequences from the MCMC algorithm.")
+    logging.info(
+        f"Sampled {len(sampled_sequences_ids)} sequences from the MCMC algorithm."
+    )
     # Save the sampled sequences and their probabilities to JSON files
     save_to_json(sampled_sequences_ids, "sampled_sequences_ids", output_subdir)
     save_to_json(sampled_sequences_decoded, "sampled_sequences_decoded", output_subdir)
