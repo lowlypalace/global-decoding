@@ -43,10 +43,11 @@ def generate_sequences(
             for seq_ids in padded_sequences_ids_batch["input_ids"]:
                 if not torch.all(seq_ids == tokenizer.pad_token_id).item():
                     sequences_ids.extend([seq_ids])
+                    if len(sequences_ids) >= sequence_count:
+                        break
                 else:
                     logging.info("Generated sequence consists only of padding tokens.")
-                if len(sequences_ids) >= sequence_count:
-                    break
+
 
     # If we have more sequences than needed due to the last batch, truncate the list
     sequences_ids = sequences_ids[:sequence_count]
