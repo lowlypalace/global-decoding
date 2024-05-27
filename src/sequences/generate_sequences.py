@@ -13,7 +13,9 @@ def generate_sequences(
     batch_size,
     sequence_count,
 ):
-    logging.info(f"Generating {sequence_count} sequences in batches of size {batch_size}...")
+    logging.info(
+        f"Generating {sequence_count} sequences in batches of size {batch_size}..."
+    )
 
     # Container for all generated sequences
     sequences_ids = []
@@ -47,7 +49,6 @@ def generate_sequences(
                         break
                 else:
                     logging.info("Generated sequence consists only of padding tokens.")
-
 
     # If we have more sequences than needed due to the last batch, truncate the list
     sequences_ids = sequences_ids[:sequence_count]
