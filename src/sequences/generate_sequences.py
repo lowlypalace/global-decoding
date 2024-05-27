@@ -48,7 +48,7 @@ def generate_sequences(
                     if len(sequences_ids) >= sequence_count:
                         break
                 else:
-                    logging.info("Generated sequence consists only of padding tokens.")
+                    logging.warning("Generated sequence consists only of padding tokens.")
 
     # If we have more sequences than needed due to the last batch, truncate the list
     sequences_ids = sequences_ids[:sequence_count]
