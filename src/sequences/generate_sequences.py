@@ -13,22 +13,17 @@ def generate_sequences(
     batch_size,
     sequence_count,
 ):
-    # Calculate number of batches needed to generate the desired sequence_count
-    num_batches = sequence_count // batch_size + (sequence_count % batch_size > 0)
-    logging.info(
-        f"Generating {sequence_count} sequences in {num_batches} batches of size {batch_size}..."
-    )
+    logging.info(f"Generating {sequence_count} sequences in batches of size {batch_size}...")
 
     # Container for all generated sequences
     sequences_ids = []
 
     with torch.no_grad():
-        for _ in range(num_batches):
+        while len(sequences_ids) < sequence_count:
             # Generate a batch of sequences
             sequences_ids_batch = model.generate(
                 input_ids=input_ids,
                 max_length=max_length,
-                min_length=1,
                 pad_token_id=tokenizer.pad_token_id,
                 eos_token_id=tokenizer.eos_token_id,
                 top_k=top_k,
@@ -44,16 +39,18 @@ def generate_sequences(
                 return_tensors="pt",
             ).to(input_ids.device)
 
-            # Collect the generated sequences
-            sequences_ids.extend(padded_sequences_ids_batch["input_ids"])
-
-            # If we've generated enough sequences, stop
-            if len(sequences_ids) >= sequence_count:
-                break
+            # Filter sequences to remove those consisting only of padding tokens
+            for seq_ids in padded_sequences_ids_batch["input_ids"]:
+                if not torch.all(seq_ids == tokenizer.pad_token_id).item():
+                    sequences_ids.extend([seq_ids])
+                else:
+                    logging.info("Generated sequence consists only of padding tokens.")
+                if len(sequences_ids) >= sequence_count:
+                    break
 
     # If we have more sequences than needed due to the last batch, truncate the list
     sequences_ids = sequences_ids[:sequence_count]
-    logging.info(f"Generated {len(sequences_ids)} sequences in total.")
+    logging.info(f"Generated {len(sequences_ids)} sequence in total.")
 
     # Decode sequences to text
     sequences_decoded = tokenizer.batch_decode(sequences_ids, skip_special_tokens=True)
