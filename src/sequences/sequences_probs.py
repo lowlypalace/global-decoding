@@ -13,23 +13,6 @@ def top_k_filtering(logits, top_k):
     logits[mask] = -float("inf")
     return logits
 
-
-# def top_p_filtering(logits, top_p):
-#     sorted_logits, sorted_indices = torch.sort(logits, descending=True, dim=-1)
-#     cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
-#     # Remove tokens with cumulative probability above the threshold (top_p)
-#     sorted_indices_to_remove = cumulative_probs > top_p
-#     # Shift the indices to the right to keep the first token above the threshold
-#     sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
-#     sorted_indices_to_remove[..., 0] = 0
-#     # Scatter the indices to remove back to the original indices' locations
-#     indices_to_remove = sorted_indices_to_remove.scatter(
-#         1, sorted_indices, sorted_indices_to_remove
-#     )
-#     logits[indices_to_remove] = -float("Inf")
-#     return logits
-
-
 def mask_out_pad_token(log_probs, index, pad_token_id):
     # Create a mask that marks all pad_token_ids as True
     pad_mask = index.squeeze(-1) == pad_token_id
@@ -46,8 +29,6 @@ def get_logprobs(logits, index, pad_token_id, top_k=None):
     # If top_k is specified, apply top-k filtering
     if top_k is not None:
         logits = top_k_filtering(logits, top_k)
-    # elif top_p is not None:
-    #     logits = top_p_filtering(logits, top_p)
 
     # Convert the (filtered) logits to log probabilities
     log_probs = log_softmax(logits, dim=-1)
@@ -136,6 +117,13 @@ def get_sequences_probs(
             # Sum the log probabilities for the entire sequence for both distributions
             target_logprob_sum = sum_logprobs(target_logprobs)
             proposal_logprob_sum = sum_logprobs(proposal_logprobs)
+
+            # Check for non-finite values and log if found
+            if not torch.isfinite(target_logprob_sum).all():
+                logging.warning(f"Non-finite values detected in target log probabilities.")
+
+            if not torch.isfinite(proposal_logprob_sum).all():
+                logging.warning(f"Non-finite values detected in proposal log probabilities.")
 
             # Append the results to the placeholders
             target_logprob_sums = torch.cat((target_logprob_sums, target_logprob_sum))
