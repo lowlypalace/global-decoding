@@ -18,7 +18,7 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     seed = args.seed
 
     # Set the device ID
-    device_id = 1 if args.device is "cuda" else 0
+    device_id = 1 if args.device == "cuda" else 0
 
     # Set the number of evaluated sequnces to the number of sampled sequences
     if num_sequences is None:
