@@ -35,9 +35,9 @@ def generate_sequences_and_probs(args, output_subdir):
     else:  # Default to gpt2 or gpt2-large
         tokenizer = GPT2Tokenizer.from_pretrained(model_name)
         model = GPT2LMHeadModel.from_pretrained(model_name)
-        # Convert the model to double precision to avoid floating point discrepancies
-        model.double()
 
+    # Convert the model to double precision to avoid floating point discrepancies
+    model.double()
     # Set the model to evaluation mode
     model.eval()
     # Move the model to the specified device
