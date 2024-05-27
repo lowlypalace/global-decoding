@@ -15,11 +15,10 @@ def run_mcmc(
     target_logprobs,
     proposal_logprobs,
 ):
-    # sequence_count = args.sequence_count
-    num_subsets = args.mcmc_num_subsets
+    num_samples = args.mcmc_num_samples
 
     # Calculate the number of sequences per subset
-    subset_size = len(sequences_ids) // num_subsets
+    subset_size = len(sequences_ids) // num_samples
     logging.info(f"Number of sequences for each MCMC iteration: {subset_size}")
 
     sampled_sequences_ids = []
@@ -28,10 +27,10 @@ def run_mcmc(
 
     # Run the Independent Metropolis-Hastings algorithm
     with timer("Running MCMC algorithm"):
-        for i in range(num_subsets):
+        for i in range(num_samples):
             start_idx = i * subset_size
             end_idx = (
-                (i + 1) * subset_size if (i + 1) < num_subsets else len(sequences_ids)
+                (i + 1) * subset_size if (i + 1) < num_samples else len(sequences_ids)
             )
 
             subset_sequences_ids = sequences_ids[start_idx:end_idx]
@@ -40,7 +39,7 @@ def run_mcmc(
             subset_proposal_logprobs = proposal_logprobs[start_idx:end_idx]
 
             logging.info(
-                f"Running MCMC algorithm on subset {i + 1} of {num_subsets}..."
+                f"Running MCMC algorithm on subset {i + 1} of {num_samples}..."
             )
 
             (

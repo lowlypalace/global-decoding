@@ -20,8 +20,8 @@ def validate_args(args):
     if args.batch_size_prob <= 0:
         sys.exit("--batch_size_prob must be a positive number.")
 
-    if args.mcmc_num_subsets <= 0:
-        sys.exit("--mcmc_num_subsets must be a positive number.")
+    if args.mcmc_num_samples <= 0:
+        sys.exit("--mcmc_num_samples must be a positive number.")
 
     if (
         args.eval_num_sequences is not None
