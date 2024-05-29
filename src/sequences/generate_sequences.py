@@ -31,6 +31,7 @@ def generate_sequences(
                 top_k=top_k,
                 do_sample=True,
                 num_return_sequences=batch_size,
+                min_new_tokens=1
             )
 
             # Pad sequences in the batch to max_length
@@ -41,14 +42,18 @@ def generate_sequences(
                 return_tensors="pt",
             ).to(input_ids.device)
 
-            # Filter sequences to remove those consisting only of padding tokens
+            # Check sequences consisting only of padding tokens
+            # TODO: Remove this after testing
             for seq_ids in padded_sequences_ids_batch["input_ids"]:
-                if not torch.all(seq_ids == tokenizer.pad_token_id).item():
-                    sequences_ids.extend([seq_ids])
-                    if len(sequences_ids) >= sequence_count:
-                        break
-                else:
+                if torch.all(seq_ids == tokenizer.pad_token_id).item():
                     logging.warning("Generated sequence consists only of padding tokens.")
+
+            # Collect the generated sequences
+            sequences_ids.extend(padded_sequences_ids_batch["input_ids"])
+
+            # If we've generated enough sequences, stop
+            if len(sequences_ids) >= sequence_count:
+                break
 
     # If we have more sequences than needed due to the last batch, truncate the list
     sequences_ids = sequences_ids[:sequence_count]
