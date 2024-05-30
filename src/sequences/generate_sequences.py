@@ -31,7 +31,7 @@ def generate_sequences(
                 top_k=top_k,
                 do_sample=True,
                 num_return_sequences=batch_size,
-                min_new_tokens=1 # We don't want to generate empty sequences
+                min_new_tokens=1,  # We don't want to generate empty sequences
             )
 
             # Pad sequences in the batch to max_length
@@ -46,7 +46,9 @@ def generate_sequences(
             # TODO: Remove this after testing
             for seq_ids in padded_sequences_ids_batch["input_ids"]:
                 if torch.all(seq_ids == tokenizer.pad_token_id).item():
-                    logging.warning("Generated sequence consists only of padding tokens.")
+                    logging.warning(
+                        "Generated sequence consists only of padding tokens."
+                    )
 
             # Collect the generated sequences
             sequences_ids.extend(padded_sequences_ids_batch["input_ids"])
