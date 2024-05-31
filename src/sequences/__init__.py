@@ -1,1 +1,2 @@
 from .sequences_and_probs import generate_sequences_and_probs
+from .generate_sequences_and_probs_hf import generate_sequences_and_probs_hf
