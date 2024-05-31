@@ -40,16 +40,22 @@ def generate_sequences_and_probs_hf(
             )
 
             # Only use the IDs that were generated, excluding the input IDs
-            gen_sequences_ids = sequences_batch.sequences[:, input_ids.shape[-1]:]
+            gen_sequences_ids = sequences_batch.sequences[:, input_ids.shape[-1] :]
 
             logprobs_target = torch.stack(sequences_batch.logits, dim=1).log_softmax(-1)
-            logprobs_proposal = torch.stack(sequences_batch.scores, dim=1).log_softmax(-1)
+            logprobs_proposal = torch.stack(sequences_batch.scores, dim=1).log_softmax(
+                -1
+            )
 
-            selected_logprobs_proposal = torch.gather(logprobs_proposal, 2, gen_sequences_ids[:, :, None]).squeeze(-1)
-            selected_logprobs_target= torch.gather(logprobs_target, 2, gen_sequences_ids[:, :, None]).squeeze(-1)
+            selected_logprobs_proposal = torch.gather(
+                logprobs_proposal, 2, gen_sequences_ids[:, :, None]
+            ).squeeze(-1)
+            selected_logprobs_target = torch.gather(
+                logprobs_target, 2, gen_sequences_ids[:, :, None]
+            ).squeeze(-1)
 
             # Set logits of padding tokens to 0 instead of -inf
-            selected_logprobs_proposal[selected_logprobs_proposal == float('-inf')] = 0
+            selected_logprobs_proposal[selected_logprobs_proposal == float("-inf")] = 0
 
             proposal_logprob_sum = torch.sum(selected_logprobs_proposal, dim=-1)
             target_logprob_sum = torch.sum(selected_logprobs_target, dim=-1)
@@ -83,4 +89,9 @@ def generate_sequences_and_probs_hf(
     # Decode sequences to text
     sequences_decoded = tokenizer.batch_decode(sequences_ids, skip_special_tokens=True)
 
-    return torch.stack(sequences_ids), sequences_decoded, target_logprobs_sums, proposal_logprobs_sums
+    return (
+        torch.stack(sequences_ids),
+        sequences_decoded,
+        target_logprobs_sums,
+        proposal_logprobs_sums,
+    )
