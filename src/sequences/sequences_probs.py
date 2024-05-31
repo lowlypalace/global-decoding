@@ -3,14 +3,45 @@ import logging
 import json
 from torch.nn.functional import log_softmax
 
+# def top_k_filtering(logits, top_k):
+#     # Retrieve the top_k logits and their indices for each sequence in the batch
+#     topk_values, topk_indices = torch.topk(logits, top_k, dim=-1)
+
+#     # Print top-k values for debugging
+#     # print("Top-k values before applying mask:", topk_values)
+
+#     # Check if any of the top-k values are zero
+#     inf_mask = topk_values == 0
+#     if inf_mask.any():
+#         print("Logits with -inf found in top-k:")
+#         for i in range(inf_mask.size(0)):
+#             if inf_mask[i].any():
+#                 inf_indices = inf_mask[i].nonzero(as_tuple=True)[0]
+#                 for idx in inf_indices:
+#                     print(f"Sequence {i}, Position {idx.item()}, Logit -inf")
+
+#     # Create a mask of the same shape as logits, initialized to False
+#     mask = torch.ones_like(logits).scatter_(-1, topk_indices, 0).bool()
+
+#     # Set all elements of logits that are not in the top_k to -float("inf")
+#     logits[mask] = -float("inf")
+
+#     # Check if -inf has been introduced correctly without affecting top-k elements
+#     after_mask_values = torch.gather(logits, -1, topk_indices)
+#     if (after_mask_values == float('-inf')).any():
+#         print("Error: -inf introduced in top-k values after masking.")
+
+#     return logits
+
 
 def top_k_filtering(logits, top_k):
     # Retrieve the top_k logits and their indices for each sequence in the batch
-    _, topk_indices = torch.topk(logits, top_k, dim=-1)
+    topk_values, topk_indices = torch.topk(logits, top_k, dim=-1)
     # Create a mask of the same shape as logits, initialized to False
     mask = torch.ones_like(logits).scatter_(-1, topk_indices, 0).bool()
     # Set all elements of logits that are not in the top_k to -float("inf")
     logits[mask] = -float("inf")
+
     return logits
 
 
@@ -79,6 +110,10 @@ def get_sequences_probs(
     num_sequences = sequences_ids.size(0)
     num_batches = (num_sequences + batch_size - 1) // batch_size
 
+    # Save the log probabilities for each token in the sequences
+    proposal_logprobs_tokens = torch.tensor([], device=sequences_ids.device)
+    target_logprobs_tokens = torch.tensor([], device=sequences_ids.device)
+
     # Placeholder for the log probability sums
     target_logprob_sums = torch.tensor([], device=sequences_ids.device)
     proposal_logprob_sums = torch.tensor([], device=sequences_ids.device)
@@ -115,6 +150,13 @@ def get_sequences_probs(
                 # top_p=top_p,
             )
 
+            proposal_logprobs_tokens = torch.cat(
+                (proposal_logprobs_tokens, proposal_logprobs)
+            )
+            target_logprobs_tokens = torch.cat(
+                (target_logprobs_tokens, target_logprobs)
+            )
+
             # Sum the log probabilities for the entire sequence for both distributions
             target_logprob_sum = sum_logprobs(target_logprobs)
             proposal_logprob_sum = sum_logprobs(proposal_logprobs)
@@ -122,12 +164,12 @@ def get_sequences_probs(
             # Check for non-finite values and log if found
             if not torch.isfinite(target_logprob_sum).all():
                 logging.warning(
-                    f"Non-finite values detected in target log probabilities."
+                    f"Non-finite values detected in target log probabilities for batch {i}."
                 )
 
             if not torch.isfinite(proposal_logprob_sum).all():
                 logging.warning(
-                    f"Non-finite values detected in proposal log probabilities."
+                    f"Non-finite values detected in proposal log probabilities for batch {i}."
                 )
 
             # Append the results to the placeholders
@@ -136,4 +178,9 @@ def get_sequences_probs(
                 (proposal_logprob_sums, proposal_logprob_sum)
             )
 
-    return target_logprob_sums, proposal_logprob_sums
+    return (
+        target_logprob_sums,
+        proposal_logprob_sums,
+        proposal_logprobs_tokens,
+        target_logprobs_tokens,
+    )

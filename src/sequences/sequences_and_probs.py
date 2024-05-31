@@ -75,7 +75,12 @@ def generate_sequences_and_probs(args, output_subdir):
 
         # Get the probabilities for the generated sequences
         with timer("Computing probabilities"):
-            target_logprobs, proposal_logprobs = get_sequences_probs(
+            (
+                target_logprobs,
+                proposal_logprobs,
+                proposal_logprobs_tokens,
+                target_logprobs_tokens,
+            ) = get_sequences_probs(
                 model=model,
                 sequences_ids=sequences_ids,
                 top_k=top_k,
@@ -111,6 +116,13 @@ def generate_sequences_and_probs(args, output_subdir):
     proposal_logprobs_list = [logprob.item() for logprob in proposal_logprobs]
     save_to_json(target_logprobs_list, "logprobs_target", output_subdir)
     save_to_json(proposal_logprobs_list, "logprobs_proposal", output_subdir)
+
+    proposal_logprobs_tokens = [
+        logprob.tolist() for logprob in proposal_logprobs_tokens
+    ]
+    target_logprobs_tokens = [logprob.tolist() for logprob in target_logprobs_tokens]
+    save_to_json(proposal_logprobs_tokens, "logprobs_proposal_tokens", output_subdir)
+    save_to_json(target_logprobs_tokens, "logprobs_target_list_tokens", output_subdir)
 
     logging.info("Plotting the log probabilities distributions...")
     # Plot the distribution of the target log-probabilities
