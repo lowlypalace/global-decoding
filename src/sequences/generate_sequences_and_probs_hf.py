@@ -54,8 +54,12 @@ def generate_sequences_and_probs_hf(
                 logprobs_target, 2, gen_sequences_ids[:, :, None]
             ).squeeze(-1)
 
-            # Set logits of padding tokens to 0 instead of -inf
-            selected_logprobs_proposal[selected_logprobs_proposal == float("-inf")] = 0
+            # Handle -inf in selected_logprobs_proposal
+            mask_inf = selected_logprobs_proposal == float("-inf")
+            selected_logprobs_proposal[mask_inf] = 0
+
+            # Apply the same mask to selected_logprobs_target
+            selected_logprobs_target[mask_inf] = 0
 
             proposal_logprob_sum = torch.sum(selected_logprobs_proposal, dim=-1)
             target_logprob_sum = torch.sum(selected_logprobs_target, dim=-1)
