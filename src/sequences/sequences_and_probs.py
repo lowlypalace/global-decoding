@@ -38,6 +38,8 @@ def generate_sequences_and_probs(args, output_subdir):
         tokenizer = GPT2Tokenizer.from_pretrained(model_name)
         model = GPT2LMHeadModel.from_pretrained(model_name)
 
+    # Use double precision
+    model.double()
     # Set the model to evaluation mode
     model.eval()
     # Move the model to the specified device
@@ -47,6 +49,7 @@ def generate_sequences_and_probs(args, output_subdir):
     # Set the padding token to the EOS token
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+        # tokenizer.pad_token_id = tokenizer.eos_token_id
     # Set the padding side to the right
     tokenizer.padding_side = "right"
     # Set the text to the EOS token if it is not set
@@ -117,12 +120,12 @@ def generate_sequences_and_probs(args, output_subdir):
     save_to_json(target_logprobs_list, "logprobs_target", output_subdir)
     save_to_json(proposal_logprobs_list, "logprobs_proposal", output_subdir)
 
-    proposal_logprobs_tokens = [
-        logprob.tolist() for logprob in proposal_logprobs_tokens
-    ]
-    target_logprobs_tokens = [logprob.tolist() for logprob in target_logprobs_tokens]
-    save_to_json(proposal_logprobs_tokens, "logprobs_proposal_tokens", output_subdir)
-    save_to_json(target_logprobs_tokens, "logprobs_target_list_tokens", output_subdir)
+    # proposal_logprobs_tokens = [
+    #     logprob.tolist() for logprob in proposal_logprobs_tokens
+    # ]
+    # target_logprobs_tokens = [logprob.tolist() for logprob in target_logprobs_tokens]
+    # save_to_json(proposal_logprobs_tokens, "logprobs_proposal_tokens", output_subdir)
+    # save_to_json(target_logprobs_tokens, "logprobs_target_list_tokens", output_subdir)
 
     logging.info("Plotting the log probabilities distributions...")
     # Plot the distribution of the target log-probabilities
