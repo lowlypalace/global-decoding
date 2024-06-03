@@ -31,7 +31,8 @@ def generate_sequences(
                 top_k=top_k,
                 do_sample=True,
                 num_return_sequences=batch_size,
-                min_new_tokens=1,  # We don't want to generate empty sequences
+                min_new_tokens=1,  # We don't want to generate empty sequences,
+                use_cache=False
             )
 
             # Pad sequences in the batch to max_length
