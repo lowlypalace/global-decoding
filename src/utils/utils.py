@@ -20,7 +20,7 @@ def set_seed(seed):
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
-    torch.use_deterministic_algorithms(True)
+    torch.use_deterministic_algorithms(True) # TODO: consider removing this line as it can slow down the code
 
 
 @contextlib.contextmanager
@@ -90,6 +90,10 @@ def save_to_json(data, base_name, subdir):
     with open(filename, "w") as f:
         json.dump(data, f)
 
+def load_from_json(file_path):
+    with open(f"{file_path}.json", "r") as f:
+        data = json.load(f)
+    return data
 
 def load_data_from_jsonl(file_path):
     with open(file_path, "r", encoding="utf-8") as file:

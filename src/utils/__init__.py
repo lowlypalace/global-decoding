@@ -8,6 +8,7 @@ from .utils import (
     convert_to_dict,
     load_data_from_jsonl,
     set_seed,
+    load_from_json
 )
 
 from .validate import validate_args

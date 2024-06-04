@@ -96,6 +96,12 @@ def parse_args():
         choices=["fp16", "fp32", "fp64"],
         help="Precision to use for the model. Defaults to fp64.",
     )
+    parser.add_argument(
+        "--preload_sequences",
+        type=str,
+        default=None,
+        help="Directory name to preload generated sequences from.",
+    )
 
     # MCMC arguments
     parser.add_argument(
@@ -161,7 +167,10 @@ def main():
     args = parse_args()
 
     # Add a directory with a timestamp to the output directory
-    output_subdir = os.path.join(args.output_dir, get_timestamp())
+    if args.preload_sequences:
+        output_subdir = os.path.join(args.output_dir, args.preload_sequences)
+    else:
+        output_subdir = os.path.join(args.output_dir, get_timestamp())
     # Create a directory to save the output files
     os.makedirs(output_subdir, exist_ok=True)
     # Save log messages to a file
