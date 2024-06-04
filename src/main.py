@@ -37,11 +37,11 @@ def parse_args():
             "pythia-70m",
             "pythia-160m",
             "pythia-410m",
-            "pythia-1b",  # maybe drop and keep 1.4b
+            "pythia-1b",
             "pythia-1.4b",
             "pythia-2.8b",
             "pythia-6.9b",
-            "pythia-12b",  # ommited if not enough time
+            "pythia-12b",
         ],
         help="Model to use for text generation. Supports GPT-2 and Pythia.",
     )
