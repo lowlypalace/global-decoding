@@ -6,7 +6,7 @@ import plotly.figure_factory as ff
 
 from scipy.stats import gaussian_kde
 
-from utils import (
+from src.utils.utils import (
     create_filename,
 )
 

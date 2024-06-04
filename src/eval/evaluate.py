@@ -4,9 +4,9 @@ import logging
 
 from evaluate import load
 
-from utils import save_to_json, timer, convert_to_dict, load_data_from_jsonl
+from src.utils.utils import save_to_json, timer, convert_to_dict, load_data_from_jsonl
 
-from .download_dataset import download_dataset
+from src.eval.download_dataset import download_dataset
 
 
 def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):

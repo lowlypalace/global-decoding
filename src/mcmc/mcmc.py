@@ -1,10 +1,10 @@
 import os
 import logging
 
-from utils import timer, save_to_json
+from src.utils.utils import timer, save_to_json
 
-from .metropolis_hastings import metropolis_hastings
-from .plots import plot_distribution, plot_chain, plot_logprob_diff
+from src.mcmc.metropolis_hastings import metropolis_hastings
+from src.mcmc.plots import plot_distribution, plot_chain, plot_logprob_diff
 
 
 def run_mcmc(

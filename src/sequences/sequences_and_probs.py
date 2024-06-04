@@ -10,12 +10,12 @@ from transformers import (
     GPTNeoXForCausalLM,
 )
 
-from utils import timer, save_to_json, load_from_json
+from src.utils.utils import timer, save_to_json, load_from_json
 
-from .sequences_probs import get_sequences_probs
-from .generate_sequences import generate_sequences
+from src.sequences.sequences_probs import get_sequences_probs
+from src.sequences.generate_sequences import generate_sequences
 
-from mcmc.plots import plot_distribution
+from src.mcmc.plots import plot_distribution
 
 
 def generate_sequences_and_probs(args, output_subdir):

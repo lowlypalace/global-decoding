@@ -5,17 +5,18 @@ import torch
 import os
 
 
-from utils import (
+from src.utils.utils import (
     setup_logging,
     save_args,
     get_timestamp,
-    validate_args,
     set_seed,
     load_from_json,
 )
-from sequences import generate_sequences_and_probs
-from mcmc import run_mcmc
-from eval import evaluate
+from src.utils.validate import validate_args
+
+from src.sequences import generate_sequences_and_probs
+from src.mcmc import run_mcmc
+from src.eval import evaluate
 
 
 # Define the function to parse command-line arguments

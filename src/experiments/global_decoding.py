@@ -6,7 +6,7 @@ import plotly.figure_factory as ff
 
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
-from utils import (
+from src.utils.utils import (
     create_filename,
 )
 
