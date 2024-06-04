@@ -92,9 +92,9 @@ def parse_args():
     parser.add_argument(
         "--precision",
         type=str,
-        default="fp32",
+        default="fp64",
         choices=["fp16", "fp32", "fp64"],
-        help="Precision to use for the model. Defaults to fp32.",
+        help="Precision to use for the model. Defaults to fp64.",
     )
 
     # MCMC arguments
