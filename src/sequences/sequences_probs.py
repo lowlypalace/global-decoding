@@ -3,25 +3,25 @@ import logging
 import json
 from torch.nn.functional import log_softmax
 
-def top_k_filtering(logits, top_k):
-    top_k = min(top_k, logits.size(-1))  # Ensure top_k does not exceed number of logits
-    # Compute the k-th best logit
-    kth_best_logit = torch.topk(logits, top_k)[0][..., -1, None]
-    # Create a mask for all logits that are less than the k-th best logit
-    indices_to_remove = logits < kth_best_logit
-    # Apply filtering
-    logits_filtered = logits.masked_fill(indices_to_remove, -float("inf"))
-    return logits_filtered
-
 # def top_k_filtering(logits, top_k):
-#     # Retrieve the top_k logits and their indices for each sequence in the batch
-#     topk_values, topk_indices = torch.topk(logits, top_k, dim=-1)
-#     # Create a mask of the same shape as logits, initialized to False
-#     mask = torch.ones_like(logits).scatter_(-1, topk_indices, 0).bool()
-#     # Set all elements of logits that are not in the top_k to -float("inf")
-#     logits[mask] = -float("inf")
+#     top_k = min(top_k, logits.size(-1))  # Ensure top_k does not exceed number of logits
+#     # Compute the k-th best logit
+#     kth_best_logit = torch.topk(logits, top_k)[0][..., -1, None]
+#     # Create a mask for all logits that are less than the k-th best logit
+#     indices_to_remove = logits < kth_best_logit
+#     # Apply filtering
+#     logits_filtered = logits.masked_fill(indices_to_remove, -float("inf"))
+#     return logits_filtered
 
-#     return logits
+def top_k_filtering(logits, top_k):
+    # Retrieve the top_k logits and their indices for each sequence in the batch
+    topk_values, topk_indices = torch.topk(logits, top_k, dim=-1)
+    # Create a mask of the same shape as logits, initialized to False
+    mask = torch.ones_like(logits).scatter_(-1, topk_indices, 0).bool()
+    # Set all elements of logits that are not in the top_k to -float("inf")
+    logits[mask] = -float("inf")
+
+    return logits
 
 
 def mask_out_pad_token(log_probs, index, pad_token_id):
