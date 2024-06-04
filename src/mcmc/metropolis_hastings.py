@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 
 
@@ -42,6 +44,11 @@ def metropolis_hastings(
         # Get the probabilities for the proposed sequences
         proposed_target_logprob = target_logprobs[i]
         proposed_proposal_logprob = proposal_logprobs[i]
+
+        # Skip the iteration if the proposed proposal log probability is -inf
+        if proposed_proposal_logprob == float("-inf")
+            logging.warning(f"Skipping iteration {i} due to -inf proposal log probability.")
+            continue
 
         # Calculate differences for plotting
         logprob_diff_proposed.append(
