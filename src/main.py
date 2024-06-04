@@ -90,7 +90,7 @@ def parse_args():
         help="Batch size for computing probabilities.",
     )
     parser.add_argument(
-        "precision",
+        "--precision",
         type=str,
         default="fp32",
         choices=["fp16", "fp32", "fp64"],
