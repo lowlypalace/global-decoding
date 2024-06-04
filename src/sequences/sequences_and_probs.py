@@ -81,7 +81,6 @@ def generate_sequences_and_probs(args, output_subdir):
                 input_ids=input_ids,
                 max_length=max_length,
                 top_k=top_k,
-                # top_p=top_p,
                 sequence_count=sequence_count,
                 batch_size=batch_size_seq,
             )
@@ -110,7 +109,6 @@ def generate_sequences_and_probs(args, output_subdir):
                 model=model,
                 sequences_ids=sequences_ids,
                 top_k=top_k,
-                # top_p=top_p,
                 pad_token_id=tokenizer.pad_token_id,
                 input_ids=input_ids,
                 batch_size=batch_size_prob,
