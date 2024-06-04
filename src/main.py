@@ -1,10 +1,11 @@
 import torch
 import argparse
+import logging
 import torch
 import os
 
 
-from utils import setup_logging, save_args, get_timestamp, validate_args, set_seed
+from utils import setup_logging, save_args, get_timestamp, validate_args, set_seed, load_from_json
 from sequences import generate_sequences_and_probs
 from mcmc import run_mcmc
 from eval import evaluate
@@ -166,11 +167,20 @@ def parse_args():
 def main():
     args = parse_args()
 
-    # Add a directory with a timestamp to the output directory
     if args.preload_sequences:
         output_subdir = os.path.join(args.output_dir, args.preload_sequences)
+        # Load metadata and parse arguments from it
+        logging.info(f"Loading metadata from {output_subdir}...")
+        metadata = load_from_json(os.path.join(output_subdir, "metadata"))
+        # Load args from metadata json
+        for key, value in metadata.items():
+            # Set value from metadata if the corresponding arg is not set (is None) or update from metadata
+            setattr(args, key, value)
+
     else:
+        # Add a directory with a timestamp to the output directory
         output_subdir = os.path.join(args.output_dir, get_timestamp())
+
     # Create a directory to save the output files
     os.makedirs(output_subdir, exist_ok=True)
     # Save log messages to a file

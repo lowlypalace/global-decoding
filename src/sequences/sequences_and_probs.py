@@ -74,9 +74,6 @@ def generate_sequences_and_probs(args, output_subdir):
         logging.info("Loading preloaded sequences...")
         sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
         sequences_decoded = load_from_json(os.path.join(output_subdir, "sequences_decoded"))
-        if len(sequences_ids) != sequence_count:
-            logging.warning(f"Number of sequences in the file ({len(sequences_ids)}) does not match sequence_count ({sequence_count}).")
-        # TODO: Implement more robust logic to compare args in the metadata file
     else:
         with timer("Generating new sequences"):
             sequences_ids, sequences_decoded = generate_sequences(
