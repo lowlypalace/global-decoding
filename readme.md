@@ -33,8 +33,7 @@ python src/main.py \
   --batch_size_seq 32 \
   --batch_size_prob 16 \
   --model_name gpt2-medium \
-  --mcmc_rate 10 \
-  --mcmc_burnin 0.2 \
+  --mcmc_num_samples 100 \
   --eval_num_sequences 100 \
   --seed 0
 ```
