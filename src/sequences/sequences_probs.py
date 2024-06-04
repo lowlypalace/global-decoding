@@ -3,36 +3,6 @@ import logging
 import json
 from torch.nn.functional import log_softmax
 
-# def top_k_filtering(logits, top_k):
-#     # Retrieve the top_k logits and their indices for each sequence in the batch
-#     topk_values, topk_indices = torch.topk(logits, top_k, dim=-1)
-
-#     # Print top-k values for debugging
-#     # print("Top-k values before applying mask:", topk_values)
-
-#     # Check if any of the top-k values are zero
-#     inf_mask = topk_values == 0
-#     if inf_mask.any():
-#         print("Logits with -inf found in top-k:")
-#         for i in range(inf_mask.size(0)):
-#             if inf_mask[i].any():
-#                 inf_indices = inf_mask[i].nonzero(as_tuple=True)[0]
-#                 for idx in inf_indices:
-#                     print(f"Sequence {i}, Position {idx.item()}, Logit -inf")
-
-#     # Create a mask of the same shape as logits, initialized to False
-#     mask = torch.ones_like(logits).scatter_(-1, topk_indices, 0).bool()
-
-#     # Set all elements of logits that are not in the top_k to -float("inf")
-#     logits[mask] = -float("inf")
-
-#     # Check if -inf has been introduced correctly without affecting top-k elements
-#     after_mask_values = torch.gather(logits, -1, topk_indices)
-#     if (after_mask_values == float('-inf')).any():
-#         print("Error: -inf introduced in top-k values after masking.")
-
-#     return logits
-
 
 def top_k_filtering(logits, top_k):
     # Retrieve the top_k logits and their indices for each sequence in the batch
