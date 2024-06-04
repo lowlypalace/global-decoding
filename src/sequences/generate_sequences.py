@@ -61,7 +61,6 @@ def generate_sequences(
             # Free memory
             del sequences_ids_batch
             del padded_sequences_ids_batch
-            # torch.cuda.empty_cache()
 
     # If we have more sequences than needed due to the last batch, truncate the list
     sequences_ids = sequences_ids[:sequence_count]
