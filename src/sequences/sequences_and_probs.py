@@ -94,7 +94,7 @@ def generate_sequences_and_probs(args, output_subdir):
             )
     else:
         with timer("Generating new sequences and computing probabilities"):
-            sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = (
+            sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs, proposal_logprobs_tokens, target_logprobs_tokens = (
                 generate_sequences_and_probs_hf(
                     model=model,
                     tokenizer=tokenizer,
@@ -120,12 +120,12 @@ def generate_sequences_and_probs(args, output_subdir):
     save_to_json(target_logprobs_list, "logprobs_target", output_subdir)
     save_to_json(proposal_logprobs_list, "logprobs_proposal", output_subdir)
 
-    # proposal_logprobs_tokens = [
-    #     logprob.tolist() for logprob in proposal_logprobs_tokens
-    # ]
-    # target_logprobs_tokens = [logprob.tolist() for logprob in target_logprobs_tokens]
-    # save_to_json(proposal_logprobs_tokens, "logprobs_proposal_tokens", output_subdir)
-    # save_to_json(target_logprobs_tokens, "logprobs_target_list_tokens", output_subdir)
+    target_logprobs_tokens = [logprob.tolist() for logprob in target_logprobs_tokens]
+    proposal_logprobs_tokens = [
+        logprob.tolist() for logprob in proposal_logprobs_tokens
+    ]
+    save_to_json(target_logprobs_tokens, "logprobs_target_tokens", output_subdir)
+    save_to_json(proposal_logprobs_tokens, "logprobs_proposal_tokens", output_subdir)
 
     logging.info("Plotting the log probabilities distributions...")
     # Plot the distribution of the target log-probabilities
