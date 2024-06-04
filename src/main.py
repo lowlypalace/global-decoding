@@ -150,11 +150,6 @@ def parse_args():
         default="output",
         help="Directory to save the output files.",
     )
-    parser.add_argument(
-        "--custom_generate_sequences",
-        action="store_true",
-        help="Use custom sequence generation method.",
-    )
 
     args = parser.parse_args()
     validate_args(args)

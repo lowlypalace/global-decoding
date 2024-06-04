@@ -27,7 +27,6 @@ def generate_sequences_and_probs(args, output_subdir):
     batch_size_seq = args.batch_size_seq
     batch_size_prob = args.batch_size_prob
     model_name = args.model_name
-    custom_generate_sequences = args.custom_generate_sequences
     precision = args.precision
     device = torch.device(args.device)
 
@@ -67,54 +66,36 @@ def generate_sequences_and_probs(args, output_subdir):
     )
     # Calculate the max_length so it is bound by the model context length
     max_length = max_length if max_length is not None else max_model_length
-    if custom_generate_sequences:
-        # Generate sequences
-        with timer("Generating new sequences"):
-            sequences_ids, sequences_decoded = generate_sequences(
-                model=model,
-                tokenizer=tokenizer,
-                input_ids=input_ids,
-                max_length=max_length,
-                top_k=top_k,
-                # top_p=top_p,
-                sequence_count=sequence_count,
-                batch_size=batch_size_seq,
-            )
 
-        # Get the probabilities for the generated sequences
-        with timer("Computing probabilities"):
-            (
-                target_logprobs,
-                proposal_logprobs,
-                proposal_logprobs_tokens,
-                target_logprobs_tokens,
-            ) = get_sequences_probs(
-                model=model,
-                sequences_ids=sequences_ids,
-                top_k=top_k,
-                # top_p=top_p,
-                pad_token_id=tokenizer.pad_token_id,
-                input_ids=input_ids,
-                batch_size=batch_size_prob,
-            )
-    else:
-        with timer("Generating new sequences and computing probabilities"):
-            (
-                sequences_ids,
-                sequences_decoded,
-                target_logprobs,
-                proposal_logprobs,
-                proposal_logprobs_tokens,
-                target_logprobs_tokens,
-            ) = generate_sequences_and_probs_hf(
-                model=model,
-                tokenizer=tokenizer,
-                input_ids=input_ids,
-                max_length=max_length,
-                top_k=top_k,
-                sequence_count=sequence_count,
-                batch_size=batch_size_seq,
-            )
+    # Generate sequences
+    with timer("Generating new sequences"):
+        sequences_ids, sequences_decoded = generate_sequences(
+            model=model,
+            tokenizer=tokenizer,
+            input_ids=input_ids,
+            max_length=max_length,
+            top_k=top_k,
+            # top_p=top_p,
+            sequence_count=sequence_count,
+            batch_size=batch_size_seq,
+        )
+
+    # Get the probabilities for the generated sequences
+    with timer("Computing probabilities"):
+        (
+            target_logprobs,
+            proposal_logprobs,
+            proposal_logprobs_tokens,
+            target_logprobs_tokens,
+        ) = get_sequences_probs(
+            model=model,
+            sequences_ids=sequences_ids,
+            top_k=top_k,
+            # top_p=top_p,
+            pad_token_id=tokenizer.pad_token_id,
+            input_ids=input_ids,
+            batch_size=batch_size_prob,
+        )
 
     # Convert tensors to lists
     logging.info("Saving the generated sequences...")
