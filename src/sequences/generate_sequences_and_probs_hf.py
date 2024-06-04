@@ -1,11 +1,19 @@
 import torch
 import logging
 
+
 def mask_out_pad_token(logprobs, sequences, pad_token_id):
-    mask = sequences == pad_token_id  # Create a mask where sequences are equal to pad_token_id.
-    cumulative_mask = mask.cumsum(dim=1) > 1  # Create a cumulative sum to identify subsequent pads after the first one.
-    logprobs.masked_fill_(cumulative_mask, 0)  # Set log probabilities to zero where cumulative_mask is True.
+    mask = (
+        sequences == pad_token_id
+    )  # Create a mask where sequences are equal to pad_token_id.
+    cumulative_mask = (
+        mask.cumsum(dim=1) > 1
+    )  # Create a cumulative sum to identify subsequent pads after the first one.
+    logprobs.masked_fill_(
+        cumulative_mask, 0
+    )  # Set log probabilities to zero where cumulative_mask is True.
     return logprobs
+
 
 def generate_sequences_and_probs_hf(
     model,
@@ -52,20 +60,26 @@ def generate_sequences_and_probs_hf(
             gen_sequences_ids = sequences_batch.sequences[:, input_ids.shape[-1] :]
             index = gen_sequences_ids[:, :, None]
 
-            logprobs_proposal = torch.stack(sequences_batch.scores, dim=1).log_softmax(-1)
+            logprobs_proposal = torch.stack(sequences_batch.scores, dim=1).log_softmax(
+                -1
+            )
             selected_logprobs_proposal = torch.gather(
                 logprobs_proposal, 2, index
             ).squeeze(-1)
             del logprobs_proposal
 
             logprobs_target = torch.stack(sequences_batch.logits, dim=1).log_softmax(-1)
-            selected_logprobs_target = torch.gather(
-                logprobs_target, 2, index
-            ).squeeze(-1)
+            selected_logprobs_target = torch.gather(logprobs_target, 2, index).squeeze(
+                -1
+            )
             del logprobs_target
 
-            selected_logprobs_proposal = mask_out_pad_token(selected_logprobs_proposal, gen_sequences_ids, tokenizer.pad_token_id)
-            selected_logprobs_target = mask_out_pad_token(selected_logprobs_target, gen_sequences_ids, tokenizer.pad_token_id)
+            selected_logprobs_proposal = mask_out_pad_token(
+                selected_logprobs_proposal, gen_sequences_ids, tokenizer.pad_token_id
+            )
+            selected_logprobs_target = mask_out_pad_token(
+                selected_logprobs_target, gen_sequences_ids, tokenizer.pad_token_id
+            )
 
             proposal_logprob_sum = torch.sum(selected_logprobs_proposal, dim=-1)
             target_logprob_sum = torch.sum(selected_logprobs_target, dim=-1)
@@ -81,7 +95,6 @@ def generate_sequences_and_probs_hf(
             target_logprobs_tokens = torch.cat(
                 (target_logprobs_tokens, selected_logprobs_target)
             )
-
 
             # Collect the generated sequences
             sequences_ids.extend(gen_sequences_ids)

@@ -99,16 +99,21 @@ def generate_sequences_and_probs(args, output_subdir):
             )
     else:
         with timer("Generating new sequences and computing probabilities"):
-            sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs, proposal_logprobs_tokens, target_logprobs_tokens = (
-                generate_sequences_and_probs_hf(
-                    model=model,
-                    tokenizer=tokenizer,
-                    input_ids=input_ids,
-                    max_length=max_length,
-                    top_k=top_k,
-                    sequence_count=sequence_count,
-                    batch_size=batch_size_seq,
-                )
+            (
+                sequences_ids,
+                sequences_decoded,
+                target_logprobs,
+                proposal_logprobs,
+                proposal_logprobs_tokens,
+                target_logprobs_tokens,
+            ) = generate_sequences_and_probs_hf(
+                model=model,
+                tokenizer=tokenizer,
+                input_ids=input_ids,
+                max_length=max_length,
+                top_k=top_k,
+                sequence_count=sequence_count,
+                batch_size=batch_size_seq,
             )
 
     # Convert tensors to lists
