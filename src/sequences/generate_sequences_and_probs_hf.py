@@ -46,7 +46,6 @@ def generate_sequences_and_probs_hf(
                 return_dict_in_generate=True,
                 output_scores=True,
                 output_logits=True,
-                # renormalize_logits=True
             )
 
             # Only use the IDs that were generated, excluding the input IDs
