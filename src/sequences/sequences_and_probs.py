@@ -85,12 +85,11 @@ def generate_sequences_and_probs(args, output_subdir):
                 sequence_count=sequence_count,
                 batch_size=batch_size_seq,
             )
-
+    if preload_sequences:
         # Convert tensors to lists
         logging.info("Saving the generated sequences...")
-        sequences_ids = [sequence_ids.tolist() for sequence_ids in sequences_ids]
         # Save the encoded and decoded sequences
-        save_to_json(sequences_ids, "sequences_ids", output_subdir)
+        save_to_json([sequence_ids.tolist() for sequence_ids in sequences_ids], "sequences_ids", output_subdir)
         save_to_json(sequences_decoded, "sequences_decoded", output_subdir)
 
     # Get the probabilities for the generated sequences
@@ -150,7 +149,7 @@ def generate_sequences_and_probs(args, output_subdir):
         )
 
     return (
-        sequences_ids,
+        [sequence_ids.tolist() for sequence_ids in sequences_ids],
         sequences_decoded,
         target_logprobs,
         proposal_logprobs,
