@@ -28,6 +28,7 @@ def generate_sequences_and_probs(args, output_subdir):
     batch_size_prob = args.batch_size_prob
     model_name = args.model_name
     custom_generate_sequences = args.custom_generate_sequences
+    precision = args.precision
     device = torch.device(args.device)
 
     # Load model and tokenizer based on the selected model
@@ -38,8 +39,12 @@ def generate_sequences_and_probs(args, output_subdir):
         tokenizer = GPT2Tokenizer.from_pretrained(model_name)
         model = GPT2LMHeadModel.from_pretrained(model_name)
 
-    # Use double precision
-    model.double()
+    # Set the model precision
+    if precision == "fp16":
+        model = model.half()
+    elif precision == "fp64":
+        model = model.double()
+
     # Set the model to evaluation mode
     model.eval()
     # Move the model to the specified device

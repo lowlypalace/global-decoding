@@ -89,6 +89,13 @@ def parse_args():
         default=16,
         help="Batch size for computing probabilities.",
     )
+    parser.add_argument(
+        "precision",
+        type=str,
+        default="fp32",
+        choices=["fp16", "fp32", "fp64"],
+        help="Precision to use for the model. Defaults to fp32.",
+    )
 
     # MCMC arguments
     parser.add_argument(
