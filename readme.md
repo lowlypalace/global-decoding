@@ -27,7 +27,7 @@ The script can be run from the command line with various arguments to customize 
 
 ### Basic Command
 ```bash
-python src/main.py \
+python main.py \
   --top_k 100 \
   --sequence_count 1000 \
   --batch_size_seq 32 \
