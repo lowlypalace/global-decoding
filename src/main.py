@@ -101,7 +101,7 @@ def parse_args():
     parser.add_argument(
         "--mcmc_num_samples",
         type=int,
-        default=10,
+        default=100,
         help="Number of MCMC samples to generate.",
     )
 
