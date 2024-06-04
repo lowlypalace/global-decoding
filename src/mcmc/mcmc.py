@@ -38,10 +38,6 @@ def run_mcmc(
             subset_target_logprobs = target_logprobs[start_idx:end_idx]
             subset_proposal_logprobs = proposal_logprobs[start_idx:end_idx]
 
-            logging.info(
-                f"Running MCMC algorithm on subset {i + 1} of {num_samples}..."
-            )
-
             (
                 collected_sequences_ids,
                 collected_sequences_decoded,
