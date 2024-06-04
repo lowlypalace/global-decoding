@@ -5,7 +5,14 @@ import torch
 import os
 
 
-from utils import setup_logging, save_args, get_timestamp, validate_args, set_seed, load_from_json
+from utils import (
+    setup_logging,
+    save_args,
+    get_timestamp,
+    validate_args,
+    set_seed,
+    load_from_json,
+)
 from sequences import generate_sequences_and_probs
 from mcmc import run_mcmc
 from eval import evaluate

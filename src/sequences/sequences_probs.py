@@ -101,7 +101,6 @@ def get_sequences_probs(
     model,
     sequences_ids,
     top_k,
-    # top_p,
     pad_token_id,
     input_ids,
     batch_size,
@@ -147,7 +146,6 @@ def get_sequences_probs(
                 index=index,
                 pad_token_id=pad_token_id,
                 top_k=top_k,
-                # top_p=top_p,
             )
 
             proposal_logprobs_tokens = torch.cat(

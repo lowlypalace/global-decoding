@@ -72,7 +72,9 @@ def generate_sequences_and_probs(args, output_subdir):
     if preload_sequences:
         logging.info("Loading preloaded sequences...")
         sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
-        sequences_decoded = load_from_json(os.path.join(output_subdir, "sequences_decoded"))
+        sequences_decoded = load_from_json(
+            os.path.join(output_subdir, "sequences_decoded")
+        )
     else:
         with timer("Generating new sequences"):
             sequences_ids, sequences_decoded = generate_sequences(
@@ -88,16 +90,30 @@ def generate_sequences_and_probs(args, output_subdir):
         # Convert tensors to lists
         logging.info("Saving the generated sequences...")
         # Save the encoded and decoded sequences
-        save_to_json([sequence_ids.tolist() for sequence_ids in sequences_ids], "sequences_ids", output_subdir)
+        save_to_json(
+            [sequence_ids.tolist() for sequence_ids in sequences_ids],
+            "sequences_ids",
+            output_subdir,
+        )
         save_to_json(sequences_decoded, "sequences_decoded", output_subdir)
 
     # Get the probabilities for the generated sequences
-    if preload_sequences and os.path.exists(os.path.join(output_subdir, "logprobs_target.json")) and os.path.exists(os.path.join(output_subdir, "logprobs_proposal.json")):
+    if (
+        preload_sequences
+        and os.path.exists(os.path.join(output_subdir, "logprobs_target.json"))
+        and os.path.exists(os.path.join(output_subdir, "logprobs_proposal.json"))
+    ):
         logging.info("Loading precomputed probabilities...")
         target_logprobs = load_from_json(os.path.join(output_subdir, "logprobs_target"))
-        proposal_logprobs = load_from_json(os.path.join(output_subdir, "logprobs_proposal"))
-        target_logprobs_tokens = load_from_json(os.path.join(output_subdir, "logprobs_target_tokens"))
-        proposal_logprobs_tokens = load_from_json(os.path.join(output_subdir, "logprobs_proposal_tokens"))
+        proposal_logprobs = load_from_json(
+            os.path.join(output_subdir, "logprobs_proposal")
+        )
+        target_logprobs_tokens = load_from_json(
+            os.path.join(output_subdir, "logprobs_target_tokens")
+        )
+        proposal_logprobs_tokens = load_from_json(
+            os.path.join(output_subdir, "logprobs_proposal_tokens")
+        )
     else:
         with timer("Computing probabilities"):
             (
@@ -121,12 +137,16 @@ def generate_sequences_and_probs(args, output_subdir):
         save_to_json(target_logprobs, "logprobs_target", output_subdir)
         save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
 
-        target_logprobs_tokens = [logprob.tolist() for logprob in target_logprobs_tokens]
+        target_logprobs_tokens = [
+            logprob.tolist() for logprob in target_logprobs_tokens
+        ]
         proposal_logprobs_tokens = [
             logprob.tolist() for logprob in proposal_logprobs_tokens
         ]
         save_to_json(target_logprobs_tokens, "logprobs_target_tokens", output_subdir)
-        save_to_json(proposal_logprobs_tokens, "logprobs_proposal_tokens", output_subdir)
+        save_to_json(
+            proposal_logprobs_tokens, "logprobs_proposal_tokens", output_subdir
+        )
 
         logging.info("Plotting the log probabilities distributions...")
         # Plot the distribution of the target log-probabilities
