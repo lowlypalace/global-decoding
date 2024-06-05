@@ -4,17 +4,6 @@ import json
 from torch.nn.functional import log_softmax
 
 def top_p_filtering(logits, top_p):
-    """
-    Masks out all logits that cumulatively do not reach the threshold `top_p`.
-
-    Parameters:
-    logits (torch.Tensor): The logits tensor having shape [batch_size, sequence_length, vocab_size]
-    top_p (float): The cumulative probability threshold. Only the top tokens with a cumulative probability
-                   exceeding `top_p` are kept.
-
-    Returns:
-    torch.Tensor: The modified logits with tokens not reaching the `top_p` threshold set to -float("inf").
-    """
     # Sort logits and get cumulative distribution of probabilities
     sorted_logits, sorted_indices = torch.sort(logits, descending=True, dim=-1)
     sorted_probs = torch.softmax(sorted_logits, dim=-1)
