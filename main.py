@@ -178,7 +178,7 @@ def main():
     if args.preload_sequences:
         output_subdir = os.path.join(args.output_dir, args.preload_sequences)
         # Load metadata and parse arguments from it
-        logging.info(f"Loading metadata from {output_subdir}...")
+        logging.info(f"Loading metadata from {output_subdir} as args...")
         metadata = load_from_json(os.path.join(output_subdir, "metadata"))
         # Load args from metadata json
         for key, value in metadata.items():
