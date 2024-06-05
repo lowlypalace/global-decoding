@@ -28,9 +28,9 @@ def top_p_filtering(logits, top_p):
     """
     # Sort the logits to identify the cut-off threshold
     sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-    cumulative_probs = torch.softmax(sorted_logits, dim=-1).cumsum(dim=-1)
+    cumulative_probs = sorted_logits.softmax(dim=-1).cumsum(dim=-1)
     # Create a mask to remove tokens with a cumulative probability above the threshold
-    sorted_indices_to_remove = cumulative_probs > top_p
+    sorted_indices_to_remove = cumulative_probs <= (1 - top_p)
     # Scatter sorted tensors to original indexing
     indices_to_remove = sorted_indices_to_remove.scatter(
         1, sorted_indices, sorted_indices_to_remove
