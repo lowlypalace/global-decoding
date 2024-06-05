@@ -95,15 +95,5 @@ class TestTopKFiltering(unittest.TestCase):
 #             valid_probs = probs[probs != 0]  # Filter out the probabilities of -inf logits
 #             self.assertTrue(torch.sum(valid_probs) <= top_p + 1e-5, "Cumulative probability exceeds top_p")
 
-
-# for i in range(batch_size):
-#     for j in range(sequence_length):
-#         finite_logits = filtered_logits[i, j][
-#             torch.isfinite(filtered_logits[i, j])
-#         ]
-#         probs = torch.softmax(finite_logits, dim=0)
-#         self.assertTrue(torch.cumsum(probs, dim=0)[-1] <= top_p)
-
-
 if __name__ == "__main__":
     unittest.main()
