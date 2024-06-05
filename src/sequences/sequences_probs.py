@@ -60,10 +60,12 @@ def mask_out_pad_token(log_probs, index, pad_token_id):
 
 
 # def get_logprobs(logits, index, pad_token_id, top_k=None, top_p=None):
-def get_logprobs(logits, index, pad_token_id, top_k=None):
+def get_logprobs(logits, index, pad_token_id, top_k=None, top_p=None):
     # If top_k is specified, apply top-k filtering
     if top_k is not None:
         logits = top_k_filtering(logits, top_k)
+    elif top_p is not None:
+        logits = top_p_filtering(logits, top_p)
 
     # Convert the (filtered) logits to log probabilities
     log_probs = log_softmax(logits, dim=-1)
@@ -104,6 +106,7 @@ def get_sequences_probs(
     model,
     sequences_ids,
     top_k,
+    top_p,
     pad_token_id,
     input_ids,
     batch_size,
@@ -149,6 +152,7 @@ def get_sequences_probs(
                 index=index,
                 pad_token_id=pad_token_id,
                 top_k=top_k,
+                top_p=top_p,
             )
 
             proposal_logprobs_tokens = torch.cat(

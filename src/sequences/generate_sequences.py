@@ -10,6 +10,7 @@ def generate_sequences(
     input_ids,
     max_length,
     top_k,
+    top_p,
     batch_size,
     sequence_count,
 ):
@@ -29,6 +30,7 @@ def generate_sequences(
                 pad_token_id=tokenizer.pad_token_id,
                 eos_token_id=tokenizer.eos_token_id,
                 top_k=top_k,
+                top_p=top_p,
                 do_sample=True,
                 num_return_sequences=batch_size,
                 min_new_tokens=1,  # We don't want to generate empty sequences,
