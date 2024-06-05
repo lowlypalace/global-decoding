@@ -47,8 +47,12 @@ def metropolis_hastings(
 
         # Skip the iteration if the proposed proposal log probability is -inf
         if proposed_proposal_logprob == float("-inf"):
-            logprob_diff_proposed.append(None)  # Placeholder indicating skipped iteration
-            logprob_diff_current.append(None)   # Placeholder indicating skipped iteration
+            logprob_diff_proposed.append(
+                None
+            )  # Placeholder indicating skipped iteration
+            logprob_diff_current.append(
+                None
+            )  # Placeholder indicating skipped iteration
             logging.warning(
                 f"Skipping iteration {i} due to -inf proposal log probability."
             )

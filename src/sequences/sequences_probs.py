@@ -13,6 +13,7 @@ from torch.nn.functional import log_softmax
 #     logits_filtered = logits.masked_fill(indices_to_remove, -float("inf"))
 #     return logits_filtered
 
+
 def top_p_filtering(logits, top_p):
     """
     Applies top-p filtering to the logits to enforce more focused and coherent text generation.
@@ -31,11 +32,14 @@ def top_p_filtering(logits, top_p):
     # Create a mask to remove tokens with a cumulative probability above the threshold
     sorted_indices_to_remove = cumulative_probs > top_p
     # Scatter sorted tensors to original indexing
-    indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
+    indices_to_remove = sorted_indices_to_remove.scatter(
+        1, sorted_indices, sorted_indices_to_remove
+    )
     # Apply the mask to the logits using the filter value
     logits_processed = logits.masked_fill(indices_to_remove, -float("inf"))
 
     return logits_processed
+
 
 def top_k_filtering(logits, top_k):
     # Retrieve the top_k logits and their indices for each sequence in the batch
