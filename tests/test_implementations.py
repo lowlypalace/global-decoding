@@ -207,9 +207,49 @@ class TestImplementations(unittest.TestCase):
             )
         )
 
-    # test to check if no top_k and no top_p is provided, then the the logprops target and proposal should be the same
-    # Use custom implementation here
-    # def
+    def test_no_top_k_no_top_p(self):
+
+        tokenizer, model, input_ids = setup()
+
+        # Get sequences and their probabilities using custom implementation
+        sequences_ids_custom, sequences_decoded_custom = generate_sequences(
+            model=model,
+            tokenizer=tokenizer,
+            input_ids=input_ids,
+            max_length=10,
+            top_k=None,
+            top_p=None,
+            sequence_count=10,
+            batch_size=16,
+        )
+        (
+            target_logprobs_custom,
+            proposal_logprobs_custom,
+            proposal_logprobs_tokens_custom,
+            target_logprobs_tokens_custom,
+        ) = get_sequences_probs(
+            model=model,
+            sequences_ids=sequences_ids_custom,
+            top_k=None,
+            top_p=None,
+            pad_token_id=tokenizer.pad_token_id,
+            input_ids=input_ids,
+            batch_size=16,
+        )
+
+        self.assertTrue(
+            torch.allclose(
+                target_logprobs_custom, proposal_logprobs_custom, rtol=1e-03, atol=1e-03
+            )
+        )
+        self.assertTrue(
+            torch.allclose(
+                proposal_logprobs_tokens_custom,
+                target_logprobs_tokens_custom,
+                rtol=1e-03,
+                atol=1e-03,
+            )
+        )
 
 if __name__ == "__main__":
     unittest.main()
