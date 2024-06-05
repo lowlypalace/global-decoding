@@ -212,7 +212,7 @@ class TestImplementations(unittest.TestCase):
         tokenizer, model, input_ids = setup()
 
         # Get sequences and their probabilities using custom implementation
-        sequences_ids_custom, sequences_decoded_custom = generate_sequences(
+        sequences_ids, sequences_decoded = generate_sequences(
             model=model,
             tokenizer=tokenizer,
             input_ids=input_ids,
@@ -223,13 +223,13 @@ class TestImplementations(unittest.TestCase):
             batch_size=16,
         )
         (
-            target_logprobs_custom,
-            proposal_logprobs_custom,
-            proposal_logprobs_tokens_custom,
-            target_logprobs_tokens_custom,
+            target_logprobs,
+            proposal_logprobs,
+            proposal_logprobs_tokens,
+            target_logprobs_tokens,
         ) = get_sequences_probs(
             model=model,
-            sequences_ids=sequences_ids_custom,
+            sequences_ids=sequences_ids,
             top_k=None,
             top_p=None,
             pad_token_id=tokenizer.pad_token_id,
@@ -239,13 +239,13 @@ class TestImplementations(unittest.TestCase):
 
         self.assertTrue(
             torch.allclose(
-                target_logprobs_custom, proposal_logprobs_custom, rtol=1e-03, atol=1e-03
+                target_logprobs, proposal_logprobs, rtol=1e-03, atol=1e-03
             )
         )
         self.assertTrue(
             torch.allclose(
-                proposal_logprobs_tokens_custom,
-                target_logprobs_tokens_custom,
+                proposal_logprobs_tokens,
+                target_logprobs_tokens,
                 rtol=1e-03,
                 atol=1e-03,
             )
