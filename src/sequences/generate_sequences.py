@@ -45,14 +45,6 @@ def generate_sequences(
                 return_tensors="pt",
             ).to(input_ids.device)
 
-            # Check sequences consisting only of padding tokens
-            # TODO: Remove this after testing
-            for seq_ids in padded_sequences_ids_batch["input_ids"]:
-                if torch.all(seq_ids == tokenizer.pad_token_id).item():
-                    logging.warning(
-                        "Generated sequence consists only of padding tokens."
-                    )
-
             # Collect the generated sequences
             sequences_ids.extend(padded_sequences_ids_batch["input_ids"])
 
@@ -61,6 +53,7 @@ def generate_sequences(
                 break
 
             # Free memory
+            # TODO: Check if this is needed
             del sequences_ids_batch
             del padded_sequences_ids_batch
 
