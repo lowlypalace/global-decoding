@@ -167,6 +167,11 @@ def parse_args():
     )
 
     args = parser.parse_args()
+
+    # If top-p is provided, set top_k to None
+    if args.top_p is not None:
+        args.top_k = None
+
     validate_args(args)
 
     return args
