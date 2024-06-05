@@ -23,8 +23,8 @@ def validate_args(args):
     if args.mcmc_num_samples <= 0:
         sys.exit(f"--mcmc_num_samples must be an int > 0, but is {args.mcmc_num_samples}")
 
-    if args.mcmc_num_samples < args.sequence_count:
-        sys.exit(f"--mcmc_num_samples must be greater than or equal to --sequence_count, but is {args.mcmc_num_samples}")
+    if args.mcmc_num_samples > args.sequence_count:
+        sys.exit(f"--mcmc_num_samples must be less than or equal to --sequence_count, but is {args.mcmc_num_samples}")
 
     if (
         args.eval_num_sequences is not None
