@@ -38,6 +38,13 @@ python main.py \
   --seed 0
 ```
 
+### Resume Computation
+If the sequences were generated, but some of the subsequent steps failed, the task could be resumed as follows:
+```bash
+python main.py \
+ --preload_sequences 05-06-2024_09-45-06
+```
+
 ### Arguments
 Run `python src/main.py --help` to see all available arguments and their descriptions.
 
