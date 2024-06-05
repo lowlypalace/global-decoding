@@ -106,8 +106,6 @@ class TestSequenceProbability(unittest.TestCase):
             torch.equal(output_logprobs_with_top_k, expected_output_logprobs_with_top_k)
         )
 
-    # TODO: add get_logprobs test
-
 
 if __name__ == "__main__":
     unittest.main()
