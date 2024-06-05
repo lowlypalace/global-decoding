@@ -3,6 +3,7 @@ import logging
 import json
 from torch.nn.functional import log_softmax
 
+
 def top_p_filtering(logits, top_p):
     # Sort logits and get cumulative distribution of probabilities
     sorted_logits, sorted_indices = torch.sort(logits, descending=True, dim=-1)
@@ -15,7 +16,9 @@ def top_p_filtering(logits, top_p):
     sorted_indices_to_remove[..., 0] = False
     # Scatter the boolean mask to the original indices
     # Create a byte mask for indices that need to be set to -inf
-    indices_to_remove = torch.zeros_like(logits, dtype=torch.bool).scatter_(-1, sorted_indices, sorted_indices_to_remove)
+    indices_to_remove = torch.zeros_like(logits, dtype=torch.bool).scatter_(
+        -1, sorted_indices, sorted_indices_to_remove
+    )
     logits[indices_to_remove] = -float("inf")
 
     return logits
