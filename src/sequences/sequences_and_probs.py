@@ -75,6 +75,8 @@ def generate_sequences_and_probs(args, output_subdir):
         sequences_decoded = load_from_json(
             os.path.join(output_subdir, "sequences_decoded")
         )
+        # Convert the list of lists to a list of tensors
+        sequences_ids = [torch.tensor(sequence_ids) for sequence_ids in sequences_ids]
     else:
         with timer("Generating new sequences"):
             sequences_ids, sequences_decoded = generate_sequences(
@@ -86,7 +88,7 @@ def generate_sequences_and_probs(args, output_subdir):
                 sequence_count=sequence_count,
                 batch_size=batch_size_seq,
             )
-    if preload_sequences:
+
         # Convert tensors to lists
         logging.info("Saving the generated sequences...")
         # Save the encoded and decoded sequences
@@ -166,8 +168,11 @@ def generate_sequences_and_probs(args, output_subdir):
             output_dir=os.path.join(output_subdir, "plots"),
         )
 
+    # Convert the list of tensors to a list of lists
+    sequences_ids = [sequence_ids.tolist() for sequence_ids in sequences_ids]
+
     return (
-        [sequence_ids.tolist() for sequence_ids in sequences_ids],
+        sequences_ids,
         sequences_decoded,
         target_logprobs,
         proposal_logprobs,
