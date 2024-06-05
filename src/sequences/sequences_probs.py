@@ -3,43 +3,33 @@ import logging
 import json
 from torch.nn.functional import log_softmax
 
-# def top_k_filtering(logits, top_k):
-#     top_k = min(top_k, logits.size(-1))  # Ensure top_k does not exceed number of logits
-#     # Compute the k-th best logit
-#     kth_best_logit = torch.topk(logits, top_k)[0][..., -1, None]
-#     # Create a mask for all logits that are less than the k-th best logit
-#     indices_to_remove = logits < kth_best_logit
-#     # Apply filtering
-#     logits_filtered = logits.masked_fill(indices_to_remove, -float("inf"))
-#     return logits_filtered
-
-
 def top_p_filtering(logits, top_p):
     """
-    Applies top-p filtering to the logits to enforce more focused and coherent text generation.
+    Masks out all logits that cumulatively do not reach the threshold `top_p`.
 
-    Args:
-        logits torch.FloatTensor: The original logits from the model output.
-        top_p (float): The cumulative probability cutoff for token selection. Should be between 0 and 1.
-        filter_value (float): The value to replace filtered logits with.
+    Parameters:
+    logits (torch.Tensor): The logits tensor having shape [batch_size, sequence_length, vocab_size]
+    top_p (float): The cumulative probability threshold. Only the top tokens with a cumulative probability
+                   exceeding `top_p` are kept.
 
     Returns:
-        torch.FloatTensor: The adjusted logits after applying top-p filtering.
+    torch.Tensor: The modified logits with tokens not reaching the `top_p` threshold set to -float("inf").
     """
-    # Sort the logits to identify the cut-off threshold
-    sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-    cumulative_probs = sorted_logits.softmax(dim=-1).cumsum(dim=-1)
-    # Create a mask to remove tokens with a cumulative probability above the threshold
-    sorted_indices_to_remove = cumulative_probs <= (1 - top_p)
-    # Scatter sorted tensors to original indexing
-    indices_to_remove = sorted_indices_to_remove.scatter(
-        1, sorted_indices, sorted_indices_to_remove
-    )
-    # Apply the mask to the logits using the filter value
-    logits_processed = logits.masked_fill(indices_to_remove, -float("inf"))
+    # Sort logits and get cumulative distribution of probabilities
+    sorted_logits, sorted_indices = torch.sort(logits, descending=True, dim=-1)
+    sorted_probs = torch.softmax(sorted_logits, dim=-1)
+    cumulative_probs = torch.cumsum(sorted_probs, dim=-1)
+    # Remove tokens with cumulative probability above the threshold
+    sorted_indices_to_remove = cumulative_probs > top_p
+    # Shift the indices to the right to keep the first element that crosses the threshold
+    sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
+    sorted_indices_to_remove[..., 0] = False
+    # Scatter the boolean mask to the original indices
+    # Create a byte mask for indices that need to be set to -inf
+    indices_to_remove = torch.zeros_like(logits, dtype=torch.bool).scatter_(-1, sorted_indices, sorted_indices_to_remove)
+    logits[indices_to_remove] = -float("inf")
 
-    return logits_processed
-
+    return logits
 
 def top_k_filtering(logits, top_k):
     # Retrieve the top_k logits and their indices for each sequence in the batch
