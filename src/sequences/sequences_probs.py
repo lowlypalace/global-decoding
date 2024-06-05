@@ -23,6 +23,7 @@ def top_p_filtering(logits, top_p):
 
     return logits
 
+
 def top_k_filtering(logits, top_k):
     # Retrieve the top_k logits and their indices for each sequence in the batch
     topk_values, topk_indices = torch.topk(logits, top_k, dim=-1)

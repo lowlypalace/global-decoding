@@ -238,9 +238,7 @@ class TestImplementations(unittest.TestCase):
         )
 
         self.assertTrue(
-            torch.allclose(
-                target_logprobs, proposal_logprobs, rtol=1e-03, atol=1e-03
-            )
+            torch.allclose(target_logprobs, proposal_logprobs, rtol=1e-03, atol=1e-03)
         )
         self.assertTrue(
             torch.allclose(
@@ -250,6 +248,7 @@ class TestImplementations(unittest.TestCase):
                 atol=1e-03,
             )
         )
+
 
 if __name__ == "__main__":
     unittest.main()
