@@ -65,6 +65,13 @@ def save_sequences(output_subdir, sequences_ids, sequences_decoded):
     )
     save_to_json(sequences_decoded, "sequences_decoded", output_subdir)
 
+def set_max_length(model, max_length):
+    # Assume max_model_length is the maximum sequence length the model can handle
+    max_model_length = model.config.max_position_embeddings
+    # Calculate the max_length so it is bound by the model context length
+    max_length = max_length if max_length is not None else max_model_length
+
+    return max_length
 
 def load_probs(output_subdir):
     target_logprobs = load_from_json(os.path.join(output_subdir, "logprobs_target"))
@@ -129,10 +136,7 @@ def generate_sequences_and_probs(args, output_subdir):
         device
     )
 
-    # Assume max_model_length is the maximum sequence length the model can handle
-    max_model_length = model.config.max_position_embeddings
-    # Calculate the max_length so it is bound by the model context length
-    max_length = max_length if max_length is not None else max_model_length
+    max_length = set_max_length(model, max_length)
 
     if preload_sequences:
         logging.info("Loading preloaded sequences...")
