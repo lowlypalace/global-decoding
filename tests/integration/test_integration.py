@@ -16,6 +16,8 @@ from src.utils.utils import (
     set_seed,
 )
 
+# TODO: convert this to a proper integration test
+
 
 def setup():
     # Initialize tokenizer and model, set to evaluation mode
