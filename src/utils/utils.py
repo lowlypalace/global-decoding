@@ -110,3 +110,14 @@ def convert_to_dict(obj):
     elif isinstance(obj, np.ndarray):
         return obj.tolist()  # Convert numpy arrays to list
     return obj
+
+def convert_tensor_to_list(data):
+    if isinstance(data, torch.Tensor):
+        if data.ndim == 0:  # It's a scalar tensor
+            return data.item()
+        else:
+            return data.tolist()
+    elif isinstance(data, list):
+        return [convert_tensor_to_list(item) for item in data]
+    else:
+        raise TypeError("Input must be a torch.Tensor or a list of torch.Tensors")

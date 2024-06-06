@@ -10,7 +10,7 @@ from transformers import (
     GPTNeoXForCausalLM,
 )
 
-from src.utils.utils import timer, save_to_json, load_from_json
+from src.utils.utils import timer, save_to_json, load_from_json, convert_tensor_to_list
 
 from src.sequences.sequences_probs import get_sequences_probs
 from src.sequences.generate_sequences import generate_sequences
@@ -95,16 +95,6 @@ def probs_exist(output_subdir):
         os.path.join(output_subdir, "logprobs_target.json")
     ) and os.path.exists(os.path.join(output_subdir, "logprobs_proposal.json"))
 
-def convert_tensor_to_list(data):
-    if isinstance(data, torch.Tensor):
-        if data.ndim == 0:  # It's a scalar tensor
-            return data.item()
-        else:
-            return data.tolist()
-    elif isinstance(data, list):
-        return [convert_tensor_to_list(item) for item in data]
-    else:
-        raise TypeError("Input must be a torch.Tensor or a list of torch.Tensors")
 
 def save_probs(
     output_subdir,
