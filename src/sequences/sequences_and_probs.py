@@ -58,7 +58,7 @@ def save_sequences(output_subdir, sequences_ids, sequences_decoded):
     # Save the encoded and decoded sequences
     save_to_json(
         # Convert the list of tensors to a list of lists
-        [sequence_ids.tolist() for sequence_ids in sequences_ids],
+        convert_tensor_to_list(sequences_ids),
         "sequences_ids",
         output_subdir,
     )
@@ -85,9 +85,9 @@ def load_probs(output_subdir, device):
     )
     return (
         torch.tensor(target_logprobs).to(device),
-        proposal_logprobs.to(device),
-        target_logprobs_tokens.to(device),
-        proposal_logprobs_tokens.to(device),
+        torch.tensor(proposal_logprobs).to(device),
+        torch.tensor(target_logprobs_tokens).to(device),
+        torch.tensor(proposal_logprobs_tokens).to(device),
     )
 
 
@@ -167,7 +167,7 @@ def generate_sequences_and_probs(args, output_subdir):
             proposal_logprobs,
             target_logprobs_tokens,
             proposal_logprobs_tokens,
-        ) = load_probs(output_subdir)
+        ) = load_probs(output_subdir, device)
         target_logprobs = convert_tensor_to_list(target_logprobs)
         proposal_logprobs = convert_tensor_to_list(proposal_logprobs)
         target_logprobs_tokens = convert_tensor_to_list(target_logprobs_tokens)
