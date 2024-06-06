@@ -52,11 +52,6 @@ def generate_sequences(
             if len(sequences_ids) >= sequence_count:
                 break
 
-            # Free memory
-            # TODO: Check if this is needed
-            del sequences_ids_batch
-            del padded_sequences_ids_batch
-
     # If we have more sequences than needed due to the last batch, truncate the list
     sequences_ids = sequences_ids[:sequence_count]
     logging.info(f"Generated {len(sequences_ids)} sequence in total.")
