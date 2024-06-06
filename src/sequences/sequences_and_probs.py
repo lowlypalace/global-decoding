@@ -41,7 +41,6 @@ def setup_model_and_tokenizer(model_name, precision, device):
     # Set the padding token to the EOS token
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-        # tokenizer.pad_token_id = tokenizer.eos_token_id
     # Set the padding side to the right
     tokenizer.padding_side = "right"
 
