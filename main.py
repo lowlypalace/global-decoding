@@ -187,7 +187,10 @@ def main():
         metadata = load_from_json(os.path.join(output_subdir, "metadata"))
         # Load args from metadata json
         for key, value in metadata.items():
-            # Set value from metadata if the corresponding arg is not set (is None) or update from metadata
+            # Skip preload_sequences key
+            if key == "preload_sequences":
+                continue
+            # Set value from metadata
             setattr(args, key, value)
 
     else:
