@@ -231,6 +231,7 @@ class TestIntegration(unittest.TestCase):
             )
         )
 
+    # TODO: Add tests for MCMC and evaluations
 
 if __name__ == "__main__":
     unittest.main()
