@@ -187,6 +187,7 @@ def get_output_subdir(args):
 
     return output_subdir
 
+
 def set_args_from_metadata(args, output_subdir):
     metadata = load_from_json(os.path.join(output_subdir, "metadata"))
     # Load args from metadata json
@@ -196,6 +197,7 @@ def set_args_from_metadata(args, output_subdir):
             continue
         # Set value from metadata
         setattr(args, key, value)
+
 
 def main():
     args = parse_args()
