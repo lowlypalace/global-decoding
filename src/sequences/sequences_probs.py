@@ -89,24 +89,6 @@ def save_logprobs(logprobs, filename):
         json.dump(logprobs_list, f)
 
 
-def convert_probs_to_list(
-    target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens
-):
-    # Convert tensors to lists
-    target_logprobs = [logprob.item() for logprob in target_logprobs]
-    proposal_logprobs = [logprob.item() for logprob in proposal_logprobs]
-    target_logprobs_tokens = [logprob.tolist() for logprob in target_logprobs_tokens]
-    proposal_logprobs_tokens = [
-        logprob.tolist() for logprob in proposal_logprobs_tokens
-    ]
-    return (
-        target_logprobs,
-        proposal_logprobs,
-        target_logprobs_tokens,
-        proposal_logprobs_tokens,
-    )
-
-
 def get_sequences_probs(
     model,
     sequences_ids,
@@ -187,18 +169,6 @@ def get_sequences_probs(
             proposal_logprob_sums = torch.cat(
                 (proposal_logprob_sums, proposal_logprob_sum)
             )
-
-    (
-        target_logprob_sums,
-        proposal_logprob_sums,
-        proposal_logprobs_tokens,
-        target_logprobs_tokens,
-    ) = convert_probs_to_list(
-        target_logprob_sums,
-        proposal_logprob_sums,
-        target_logprobs_tokens,
-        proposal_logprobs_tokens,
-    )
 
     return (
         target_logprob_sums,

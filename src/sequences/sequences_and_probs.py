@@ -73,7 +73,7 @@ def set_max_length(model, max_length):
 
     return max_length
 
-def load_probs(output_subdir):
+def load_probs(output_subdir, device):
     target_logprobs = load_from_json(os.path.join(output_subdir, "logprobs_target"))
     proposal_logprobs = load_from_json(os.path.join(output_subdir, "logprobs_proposal"))
     target_logprobs_tokens = load_from_json(
@@ -83,10 +83,10 @@ def load_probs(output_subdir):
         os.path.join(output_subdir, "logprobs_proposal_tokens")
     )
     return (
-        target_logprobs,
-        proposal_logprobs,
-        target_logprobs_tokens,
-        proposal_logprobs_tokens,
+        torch.tensor(target_logprobs).to(device),
+        proposal_logprobs.to(device),
+        target_logprobs_tokens.to(device),
+        proposal_logprobs_tokens.to(device),
     )
 
 
@@ -95,6 +95,16 @@ def probs_exist(output_subdir):
         os.path.join(output_subdir, "logprobs_target.json")
     ) and os.path.exists(os.path.join(output_subdir, "logprobs_proposal.json"))
 
+def convert_tensor_to_list(data):
+    if isinstance(data, torch.Tensor):
+        if data.ndim == 0:  # It's a scalar tensor
+            return data.item()
+        else:
+            return data.tolist()
+    elif isinstance(data, list):
+        return [convert_tensor_to_list(item) for item in data]
+    else:
+        raise TypeError("Input must be a torch.Tensor or a list of torch.Tensors")
 
 def save_probs(
     output_subdir,
@@ -167,6 +177,10 @@ def generate_sequences_and_probs(args, output_subdir):
             target_logprobs_tokens,
             proposal_logprobs_tokens,
         ) = load_probs(output_subdir)
+        target_logprobs = convert_tensor_to_list(target_logprobs)
+        proposal_logprobs = convert_tensor_to_list(proposal_logprobs)
+        target_logprobs_tokens = convert_tensor_to_list(target_logprobs_tokens)
+        proposal_logprobs_tokens = convert_tensor_to_list(proposal_logprobs_tokens)
 
     else:
         with timer("Computing probabilities"):
@@ -184,6 +198,10 @@ def generate_sequences_and_probs(args, output_subdir):
                 input_ids=input_ids,
                 batch_size=batch_size_prob,
             )
+        target_logprobs = convert_tensor_to_list(target_logprobs)
+        proposal_logprobs = convert_tensor_to_list(proposal_logprobs)
+        target_logprobs_tokens = convert_tensor_to_list(target_logprobs_tokens)
+        proposal_logprobs_tokens = convert_tensor_to_list(proposal_logprobs_tokens)
 
         logging.info("Saving the log probabilities...")
         save_probs(
@@ -213,7 +231,7 @@ def generate_sequences_and_probs(args, output_subdir):
     )
 
     # Convert the list of tensors to a list of lists
-    sequences_ids = [sequence_ids.tolist() for sequence_ids in sequences_ids]
+    sequences_ids = convert_tensor_to_list(sequences_ids)
 
     return (
         sequences_ids,
