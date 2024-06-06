@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument(
         "--model_name",
         type=str,
-        default="gpt2",
+        default="pythia-70m",
         choices=[
             "gpt2",
             "gpt2-medium",
