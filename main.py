@@ -173,10 +173,10 @@ def parse_args():
 def get_output_subdir(args):
     if args.preload_sequences:
         # Use the preload_sequences directory as the output directory
-        output_subdir = os.path.join(args.output_dir, args.preload_sequences)
+        output_subdir = os.path.join(args.output_dir, args.model_name, args.preload_sequences)
     else:
         # Add a directory with a timestamp to the output directory
-        output_subdir = os.path.join(args.output_dir, get_timestamp())
+        output_subdir = os.path.join(args.output_dir, args.model_name, get_timestamp())
 
     return output_subdir
 
