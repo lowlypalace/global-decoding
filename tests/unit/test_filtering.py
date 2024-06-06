@@ -78,22 +78,22 @@ class TestTopKFiltering(unittest.TestCase):
 #         )
 #         self.assertTrue(torch.allclose(filtered_logits, expected_output))
 
-    # def test_top_p_filtering_on_large_batch(self):
-    #     # Testing on a larger batch to ensure the function scales
-    #     batch_size = 64
-    #     sequence_length = 10
-    #     vocab_size = 100
-    #     top_p = 0.9
+# def test_top_p_filtering_on_large_batch(self):
+#     # Testing on a larger batch to ensure the function scales
+#     batch_size = 64
+#     sequence_length = 10
+#     vocab_size = 100
+#     top_p = 0.9
 
-    #     logits = torch.randn(batch_size, sequence_length, vocab_size)
-    #     filtered_logits = top_p_filtering(logits, top_p)
+#     logits = torch.randn(batch_size, sequence_length, vocab_size)
+#     filtered_logits = top_p_filtering(logits, top_p)
 
-    #     # Check that the cumulative probability of non--inf values does not exceed top_p
-    #     for i in range(batch_size):
-    #         for j in range(sequence_length):
-    #             probs = torch.softmax(filtered_logits[i, j], dim=-1)
-    #             valid_probs = probs[probs != 0]  # Filter out the probabilities of -inf logits
-    #             self.assertTrue(torch.sum(valid_probs) <= top_p + 1e-5, "Cumulative probability exceeds top_p")
+#     # Check that the cumulative probability of non--inf values does not exceed top_p
+#     for i in range(batch_size):
+#         for j in range(sequence_length):
+#             probs = torch.softmax(filtered_logits[i, j], dim=-1)
+#             valid_probs = probs[probs != 0]  # Filter out the probabilities of -inf logits
+#             self.assertTrue(torch.sum(valid_probs) <= top_p + 1e-5, "Cumulative probability exceeds top_p")
 
 if __name__ == "__main__":
     unittest.main()

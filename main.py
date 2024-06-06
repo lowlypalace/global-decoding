@@ -202,7 +202,6 @@ def main():
         logging.info(f"Loading metadata from {output_subdir} as args...")
         set_args_from_metadata(args, output_subdir)
 
-
     logging.info(f"Args: {args}")
     # Create a directory to save the output files
     os.makedirs(output_subdir, exist_ok=True)
