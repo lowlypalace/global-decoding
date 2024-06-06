@@ -17,21 +17,7 @@ from src.sequences.generate_sequences import generate_sequences
 
 from src.mcmc.plots import plot_distribution
 
-
-def generate_sequences_and_probs(args, output_subdir):
-    # Parse command-line arguments
-    top_k = args.top_k
-    top_p = args.top_p
-    sequence_count = args.sequence_count
-    max_length = args.max_length
-    text = args.text
-    batch_size_seq = args.batch_size_seq
-    batch_size_prob = args.batch_size_prob
-    model_name = args.model_name
-    precision = args.precision
-    preload_sequences = args.preload_sequences
-    device = torch.device(args.device)
-
+def setup_model_and_tokenizer(model_name, precision, device):
     # Load model and tokenizer based on the selected model
     if model_name.startswith("pythia"):
         tokenizer = AutoTokenizer.from_pretrained(f"EleutherAI/{model_name}")
@@ -50,14 +36,40 @@ def generate_sequences_and_probs(args, output_subdir):
     model.eval()
     # Move the model to the specified device
     model.to(device)
-    # Assume max_model_length is the maximum sequence length the model can handle
-    max_model_length = model.config.max_position_embeddings
+
     # Set the padding token to the EOS token
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
         # tokenizer.pad_token_id = tokenizer.eos_token_id
     # Set the padding side to the right
     tokenizer.padding_side = "right"
+
+    return model, tokenizer
+
+# def load_sequences(output_subdir):
+#     sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
+#     sequences_decoded = load_from_json(os.path.join(output_subdir, "sequences_decoded"))
+#     # Convert the list of lists to a list of tensors
+#     return [torch.tensor(seq_ids) for seq_ids in sequences_ids], sequences_decoded
+
+def generate_sequences_and_probs(args, output_subdir):
+    # Parse command-line arguments
+    top_k = args.top_k
+    top_p = args.top_p
+    sequence_count = args.sequence_count
+    max_length = args.max_length
+    text = args.text
+    batch_size_seq = args.batch_size_seq
+    batch_size_prob = args.batch_size_prob
+    model_name = args.model_name
+    precision = args.precision
+    preload_sequences = args.preload_sequences
+    device = torch.device(args.device)
+
+    # Setup the model and tokenizer
+    logging.info("Setting up the model and tokenizer...")
+    model, tokenizer = setup_model_and_tokenizer(model_name, precision, device)
+
     # Set the text to the EOS token if it is not set
     if text is None:
         text = tokenizer.eos_token
@@ -66,8 +78,17 @@ def generate_sequences_and_probs(args, output_subdir):
     input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
         device
     )
+
+    # Assume max_model_length is the maximum sequence length the model can handle
+    max_model_length = model.config.max_position_embeddings
     # Calculate the max_length so it is bound by the model context length
     max_length = max_length if max_length is not None else max_model_length
+
+    # if args.preload_sequences:
+    #     logging.info("Loading preloaded sequences...")
+    #     return load_sequences(output_subdir)
+    # else:
+    #     return generate_and_save_sequences(model, tokenizer, input_ids, args, output_subdir)
 
     # Generate sequences
     if preload_sequences:
@@ -76,7 +97,7 @@ def generate_sequences_and_probs(args, output_subdir):
         sequences_decoded = load_from_json(
             os.path.join(output_subdir, "sequences_decoded")
         )
-        # Convert the list of lists to a list of tensors
+
         sequences_ids = [torch.tensor(sequence_ids) for sequence_ids in sequences_ids]
     else:
         with timer("Generating new sequences"):
