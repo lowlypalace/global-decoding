@@ -53,24 +53,22 @@ def parse_args():
         default=None,
         help="Text to use as a prompt. Defaults to the EOS token.",
     )
-    decoding_group = (
-        parser.add_mutually_exclusive_group()
-    )  # Mutually exclusive group for top-k and top-p
-    decoding_group.add_argument(
+    parser.add_argument(
         "--top_k",
         type=int,
-        default=100,
-        help="Top-k value for text generation. Defaults to 100 if neither top-k nor top-p is provided.",
+        default=None,
+        help="Top-k value for text generation. No default value; must be specified if used.",
     )
-    decoding_group.add_argument(
+    parser.add_argument(
         "--top_p",
         type=float,
+        default=None,
         help="Top-p value for text generation. No default value; must be specified if used.",
     )
     parser.add_argument(
         "--sequence_count",
         type=int,
-        default=100,
+        default=1000,
         help="Number of sequence samples to generate and use for MCMC analysis.",
     )
     parser.add_argument(
@@ -109,7 +107,7 @@ def parse_args():
         "--preload_sequences",
         type=str,
         default=None,
-        help="Directory name to preload generated sequences from.",
+        help="Directory name to preload generated sequences from to resume computations.",
     )
 
     # MCMC arguments
@@ -167,11 +165,6 @@ def parse_args():
     )
 
     args = parser.parse_args()
-
-    # If top-p is provided, set top_k to None
-    if args.top_p is not None:
-        args.top_k = None
-
     validate_args(args)
 
     return args
@@ -209,6 +202,8 @@ def main():
         logging.info(f"Loading metadata from {output_subdir} as args...")
         set_args_from_metadata(args, output_subdir)
 
+
+    logging.info(f"Args: {args}")
     # Create a directory to save the output files
     os.makedirs(output_subdir, exist_ok=True)
     # Save log messages to a file
