@@ -177,25 +177,35 @@ def parse_args():
     return args
 
 
-def main():
-    args = parse_args()
-
+def get_output_subdir(args):
     if args.preload_sequences:
+        # Use the preload_sequences directory as the output directory
         output_subdir = os.path.join(args.output_dir, args.preload_sequences)
-        # Load metadata and parse arguments from it
-        logging.info(f"Loading metadata from {output_subdir} as args...")
-        metadata = load_from_json(os.path.join(output_subdir, "metadata"))
-        # Load args from metadata json
-        for key, value in metadata.items():
-            # Skip preload_sequences key
-            if key == "preload_sequences":
-                continue
-            # Set value from metadata
-            setattr(args, key, value)
-
     else:
         # Add a directory with a timestamp to the output directory
         output_subdir = os.path.join(args.output_dir, get_timestamp())
+
+    return output_subdir
+
+def set_args_from_metadata(args, output_subdir):
+    metadata = load_from_json(os.path.join(output_subdir, "metadata"))
+    # Load args from metadata json
+    for key, value in metadata.items():
+        # Skip preload_sequences key
+        if key == "preload_sequences":
+            continue
+        # Set value from metadata
+        setattr(args, key, value)
+
+def main():
+    args = parse_args()
+
+    output_subdir = get_output_subdir(args)
+
+    if args.preload_sequences:
+        # Load metadata and parse arguments from it
+        logging.info(f"Loading metadata from {output_subdir} as args...")
+        set_args_from_metadata(args, output_subdir)
 
     # Create a directory to save the output files
     os.makedirs(output_subdir, exist_ok=True)
