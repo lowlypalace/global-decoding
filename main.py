@@ -231,6 +231,18 @@ def main():
         global_decoding_texts=sampled_sequences_decoded,  # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
     )
 
+    return (
+        sequences_ids,
+        sequences_decoded,
+        target_logprobs,
+        proposal_logprobs,
+        sampled_sequences_ids,
+        sampled_sequences_decoded,
+        sampled_logprobs,
+        mauve_results_local,
+        mauve_results_global,
+    )
+
 
 if __name__ == "__main__":
     main()
