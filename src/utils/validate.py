@@ -2,6 +2,9 @@ import sys
 
 
 def validate_args(args):
+    if args.top_k is not None and args.top_p is not None:
+        sys.exit("Either --top_k or --top_p should be provided, not both.")
+
     if args.top_k is not None and args.top_k <= 0:
         sys.exit(f"--top_k must be an int > 0, but is {args.top_k}")
 
