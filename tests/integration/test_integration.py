@@ -1,8 +1,5 @@
 import unittest
 import torch
-import os
-
-from transformers import AutoTokenizer, GPTNeoXForCausalLM
 
 from src.sequences.generate_sequences_and_probs_hf import (
     generate_sequences_and_probs_hf,
@@ -10,37 +7,22 @@ from src.sequences.generate_sequences_and_probs_hf import (
 
 from src.sequences.generate_sequences import generate_sequences
 
+from src.sequences.sequences_and_probs import setup_model_and_tokenizer
+
 from src.sequences.sequences_probs import get_sequences_probs
 
 from src.utils.utils import (
     set_seed,
 )
 
-# TODO: convert this to a proper integration test
 
-
-def setup():
-    # Initialize tokenizer and model, set to evaluation mode
-    tokenizer = AutoTokenizer.from_pretrained(f"EleutherAI/pythia-70m")
-    model = GPTNeoXForCausalLM.from_pretrained(f"EleutherAI/pythia-70m")
-
+def setup(model_name="pythia-70m", precision="fp64", seed=42):
+    # Get device
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    # Set the model to evaluation mode
-    model.eval()
-    # Move the model to the specified device
-    model.to(device)
-    # Set the model precision
-    model.double()
-
-    # Set the padding token to the EOS token
-    tokenizer.pad_token = tokenizer.eos_token
-    # Set the padding side to the right
-    tokenizer.padding_side = "right"
-
     # Set the seed for reproducibility
-    set_seed(42)
-
+    set_seed(seed)
+    # Initialize tokenizer and model, set to evaluation mode
+    model, tokenizer = setup_model_and_tokenizer(model_name, precision, device)
     # Encode the input text
     input_ids = tokenizer.encode(tokenizer.eos_token, return_tensors="pt").to(device)
 
