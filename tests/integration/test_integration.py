@@ -26,7 +26,7 @@ def setup(model_name="pythia-70m", precision="fp64", seed=42):
     return tokenizer, model, input_ids
 
 
-class TestImplementations(unittest.TestCase):
+class TestIntegration(unittest.TestCase):
 
     def test_top_k(self):
 
