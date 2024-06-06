@@ -127,7 +127,6 @@ def generate_sequences_and_probs(args, output_subdir):
     # Setup the model and tokenizer
     logging.info("Setting up the model and tokenizer...")
     model, tokenizer = setup_model_and_tokenizer(model_name, precision, device)
-
     # Set the text to the EOS token if it is not set
     if text is None:
         text = tokenizer.eos_token
