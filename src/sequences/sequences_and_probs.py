@@ -17,12 +17,13 @@ from src.sequences.generate_sequences import generate_sequences
 
 from src.mcmc.plots import plot_distribution
 
+
 def setup_model_and_tokenizer(model_name, precision, device):
     # Load model and tokenizer based on the selected model
     if model_name.startswith("pythia"):
         tokenizer = AutoTokenizer.from_pretrained(f"EleutherAI/{model_name}")
         model = GPTNeoXForCausalLM.from_pretrained(f"EleutherAI/{model_name}")
-    else:  # Default to gpt2 or gpt2-large
+    else:
         tokenizer = GPT2Tokenizer.from_pretrained(model_name)
         model = GPT2LMHeadModel.from_pretrained(model_name)
 
@@ -46,11 +47,13 @@ def setup_model_and_tokenizer(model_name, precision, device):
 
     return model, tokenizer
 
-def load_sequences(output_subdir):
+
+def load_sequences(output_subdir, device):
     sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
     sequences_decoded = load_from_json(os.path.join(output_subdir, "sequences_decoded"))
     # Convert the list of lists to a list of tensors
-    return [torch.tensor(seq_ids) for seq_ids in sequences_ids], sequences_decoded
+    return torch.tensor(sequences_ids).to(device), sequences_decoded
+
 
 def save_sequences(output_subdir, sequences_ids, sequences_decoded):
     # Save the encoded and decoded sequences
@@ -61,6 +64,43 @@ def save_sequences(output_subdir, sequences_ids, sequences_decoded):
         output_subdir,
     )
     save_to_json(sequences_decoded, "sequences_decoded", output_subdir)
+
+
+def load_probs(output_subdir):
+    target_logprobs = load_from_json(os.path.join(output_subdir, "logprobs_target"))
+    proposal_logprobs = load_from_json(os.path.join(output_subdir, "logprobs_proposal"))
+    target_logprobs_tokens = load_from_json(
+        os.path.join(output_subdir, "logprobs_target_tokens")
+    )
+    proposal_logprobs_tokens = load_from_json(
+        os.path.join(output_subdir, "logprobs_proposal_tokens")
+    )
+    return (
+        target_logprobs,
+        proposal_logprobs,
+        target_logprobs_tokens,
+        proposal_logprobs_tokens,
+    )
+
+
+def probs_exist(output_subdir):
+    return os.path.exists(
+        os.path.join(output_subdir, "logprobs_target.json")
+    ) and os.path.exists(os.path.join(output_subdir, "logprobs_proposal.json"))
+
+
+def save_probs(
+    output_subdir,
+    target_logprobs,
+    proposal_logprobs,
+    target_logprobs_tokens,
+    proposal_logprobs_tokens,
+):
+    save_to_json(target_logprobs, "logprobs_target", output_subdir)
+    save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
+    save_to_json(target_logprobs_tokens, "logprobs_target_tokens", output_subdir)
+    save_to_json(proposal_logprobs_tokens, "logprobs_proposal_tokens", output_subdir)
+
 
 def generate_sequences_and_probs(args, output_subdir):
     # Parse command-line arguments
@@ -96,7 +136,7 @@ def generate_sequences_and_probs(args, output_subdir):
 
     if preload_sequences:
         logging.info("Loading preloaded sequences...")
-        sequences_ids, sequences_decoded = load_sequences(output_subdir)
+        sequences_ids, sequences_decoded = load_sequences(output_subdir, device)
     else:
         with timer("Generating new sequences"):
             sequences_ids, sequences_decoded = generate_sequences(
@@ -115,22 +155,15 @@ def generate_sequences_and_probs(args, output_subdir):
         save_sequences(output_subdir, sequences_ids, sequences_decoded)
 
     # Get the probabilities for the generated sequences
-    if (
-        preload_sequences
-        and os.path.exists(os.path.join(output_subdir, "logprobs_target.json"))
-        and os.path.exists(os.path.join(output_subdir, "logprobs_proposal.json"))
-    ):
+    if preload_sequences and probs_exist(output_subdir):
         logging.info("Loading precomputed probabilities...")
-        target_logprobs = load_from_json(os.path.join(output_subdir, "logprobs_target"))
-        proposal_logprobs = load_from_json(
-            os.path.join(output_subdir, "logprobs_proposal")
-        )
-        target_logprobs_tokens = load_from_json(
-            os.path.join(output_subdir, "logprobs_target_tokens")
-        )
-        proposal_logprobs_tokens = load_from_json(
-            os.path.join(output_subdir, "logprobs_proposal_tokens")
-        )
+        (
+            target_logprobs,
+            proposal_logprobs,
+            target_logprobs_tokens,
+            proposal_logprobs_tokens,
+        ) = load_probs(output_subdir)
+
     else:
         with timer("Computing probabilities"):
             (
@@ -149,40 +182,31 @@ def generate_sequences_and_probs(args, output_subdir):
             )
 
         logging.info("Saving the log probabilities...")
-        # Convert tensors to lists
-        target_logprobs = [logprob.item() for logprob in target_logprobs]
-        proposal_logprobs = [logprob.item() for logprob in proposal_logprobs]
-        save_to_json(target_logprobs, "logprobs_target", output_subdir)
-        save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
-
-        target_logprobs_tokens = [
-            logprob.tolist() for logprob in target_logprobs_tokens
-        ]
-        proposal_logprobs_tokens = [
-            logprob.tolist() for logprob in proposal_logprobs_tokens
-        ]
-        save_to_json(target_logprobs_tokens, "logprobs_target_tokens", output_subdir)
-        save_to_json(
-            proposal_logprobs_tokens, "logprobs_proposal_tokens", output_subdir
-        )
-
-        logging.info("Plotting the log probabilities distributions...")
-        # Plot the distribution of the target log-probabilities
-        plot_distribution(
+        save_probs(
+            output_subdir,
             target_logprobs,
-            plot_type="histogram",
-            prefix="target_logprobs",
-            show=False,
-            output_dir=os.path.join(output_subdir, "plots"),
-        )
-        # Plot the distribution of the proposal log-probabilities
-        plot_distribution(
             proposal_logprobs,
-            plot_type="histogram",
-            prefix="proposal_logprobs",
-            show=False,
-            output_dir=os.path.join(output_subdir, "plots"),
+            target_logprobs_tokens,
+            proposal_logprobs_tokens,
         )
+
+    logging.info("Plotting the log probabilities distributions...")
+    # Plot the distribution of the target log-probabilities
+    plot_distribution(
+        target_logprobs,
+        plot_type="histogram",
+        prefix="target_logprobs",
+        show=False,
+        output_dir=os.path.join(output_subdir, "plots"),
+    )
+    # Plot the distribution of the proposal log-probabilities
+    plot_distribution(
+        proposal_logprobs,
+        plot_type="histogram",
+        prefix="proposal_logprobs",
+        show=False,
+        output_dir=os.path.join(output_subdir, "plots"),
+    )
 
     # Convert the list of tensors to a list of lists
     sequences_ids = [sequence_ids.tolist() for sequence_ids in sequences_ids]
