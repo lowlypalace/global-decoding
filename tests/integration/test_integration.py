@@ -30,6 +30,7 @@ class TestImplementations(unittest.TestCase):
 
     def test_top_k(self):
 
+        # Reset model and tokenizer
         tokenizer, model, input_ids = setup()
 
         # Get sequences and their probabilities using custom implementation
@@ -58,7 +59,7 @@ class TestImplementations(unittest.TestCase):
             batch_size=16,
         )
 
-        # Reset model
+        # Reset model and tokenizer
         tokenizer, model, input_ids = setup()
 
         # Get sequences and their probabilities using Hugging Face implementation
@@ -109,7 +110,7 @@ class TestImplementations(unittest.TestCase):
         )
 
     def test_top_p(self):
-
+        # Reset model and tokenizer
         tokenizer, model, input_ids = setup()
 
         # Get sequences and their probabilities using custom implementation
