@@ -46,11 +46,21 @@ def setup_model_and_tokenizer(model_name, precision, device):
 
     return model, tokenizer
 
-# def load_sequences(output_subdir):
-#     sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
-#     sequences_decoded = load_from_json(os.path.join(output_subdir, "sequences_decoded"))
-#     # Convert the list of lists to a list of tensors
-#     return [torch.tensor(seq_ids) for seq_ids in sequences_ids], sequences_decoded
+def load_sequences(output_subdir):
+    sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
+    sequences_decoded = load_from_json(os.path.join(output_subdir, "sequences_decoded"))
+    # Convert the list of lists to a list of tensors
+    return [torch.tensor(seq_ids) for seq_ids in sequences_ids], sequences_decoded
+
+def save_sequences(output_subdir, sequences_ids, sequences_decoded):
+    # Save the encoded and decoded sequences
+    save_to_json(
+        # Convert the list of tensors to a list of lists
+        [sequence_ids.tolist() for sequence_ids in sequences_ids],
+        "sequences_ids",
+        output_subdir,
+    )
+    save_to_json(sequences_decoded, "sequences_decoded", output_subdir)
 
 def generate_sequences_and_probs(args, output_subdir):
     # Parse command-line arguments
@@ -84,21 +94,9 @@ def generate_sequences_and_probs(args, output_subdir):
     # Calculate the max_length so it is bound by the model context length
     max_length = max_length if max_length is not None else max_model_length
 
-    # if args.preload_sequences:
-    #     logging.info("Loading preloaded sequences...")
-    #     return load_sequences(output_subdir)
-    # else:
-    #     return generate_and_save_sequences(model, tokenizer, input_ids, args, output_subdir)
-
-    # Generate sequences
     if preload_sequences:
         logging.info("Loading preloaded sequences...")
-        sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
-        sequences_decoded = load_from_json(
-            os.path.join(output_subdir, "sequences_decoded")
-        )
-
-        sequences_ids = [torch.tensor(sequence_ids) for sequence_ids in sequences_ids]
+        sequences_ids, sequences_decoded = load_sequences(output_subdir)
     else:
         with timer("Generating new sequences"):
             sequences_ids, sequences_decoded = generate_sequences(
@@ -114,13 +112,7 @@ def generate_sequences_and_probs(args, output_subdir):
 
         # Convert tensors to lists
         logging.info("Saving the generated sequences...")
-        # Save the encoded and decoded sequences
-        save_to_json(
-            [sequence_ids.tolist() for sequence_ids in sequences_ids],
-            "sequences_ids",
-            output_subdir,
-        )
-        save_to_json(sequences_decoded, "sequences_decoded", output_subdir)
+        save_sequences(output_subdir, sequences_ids, sequences_decoded)
 
     # Get the probabilities for the generated sequences
     if (
