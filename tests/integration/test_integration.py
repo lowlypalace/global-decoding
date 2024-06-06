@@ -41,7 +41,7 @@ class TestIntegration(unittest.TestCase):
             max_length=10,
             top_k=100,
             top_p=None,
-            sequence_count=10,
+            sequence_count=100,
             batch_size=16,
         )
         (
@@ -74,10 +74,10 @@ class TestIntegration(unittest.TestCase):
             model=model,
             tokenizer=tokenizer,
             input_ids=input_ids,
-            max_length=10,
+            max_length=100,
             top_k=100,
             top_p=None,
-            sequence_count=10,
+            sequence_count=100,
             batch_size=16,
         )
 
@@ -118,10 +118,10 @@ class TestIntegration(unittest.TestCase):
             model=model,
             tokenizer=tokenizer,
             input_ids=input_ids,
-            max_length=10,
+            max_length=100,
             top_k=None,
             top_p=0.6,
-            sequence_count=10,
+            sequence_count=100,
             batch_size=16,
         )
         (
@@ -154,7 +154,7 @@ class TestIntegration(unittest.TestCase):
             model=model,
             tokenizer=tokenizer,
             input_ids=input_ids,
-            max_length=10,
+            max_length=100,
             top_k=None,
             top_p=0.6,
             sequence_count=10,
@@ -198,10 +198,10 @@ class TestIntegration(unittest.TestCase):
             model=model,
             tokenizer=tokenizer,
             input_ids=input_ids,
-            max_length=10,
+            max_length=100,
             top_k=None,
             top_p=None,
-            sequence_count=10,
+            sequence_count=100,
             batch_size=16,
         )
         (
