@@ -2,14 +2,12 @@ import torch
 import argparse
 import logging
 import secrets
-import torch
 import os
 
 
 from src.utils.utils import (
     setup_logging,
     save_args,
-    get_timestamp,
     set_seed,
     load_from_json,
 )
@@ -246,7 +244,7 @@ def main():
         proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
     )
 
-    mauve_results_local, mauve_results_global = evaluate(
+    mauve_results_local, mauve_results_global, bleu_results_local, bleu_results_global = evaluate(
         args,
         output_subdir=os.path.join(output_subdir, "eval"),
         local_decoding_texts=sequences_decoded,  # sequences_decoded are the sequences sampled from the local normalized distribution
