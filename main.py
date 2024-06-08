@@ -177,12 +177,13 @@ def get_output_subdir(args):
 
     if args.preload_sequences:
         # Use the preload_sequences directory as the output directory
-        output_subdir = os.path.join(args.output_dir, args.model_name, args.preload_sequences)
+        output_subdir = os.path.join(
+            args.output_dir, args.model_name, args.preload_sequences
+        )
     else:
         output_subdir = os.path.join(args.output_dir, args.model_name, unique_name)
 
     return output_subdir
-
 
 
 def set_args_from_metadata(args, output_subdir):
@@ -191,8 +192,14 @@ def set_args_from_metadata(args, output_subdir):
 
     # These parameters are not supposed to be modified when resuming
     immutable_params = {
-        "top_k", "top_p", "mcmc_num_samples", "sequence_count",
-        "max_length", "seed", "batch_size_seq", "precision"
+        "top_k",
+        "top_p",
+        "mcmc_num_samples",
+        "sequence_count",
+        "max_length",
+        "seed",
+        "batch_size_seq",
+        "precision",
     }
 
     # Load args from metadata json
