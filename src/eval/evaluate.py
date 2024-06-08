@@ -1,6 +1,6 @@
 import os
 import logging
-
+import secrets
 
 from evaluate import load
 
@@ -42,8 +42,10 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     global_decoding_texts = global_decoding_texts[:num_sequences]
 
     with timer("Evaluating the generated sequences..."):
+        # Generate a unique experiment ID
+        experiment_id = secrets.token_hex(3)
         # Initialize MAUVE metric
-        mauve = load("mauve")
+        mauve = load("mauve", experiment_id)
         # Compute MAUVE results for locally decoded strings
         logging.info(
             f"Evaluating {len(local_decoding_texts)} locally decoded strings and {len(reference_texts)} reference strings"
