@@ -1,6 +1,7 @@
 import torch
 import argparse
 import logging
+import secrets
 import torch
 import os
 
@@ -171,25 +172,33 @@ def parse_args():
 
 
 def get_output_subdir(args):
+    # Generate a unique 6-character alphanumeric string
+    unique_name = secrets.token_hex(3)  # Generates 6 hex characters
+
     if args.preload_sequences:
         # Use the preload_sequences directory as the output directory
         output_subdir = os.path.join(args.output_dir, args.model_name, args.preload_sequences)
     else:
-        # Add a directory with a timestamp to the output directory
-        output_subdir = os.path.join(args.output_dir, args.model_name, get_timestamp())
+        output_subdir = os.path.join(args.output_dir, args.model_name, unique_name)
 
     return output_subdir
 
 
+
 def set_args_from_metadata(args, output_subdir):
-    metadata = load_from_json(os.path.join(output_subdir, "metadata"))
+    metadata_file_path = os.path.join(output_subdir, "metadata")
+    metadata = load_from_json(metadata_file_path)
+
+    # These parameters are not supposed to be modified when resuming
+    immutable_params = {
+        "top_k", "top_p", "mcmc_num_samples", "sequence_count",
+        "max_length", "seed", "batch_size_seq", "precision"
+    }
+
     # Load args from metadata json
     for key, value in metadata.items():
-        # Skip preload_sequences key
-        if key == "preload_sequences":
-            continue
-        # Set value from metadata
-        setattr(args, key, value)
+        if key in immutable_params:
+            setattr(args, key, value)
 
 
 def main():
