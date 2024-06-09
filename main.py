@@ -158,7 +158,7 @@ def parse_args():
         "--eval_num_sequences",
         type=int,
         default=None,
-        help="Number of sequences to evaluate. If not provided, (1 - burnin) * sequence_count * sample_rate * 0.01 sequences will be evaluated.",
+        help="Number of sequences to evaluate. If not provided, --num_mcmc_samples will be used.",
     )
 
     # Other arguments
