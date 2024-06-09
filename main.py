@@ -102,12 +102,37 @@ def parse_args():
         choices=["fp16", "fp32", "fp64"],
         help="Precision to use for the model. Defaults to fp64.",
     )
+
     parser.add_argument(
-        "--preload_sequences",
+        "--preload_dir",
         type=str,
         default=None,
         help="Directory name to preload generated sequences from to resume computations.",
     )
+    parser.add_argument(
+        "--generate_sequences",
+        action="store_true",
+        help="Generate sequences and probabilities.",
+    )
+    parser.add_argument(
+        "--compute_probs",
+        action="store_true",
+        help="Compute probabilities for the generated sequences.",
+    )
+    parser.add_argument(
+        "--run_mcmc",
+        action="store_true",
+        help="Run MCMC.",
+    )
+    parser.add_argument(
+        "--run_eval",
+        action="store_true",
+        help="Evaluate the sampled sequences.",
+    )
+    # parser.add_argument(
+    #     "load_metadata",
+    #     action="store_true",
+
 
     # MCMC arguments
     parser.add_argument(
@@ -173,11 +198,9 @@ def get_output_subdir(args):
     # Generate a unique 6-character alphanumeric string
     unique_name = secrets.token_hex(3)  # Generates 6 hex characters
 
-    if args.preload_sequences:
-        # Use the preload_sequences directory as the output directory
-        output_subdir = os.path.join(
-            args.output_dir, args.model_name, args.preload_sequences
-        )
+    if args.preload_dir:
+        # Use the preload directory as the output directory
+        output_subdir = os.path.join(args.output_dir, args.model_name, args.preload_dir)
     else:
         output_subdir = os.path.join(args.output_dir, args.model_name, unique_name)
 
@@ -211,7 +234,7 @@ def main():
 
     output_subdir = get_output_subdir(args)
 
-    if args.preload_sequences:
+    if args.preload_dir:
         # Load metadata and parse arguments from it
         logging.info(f"Loading metadata from {output_subdir} as args...")
         set_args_from_metadata(args, output_subdir)
@@ -235,34 +258,23 @@ def main():
         args, output_subdir=os.path.join(output_subdir, "sequences")
     )
 
-    sampled_sequences_ids, sampled_sequences_decoded, sampled_logprobs = run_mcmc(
-        args=args,
-        output_subdir=os.path.join(output_subdir, "mcmc"),
-        sequences_ids=sequences_ids,
-        sequences_decoded=sequences_decoded,
-        target_logprobs=target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
-        proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
-    )
+    if args.run_mcmc:
+        sampled_sequences_ids, sampled_sequences_decoded, sampled_logprobs = run_mcmc(
+            args=args,
+            output_subdir=os.path.join(output_subdir, "mcmc"),
+            sequences_ids=sequences_ids,
+            sequences_decoded=sequences_decoded,
+            target_logprobs=target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
+            proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
+        )
 
-    mauve_results_local, mauve_results_global, bleu_results_local, bleu_results_global = evaluate(
-        args,
-        output_subdir=os.path.join(output_subdir, "eval"),
-        local_decoding_texts=sequences_decoded,  # sequences_decoded are the sequences sampled from the local normalized distribution
-        global_decoding_texts=sampled_sequences_decoded,  # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
-    )
-
-    return (
-        sequences_ids,
-        sequences_decoded,
-        target_logprobs,
-        proposal_logprobs,
-        sampled_sequences_ids,
-        sampled_sequences_decoded,
-        sampled_logprobs,
-        mauve_results_local,
-        mauve_results_global,
-    )
-
+    if args.run_eval:
+        mauve_results_local, mauve_results_global, bleu_results_local, bleu_results_global = evaluate(
+            args,
+            output_subdir=os.path.join(output_subdir, "eval"),
+            local_decoding_texts=sequences_decoded,  # sequences_decoded are the sequences sampled from the local normalized distribution
+            global_decoding_texts=sampled_sequences_decoded,  # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
+        )
 
 if __name__ == "__main__":
     main()

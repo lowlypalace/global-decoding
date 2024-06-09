@@ -90,13 +90,6 @@ def load_probs(output_subdir, device):
         torch.tensor(proposal_logprobs_tokens).to(device),
     )
 
-
-def probs_exist(output_subdir):
-    return os.path.exists(
-        os.path.join(output_subdir, "logprobs_target.json")
-    ) and os.path.exists(os.path.join(output_subdir, "logprobs_proposal.json"))
-
-
 def save_probs(
     output_subdir,
     target_logprobs,
@@ -125,7 +118,6 @@ def generate_sequences_and_probs(args, output_subdir):
     batch_size_prob = args.batch_size_prob
     model_name = args.model_name
     precision = args.precision
-    preload_sequences = args.preload_sequences
     device = torch.device(args.device)
 
     # Setup the model and tokenizer
@@ -142,10 +134,7 @@ def generate_sequences_and_probs(args, output_subdir):
 
     max_length = set_max_length(model, max_length)
 
-    if preload_sequences:
-        logging.info("Loading preloaded sequences...")
-        sequences_ids, sequences_decoded = load_sequences(output_subdir, device)
-    else:
+    if args.generate_sequences:
         with timer("Generating new sequences"):
             sequences_ids, sequences_decoded = generate_sequences(
                 model=model,
@@ -161,22 +150,12 @@ def generate_sequences_and_probs(args, output_subdir):
         # Convert tensors to lists
         logging.info("Saving the generated sequences...")
         save_sequences(output_subdir, sequences_ids, sequences_decoded)
+    else:
+        logging.info("Loading preloaded sequences...")
+        sequences_ids, sequences_decoded = load_sequences(output_subdir, device)
 
     # Get the probabilities for the generated sequences
-    if preload_sequences and probs_exist(output_subdir):
-        logging.info("Loading precomputed probabilities...")
-        (
-            target_logprobs,
-            proposal_logprobs,
-            target_logprobs_tokens,
-            proposal_logprobs_tokens,
-        ) = load_probs(output_subdir, device)
-        target_logprobs = convert_tensor_to_list(target_logprobs)
-        proposal_logprobs = convert_tensor_to_list(proposal_logprobs)
-        target_logprobs_tokens = convert_tensor_to_list(target_logprobs_tokens)
-        proposal_logprobs_tokens = convert_tensor_to_list(proposal_logprobs_tokens)
-
-    else:
+    if args.compute_probs:
         with timer("Computing probabilities"):
             (
                 target_logprobs,
@@ -212,23 +191,36 @@ def generate_sequences_and_probs(args, output_subdir):
             proposal_normalize_constants
         )
 
-    logging.info("Plotting the log probabilities distributions...")
-    # Plot the distribution of the target log-probabilities
-    plot_distribution(
-        target_logprobs,
-        plot_type="histogram",
-        prefix="target_logprobs",
-        show=False,
-        output_dir=os.path.join(output_subdir, "plots"),
-    )
-    # Plot the distribution of the proposal log-probabilities
-    plot_distribution(
-        proposal_logprobs,
-        plot_type="histogram",
-        prefix="proposal_logprobs",
-        show=False,
-        output_dir=os.path.join(output_subdir, "plots"),
-    )
+        logging.info("Plotting the log probabilities distributions...")
+        # Plot the distribution of the target log-probabilities
+        plot_distribution(
+            target_logprobs,
+            plot_type="histogram",
+            prefix="target_logprobs",
+            show=False,
+            output_dir=os.path.join(output_subdir, "plots"),
+        )
+        # Plot the distribution of the proposal log-probabilities
+        plot_distribution(
+            proposal_logprobs,
+            plot_type="histogram",
+            prefix="proposal_logprobs",
+            show=False,
+            output_dir=os.path.join(output_subdir, "plots"),
+        )
+
+    else:
+        logging.info("Loading precomputed probabilities...")
+        (
+            target_logprobs,
+            proposal_logprobs,
+            target_logprobs_tokens,
+            proposal_logprobs_tokens,
+        ) = load_probs(output_subdir, device)
+        target_logprobs = convert_tensor_to_list(target_logprobs)
+        proposal_logprobs = convert_tensor_to_list(proposal_logprobs)
+        target_logprobs_tokens = convert_tensor_to_list(target_logprobs_tokens)
+        proposal_logprobs_tokens = convert_tensor_to_list(proposal_logprobs_tokens)
 
     # Convert the list of tensors to a list of lists
     sequences_ids = convert_tensor_to_list(sequences_ids)
