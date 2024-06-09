@@ -134,7 +134,7 @@ def generate_sequences_and_probs(args, output_subdir):
 
     max_length = set_max_length(model, max_length)
 
-    if args.generate_sequences:
+    if 'generate_seqs' in args.actions:
         with timer("Generating new sequences"):
             sequences_ids, sequences_decoded = generate_sequences(
                 model=model,
@@ -155,7 +155,7 @@ def generate_sequences_and_probs(args, output_subdir):
         sequences_ids, sequences_decoded = load_sequences(output_subdir, device)
 
     # Get the probabilities for the generated sequences
-    if args.compute_probs:
+    if 'compute_probs' in args.actions:
         with timer("Computing probabilities"):
             (
                 target_logprobs,

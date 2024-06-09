@@ -110,24 +110,11 @@ def parse_args():
         help="Directory name to preload generated sequences from to resume computations.",
     )
     parser.add_argument(
-        "--generate_sequences",
-        action="store_true",
-        help="Generate sequences and probabilities.",
-    )
-    parser.add_argument(
-        "--compute_probs",
-        action="store_true",
-        help="Compute probabilities for the generated sequences.",
-    )
-    parser.add_argument(
-        "--run_mcmc",
-        action="store_true",
-        help="Run MCMC.",
-    )
-    parser.add_argument(
-        "--run_eval",
-        action="store_true",
-        help="Evaluate the sampled sequences.",
+        "--actions",
+        nargs='+',
+        default = ['generate_seqs', 'compute_probs', 'run_mcmc', 'run_eval'],
+        choices=['generate_seqs', 'compute_probs', 'run_mcmc', 'run_eval'],
+        help="Specify which actions to perform. Defaults to all actions.",
     )
     # parser.add_argument(
     #     "load_metadata",
@@ -258,7 +245,7 @@ def main():
         args, output_subdir=os.path.join(output_subdir, "sequences")
     )
 
-    if args.run_mcmc:
+    if 'run_mcmc' in args.actions:
         _, sampled_sequences_decoded, _ = run_mcmc(
             args=args,
             output_subdir=os.path.join(output_subdir, "mcmc"),
@@ -268,7 +255,7 @@ def main():
             proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
         )
 
-    if args.run_eval:
+    if 'run_eval' in args.actions:
         _, _, _, _ = evaluate(
             args,
             output_subdir=os.path.join(output_subdir, "eval"),
