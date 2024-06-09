@@ -45,22 +45,39 @@ def mask_out_pad_token(log_probs, index, pad_token_id):
     log_probs[pad_mask & ~first_pad_mask] = 0
     return log_probs
 
+def compute_constants(probs, filtered_logits):
+    # Get all of the top-k / top-p tokens indicies
+    top_probs_mask = filtered_logits != -float("inf")
+    # Apply the mask on the original unfiltered probabilities
+    top_probs = probs * top_probs_mask
+    # Calculate the inverse sum of the unnormalized probabilities
+    constants = 1.0 / torch.sum(top_probs, dim=-1)
+
+    return constants
+
 
 def get_logprobs(logits, index, pad_token_id, top_k=None, top_p=None):
-    # If top_k is specified, apply top-k filtering
+    # Get the probabilities before applying any filtering to compute constants
+    probs = log_softmax(logits, dim=-1)
+
+    # If top_k is specified, apply top-k filtering in-place
     if top_k is not None:
-        logits = top_k_filtering(logits, top_k)
+        top_k_filtering(logits, top_k)
     elif top_p is not None:
-        logits = top_p_filtering(logits, top_p)
+        top_p_filtering(logits, top_p)
+
+    # Compute the normalization constants for each token
+    normalize_constants = compute_constants(probs, logits)
 
     # Convert the (filtered) logits to log probabilities
     log_probs = log_softmax(logits, dim=-1)
+
     # Extract the log probabilities for the generated tokens
     selected_logprobs = torch.gather(log_probs, dim=-1, index=index).squeeze(-1)
     # Mask out the log probabilities for the padding tokens
     selected_logprobs = mask_out_pad_token(selected_logprobs, index, pad_token_id)
 
-    return selected_logprobs
+    return selected_logprobs, normalize_constants
 
 
 def create_index_tensor(sequences, input_ids):
@@ -105,6 +122,10 @@ def get_sequences_probs(
     proposal_logprobs_tokens = torch.tensor([], device=sequences_ids.device)
     target_logprobs_tokens = torch.tensor([], device=sequences_ids.device)
 
+    # Save the normalization constants
+    proposal_normalize_constants = torch.tensor([], device=sequences_ids.device)
+    target_normalize_constants = torch.tensor([], device=sequences_ids.device)
+
     # Placeholder for the log probability sums
     target_logprob_sums = torch.tensor([], device=sequences_ids.device)
     proposal_logprob_sums = torch.tensor([], device=sequences_ids.device)
@@ -128,12 +149,12 @@ def get_sequences_probs(
             index = create_index_tensor(sequences_ids_batch, input_ids)
 
             # Get the log probabilities for the original sequence in the current batch
-            target_logprobs = get_logprobs(
+            target_logprobs, target_constants = get_logprobs(
                 logits=logits, index=index, pad_token_id=pad_token_id
             )
 
             # Get the log probabilities for the proposed sequence in the current batch
-            proposal_logprobs = get_logprobs(
+            proposal_logprobs, proposal_constants = get_logprobs(
                 logits=logits,
                 index=index,
                 pad_token_id=pad_token_id,
@@ -146,6 +167,13 @@ def get_sequences_probs(
             )
             target_logprobs_tokens = torch.cat(
                 (target_logprobs_tokens, target_logprobs)
+            )
+
+            target_normalize_constants = torch.cat(
+                (target_normalize_constants, target_constants)
+            )
+            proposal_normalize_constants = torch.cat(
+                (proposal_normalize_constants, proposal_constants)
             )
 
             # Sum the log probabilities for the entire sequence for both distributions
@@ -172,6 +200,8 @@ def get_sequences_probs(
     return (
         target_logprob_sums,
         proposal_logprob_sums,
-        proposal_logprobs_tokens,
         target_logprobs_tokens,
+        proposal_logprobs_tokens,
+        target_normalize_constants,
+        proposal_normalize_constants,
     )

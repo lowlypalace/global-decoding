@@ -103,11 +103,15 @@ def save_probs(
     proposal_logprobs,
     target_logprobs_tokens,
     proposal_logprobs_tokens,
+    target_normalize_constants,
+    proposal_normalize_constants
 ):
     save_to_json(target_logprobs, "logprobs_target", output_subdir)
     save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
     save_to_json(target_logprobs_tokens, "logprobs_target_tokens", output_subdir)
     save_to_json(proposal_logprobs_tokens, "logprobs_proposal_tokens", output_subdir)
+    save_to_json(target_normalize_constants, "target_normalize_constants", output_subdir)
+    save_to_json(proposal_normalize_constants, "proposal_normalize_constants", output_subdir)
 
 
 def generate_sequences_and_probs(args, output_subdir):
@@ -177,8 +181,10 @@ def generate_sequences_and_probs(args, output_subdir):
             (
                 target_logprobs,
                 proposal_logprobs,
-                proposal_logprobs_tokens,
                 target_logprobs_tokens,
+                proposal_logprobs_tokens,
+                target_normalize_constants,
+                proposal_normalize_constants
             ) = get_sequences_probs(
                 model=model,
                 sequences_ids=sequences_ids,
@@ -192,6 +198,8 @@ def generate_sequences_and_probs(args, output_subdir):
         proposal_logprobs = convert_tensor_to_list(proposal_logprobs)
         target_logprobs_tokens = convert_tensor_to_list(target_logprobs_tokens)
         proposal_logprobs_tokens = convert_tensor_to_list(proposal_logprobs_tokens)
+        target_normalize_constants = convert_tensor_to_list(target_normalize_constants)
+        proposal_normalize_constants = convert_tensor_to_list(proposal_normalize_constants)
 
         logging.info("Saving the log probabilities...")
         save_probs(
@@ -200,6 +208,8 @@ def generate_sequences_and_probs(args, output_subdir):
             proposal_logprobs,
             target_logprobs_tokens,
             proposal_logprobs_tokens,
+            target_normalize_constants,
+            proposal_normalize_constants
         )
 
     logging.info("Plotting the log probabilities distributions...")

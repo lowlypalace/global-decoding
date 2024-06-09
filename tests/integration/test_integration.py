@@ -49,6 +49,8 @@ class TestIntegration(unittest.TestCase):
             proposal_logprobs_custom,
             proposal_logprobs_tokens_custom,
             target_logprobs_tokens_custom,
+            target_normalize_constants,
+            proposal_normalize_constants,
         ) = get_sequences_probs(
             model=model,
             sequences_ids=sequences_ids_custom,
@@ -129,6 +131,8 @@ class TestIntegration(unittest.TestCase):
             proposal_logprobs_custom,
             proposal_logprobs_tokens_custom,
             target_logprobs_tokens_custom,
+            target_normalize_constants,
+            proposal_normalize_constants,
         ) = get_sequences_probs(
             model=model,
             sequences_ids=sequences_ids_custom,
@@ -209,6 +213,8 @@ class TestIntegration(unittest.TestCase):
             proposal_logprobs,
             proposal_logprobs_tokens,
             target_logprobs_tokens,
+            target_normalize_constants,
+            proposal_normalize_constants,
         ) = get_sequences_probs(
             model=model,
             sequences_ids=sequences_ids,
@@ -232,7 +238,7 @@ class TestIntegration(unittest.TestCase):
         )
 
     # TODO: Add tests for MCMC and evaluations
-
+    # TODO: Add tests with different floating point precisions
 
 if __name__ == "__main__":
     unittest.main()
