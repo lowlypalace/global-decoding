@@ -259,7 +259,7 @@ def main():
     )
 
     if args.run_mcmc:
-        sampled_sequences_ids, sampled_sequences_decoded, sampled_logprobs = run_mcmc(
+        _, sampled_sequences_decoded, _ = run_mcmc(
             args=args,
             output_subdir=os.path.join(output_subdir, "mcmc"),
             sequences_ids=sequences_ids,
@@ -269,7 +269,7 @@ def main():
         )
 
     if args.run_eval:
-        mauve_results_local, mauve_results_global, bleu_results_local, bleu_results_global = evaluate(
+        _, _, _, _ = evaluate(
             args,
             output_subdir=os.path.join(output_subdir, "eval"),
             local_decoding_texts=sequences_decoded,  # sequences_decoded are the sequences sampled from the local normalized distribution
