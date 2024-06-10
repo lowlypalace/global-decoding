@@ -120,12 +120,13 @@ def get_sequences_probs(
     num_batches = (num_sequences + batch_size - 1) // batch_size
 
     # Save the log probabilities for each token in the sequences
-    proposal_logprobs_tokens = torch.tensor([], device=sequences_ids.device)
     target_logprobs_tokens = torch.tensor([], device=sequences_ids.device)
+    proposal_logprobs_tokens = torch.tensor([], device=sequences_ids.device)
 
     # Save the normalization constants
-    proposal_normalize_constants = torch.tensor([], device=sequences_ids.device)
     target_normalize_constants = torch.tensor([], device=sequences_ids.device)
+    proposal_normalize_constants = torch.tensor([], device=sequences_ids.device)
+
 
     # Placeholder for the log probability sums
     target_logprob_sums = torch.tensor([], device=sequences_ids.device)
@@ -163,11 +164,11 @@ def get_sequences_probs(
                 top_p=top_p,
             )
 
-            proposal_logprobs_tokens = torch.cat(
-                (proposal_logprobs_tokens, proposal_logprobs)
-            )
             target_logprobs_tokens = torch.cat(
                 (target_logprobs_tokens, target_logprobs)
+            )
+            proposal_logprobs_tokens = torch.cat(
+                (proposal_logprobs_tokens, proposal_logprobs)
             )
 
             target_normalize_constants = torch.cat(
