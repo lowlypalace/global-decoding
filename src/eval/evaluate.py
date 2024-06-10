@@ -86,6 +86,7 @@ def evaluate_mauve(args, output_subdir, local_decoding_texts, global_decoding_te
 
     return mauve_results_local, mauve_results_global
 
+
 def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_texts):
     def compute_self_bleu(texts):
         experiment_id = secrets.token_hex(3)
@@ -99,10 +100,14 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
             for j, reference in enumerate(texts):
                 if i != j:
                     # Compute BLEU score for this prediction-reference pair
-                    bleu_score = bleu.compute(predictions=[prediction], references=[[reference]])["bleu"]
+                    bleu_score = bleu.compute(
+                        predictions=[prediction], references=[[reference]]
+                    )["bleu"]
                     individual_bleu_scores.append(bleu_score)
             # Average BLEU scores for this prediction
-            self_bleu_scores.append(sum(individual_bleu_scores) / len(individual_bleu_scores))
+            self_bleu_scores.append(
+                sum(individual_bleu_scores) / len(individual_bleu_scores)
+            )
 
         # Return the average Self-BLEU score
         return sum(self_bleu_scores) / len(self_bleu_scores)
@@ -120,11 +125,15 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
     global_decoding_texts = global_decoding_texts[:eval_num_sequences]
 
     # Compute Self-BLEU for local decoding texts
-    logging.info(f"Evaluating Self-BLEU for {len(local_decoding_texts)} locally decoded texts...")
+    logging.info(
+        f"Evaluating Self-BLEU for {len(local_decoding_texts)} locally decoded texts..."
+    )
     local_self_bleu = compute_self_bleu(local_decoding_texts)
 
     # Compute Self-BLEU for global decoding texts
-    logging.info(f"Evaluating Self-BLEU for {len(global_decoding_texts)} globally decoded texts...")
+    logging.info(
+        f"Evaluating Self-BLEU for {len(global_decoding_texts)} globally decoded texts..."
+    )
     global_self_bleu = compute_self_bleu(global_decoding_texts)
 
     logging.info(f"Self-BLEU score for locally decoded texts: {local_self_bleu}")
@@ -134,7 +143,7 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
     logging.info("Saving the Self-BLEU evaluation results...")
     self_bleu_results = {
         "local_self_bleu": local_self_bleu,
-        "global_self_bleu": global_self_bleu
+        "global_self_bleu": global_self_bleu,
     }
     save_to_json(self_bleu_results, "self_bleu_results", output_subdir)
 
@@ -152,4 +161,9 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
         args, output_subdir, local_decoding_texts, global_decoding_texts
     )
 
-    return mauve_results_local, mauve_results_global, bleu_results_local, bleu_results_global
+    return (
+        mauve_results_local,
+        mauve_results_global,
+        bleu_results_local,
+        bleu_results_global,
+    )

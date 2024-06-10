@@ -90,6 +90,7 @@ def load_probs(output_subdir, device):
         torch.tensor(proposal_logprobs_tokens).to(device),
     )
 
+
 def save_probs(
     output_subdir,
     target_logprobs,
@@ -97,14 +98,18 @@ def save_probs(
     target_logprobs_tokens,
     proposal_logprobs_tokens,
     target_normalize_constants,
-    proposal_normalize_constants
+    proposal_normalize_constants,
 ):
     save_to_json(target_logprobs, "logprobs_target", output_subdir)
     save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
     save_to_json(target_logprobs_tokens, "logprobs_target_tokens", output_subdir)
     save_to_json(proposal_logprobs_tokens, "logprobs_proposal_tokens", output_subdir)
-    save_to_json(target_normalize_constants, "target_normalize_constants", output_subdir)
-    save_to_json(proposal_normalize_constants, "proposal_normalize_constants", output_subdir)
+    save_to_json(
+        target_normalize_constants, "target_normalize_constants", output_subdir
+    )
+    save_to_json(
+        proposal_normalize_constants, "proposal_normalize_constants", output_subdir
+    )
 
 
 def generate_sequences_and_probs(args, output_subdir):
@@ -134,7 +139,7 @@ def generate_sequences_and_probs(args, output_subdir):
 
     max_length = set_max_length(model, max_length)
 
-    if 'generate_seqs' in args.actions:
+    if "generate_seqs" in args.actions:
         with timer("Generating new sequences"):
             sequences_ids, sequences_decoded = generate_sequences(
                 model=model,
@@ -155,7 +160,7 @@ def generate_sequences_and_probs(args, output_subdir):
         sequences_ids, sequences_decoded = load_sequences(output_subdir, device)
 
     # Get the probabilities for the generated sequences
-    if 'compute_probs' in args.actions:
+    if "compute_probs" in args.actions:
         with timer("Computing probabilities"):
             (
                 target_logprobs,
@@ -163,7 +168,7 @@ def generate_sequences_and_probs(args, output_subdir):
                 target_logprobs_tokens,
                 proposal_logprobs_tokens,
                 target_normalize_constants,
-                proposal_normalize_constants
+                proposal_normalize_constants,
             ) = get_sequences_probs(
                 model=model,
                 sequences_ids=sequences_ids,
@@ -178,7 +183,9 @@ def generate_sequences_and_probs(args, output_subdir):
         target_logprobs_tokens = convert_tensor_to_list(target_logprobs_tokens)
         proposal_logprobs_tokens = convert_tensor_to_list(proposal_logprobs_tokens)
         target_normalize_constants = convert_tensor_to_list(target_normalize_constants)
-        proposal_normalize_constants = convert_tensor_to_list(proposal_normalize_constants)
+        proposal_normalize_constants = convert_tensor_to_list(
+            proposal_normalize_constants
+        )
 
         logging.info("Saving the log probabilities...")
         save_probs(
@@ -188,7 +195,7 @@ def generate_sequences_and_probs(args, output_subdir):
             target_logprobs_tokens,
             proposal_logprobs_tokens,
             target_normalize_constants,
-            proposal_normalize_constants
+            proposal_normalize_constants,
         )
 
         logging.info("Plotting the log probabilities distributions...")
@@ -209,7 +216,7 @@ def generate_sequences_and_probs(args, output_subdir):
             output_dir=os.path.join(output_subdir, "plots"),
         )
 
-    else:
+    elif "run_mcmc" in args.actions or "run_eval" in args.actions:
         logging.info("Loading precomputed probabilities...")
         (
             target_logprobs,

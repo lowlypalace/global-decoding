@@ -45,6 +45,7 @@ def mask_out_pad_token(log_probs, index, pad_token_id):
     log_probs[pad_mask & ~first_pad_mask] = 0
     return log_probs
 
+
 def compute_constants(probs, filtered_logits):
     # Get all of the top-k / top-p tokens indicies
     top_probs_mask = filtered_logits != -float("inf")
