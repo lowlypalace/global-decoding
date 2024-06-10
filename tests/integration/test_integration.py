@@ -47,8 +47,8 @@ class TestIntegration(unittest.TestCase):
         (
             target_logprobs_custom,
             proposal_logprobs_custom,
-            proposal_logprobs_tokens_custom,
             target_logprobs_tokens_custom,
+            proposal_logprobs_tokens_custom,
             target_normalize_constants,
             proposal_normalize_constants,
         ) = get_sequences_probs(
@@ -70,8 +70,8 @@ class TestIntegration(unittest.TestCase):
             sequences_decoded_hf,
             target_logprobs_hf,
             proposal_logprobs_hf,
-            proposal_logprobs_tokens_hf,
             target_logprobs_tokens_hf,
+            proposal_logprobs_tokens_hf,
         ) = generate_sequences_and_probs_hf(
             model=model,
             tokenizer=tokenizer,
@@ -129,8 +129,8 @@ class TestIntegration(unittest.TestCase):
         (
             target_logprobs_custom,
             proposal_logprobs_custom,
-            proposal_logprobs_tokens_custom,
             target_logprobs_tokens_custom,
+            proposal_logprobs_tokens_custom,
             target_normalize_constants,
             proposal_normalize_constants,
         ) = get_sequences_probs(
@@ -152,8 +152,8 @@ class TestIntegration(unittest.TestCase):
             sequences_decoded_hf,
             target_logprobs_hf,
             proposal_logprobs_hf,
-            proposal_logprobs_tokens_hf,
             target_logprobs_tokens_hf,
+            proposal_logprobs_tokens_hf,
         ) = generate_sequences_and_probs_hf(
             model=model,
             tokenizer=tokenizer,
@@ -211,8 +211,8 @@ class TestIntegration(unittest.TestCase):
         (
             target_logprobs,
             proposal_logprobs,
-            proposal_logprobs_tokens,
             target_logprobs_tokens,
+            proposal_logprobs_tokens,
             target_normalize_constants,
             proposal_normalize_constants,
         ) = get_sequences_probs(
@@ -239,6 +239,7 @@ class TestIntegration(unittest.TestCase):
 
     # TODO: Add tests for MCMC and evaluations
     # TODO: Add tests with different floating point precisions
+
 
 if __name__ == "__main__":
     unittest.main()

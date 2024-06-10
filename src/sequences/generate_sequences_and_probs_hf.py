@@ -135,6 +135,6 @@ def generate_sequences_and_probs_hf(
         sequences_decoded,
         target_logprob_sums,
         proposal_logprob_sums,
-        proposal_logprobs_tokens,
         target_logprobs_tokens,
+        proposal_logprobs_tokens,
     )
