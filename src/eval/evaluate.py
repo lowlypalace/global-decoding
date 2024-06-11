@@ -135,6 +135,10 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
     logging.warning(
         f"Removed {len(local_decoding_texts) - len(global_decoding_texts)} texts with non-printable characters"
     )
+    local_decoding_texts = local_decoding_texts[:len(global_decoding_texts)]
+    logging.warning(
+        f"Trimmed local decoding texts to match the number of global decoding texts"
+    )
 
     # Compute Self-BLEU for local decoding texts
     logging.info(
