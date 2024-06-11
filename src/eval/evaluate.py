@@ -151,15 +151,21 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
 
 
 def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
-    # Evaluate the generated sequences using the MAUVE metric
-    mauve_results_local, mauve_results_global = evaluate_mauve(
-        args, output_subdir, local_decoding_texts, global_decoding_texts
-    )
+    # Initialize result variables to None
+    mauve_results_local, mauve_results_global = None, None
+    bleu_results_local, bleu_results_global = None, None
 
-    # Evaluate the generated sequences using the BLEU metric
-    bleu_results_local, bleu_results_global = evaluate_bleu(
-        args, output_subdir, local_decoding_texts, global_decoding_texts
-    )
+    if 'run_eval_mauve' in args.actions:
+        # Evaluate the generated sequences using the MAUVE metric
+        mauve_results_local, mauve_results_global = evaluate_mauve(
+            args, output_subdir, local_decoding_texts, global_decoding_texts
+        )
+
+    if 'run_eval_bleu' in args.actions:
+        # Evaluate the generated sequences using the BLEU metric
+        bleu_results_local, bleu_results_global = evaluate_bleu(
+            args, output_subdir, local_decoding_texts, global_decoding_texts
+        )
 
     return (
         mauve_results_local,

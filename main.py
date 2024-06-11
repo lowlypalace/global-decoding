@@ -112,8 +112,8 @@ def parse_args():
     parser.add_argument(
         "--actions",
         nargs="+",
-        default=["generate_seqs", "compute_probs", "run_mcmc", "run_eval"],
-        choices=["generate_seqs", "compute_probs", "run_mcmc", "run_eval"],
+        default=["generate_seqs", "compute_probs", "run_mcmc", "run_eval_mauve", "run_eval_bleu"],
+        choices=["generate_seqs", "compute_probs", "run_mcmc", "run_eval_mauve", "run_eval_bleu"],
         help="Specify which actions to perform. Defaults to all actions.",
     )
     # parser.add_argument(
@@ -244,26 +244,22 @@ def main():
         args, output_subdir=os.path.join(output_subdir, "sequences")
     )
 
-    if "run_mcmc" in args.actions:
-        _, sampled_sequences_decoded, _ = run_mcmc(
-            args=args,
-            output_subdir=os.path.join(output_subdir, "mcmc"),
-            sequences_ids=sequences_ids,
-            sequences_decoded=sequences_decoded,
-            target_logprobs=target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
-            proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
-        )
-    # elif 'run_eval' in args.actions:
-    #     sampled_sequences_decoded =
+    _, sampled_sequences_decoded, _ = run_mcmc(
+        args=args,
+        output_subdir=os.path.join(output_subdir, "mcmc"),
+        sequences_ids=sequences_ids,
+        sequences_decoded=sequences_decoded,
+        target_logprobs=target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
+        proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
+    )
 
-    if "run_eval" in args.actions:
-        _, _, _, _ = evaluate(
-            args,
-            output_subdir=os.path.join(output_subdir, "eval"),
-            local_decoding_texts=sequences_decoded,  # sequences_decoded are the sequences sampled from the local normalized distribution
-            global_decoding_texts=sampled_sequences_decoded,  # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
-        )
 
+    _, _, _, _ = evaluate(
+        args,
+        output_subdir=os.path.join(output_subdir, "eval"),
+        local_decoding_texts=sequences_decoded,  # sequences_decoded are the sequences sampled from the local normalized distribution
+        global_decoding_texts=sampled_sequences_decoded,  # sampled_sequences_decoded are the sequences sampled from the global unnormalized distribution
+    )
 
 if __name__ == "__main__":
     main()

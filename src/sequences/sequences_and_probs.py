@@ -216,7 +216,7 @@ def generate_sequences_and_probs(args, output_subdir):
             output_dir=os.path.join(output_subdir, "plots"),
         )
 
-    elif "run_mcmc" in args.actions or "run_eval" in args.actions:
+    elif "run_mcmc" in args.actions or "run_eval_mauve" in args.actions or "run_eval_bleu" in args.actions:
         logging.info("Loading precomputed probabilities...")
         (
             target_logprobs,
