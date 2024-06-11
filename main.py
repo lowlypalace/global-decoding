@@ -197,18 +197,6 @@ def set_args_from_metadata(args, output_subdir):
     metadata_file_path = os.path.join(output_subdir, "metadata")
     metadata = load_from_json(metadata_file_path)
 
-    # These parameters are not supposed to be modified when resuming
-    immutable_params = {
-        "top_k",
-        "top_p",
-        "mcmc_num_samples",
-        "sequence_count",
-        "max_length",
-        "seed",
-        "batch_size_seq",
-        "precision",
-    }
-
     # Load args from metadata json
     for key, value in metadata.items():
         # if key in immutable_params:
