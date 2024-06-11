@@ -124,6 +124,14 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
     local_decoding_texts = local_decoding_texts[:eval_num_sequences]
     global_decoding_texts = global_decoding_texts[:eval_num_sequences]
 
+    # Remove texts with form feed character (chr(12)) from global decoding texts
+    # As they raise divide by zero error in BLEU computation
+    # https://github.com/huggingface/evaluate/issues/601
+    global_decoding_texts = [text for text in global_decoding_texts if text != chr(12)]
+    logging.warning(
+        f"Removed {len(local_decoding_texts) - len(global_decoding_texts)} texts with form feed character from global decoding texts."
+    )
+
     # Compute Self-BLEU for local decoding texts
     logging.info(
         f"Evaluating Self-BLEU for {len(local_decoding_texts)} locally decoded texts..."
