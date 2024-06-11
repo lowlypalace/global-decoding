@@ -46,6 +46,8 @@ def metropolis_hastings(
         proposed_proposal_logprob = proposal_logprobs[i]
 
         # Skip the iteration if the proposed proposal log probability is -inf
+        # This is happening because of precision issues when getting logits from the model directly
+        # https://github.com/huggingface/transformers/issues/31127
         if proposed_proposal_logprob == float("-inf"):
             logprob_diff_proposed.append(
                 None
