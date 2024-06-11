@@ -128,9 +128,6 @@ def parse_args():
         ],
         help="Specify which actions to perform. Defaults to all actions.",
     )
-    # parser.add_argument(
-    #     "load_metadata",
-    #     action="store_true",
 
     # MCMC arguments
     parser.add_argument(
