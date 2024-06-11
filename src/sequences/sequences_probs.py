@@ -136,6 +136,7 @@ def get_sequences_probs(
     )
     with torch.no_grad():
         for i in range(num_batches):
+            logging.info(f"Processing batch {i + 1}/{num_batches}...")
             # Compute the start and end indices for the current batch
             start_idx = i * batch_size
             end_idx = min(start_idx + batch_size, num_sequences)
