@@ -93,6 +93,7 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
         return all(not char.isprintable() for char in text.strip())
 
     def compute_self_bleu(texts):
+        # Generate a unique experiment ID
         experiment_id = secrets.token_hex(3)
         # Load the BLEU metric
         bleu = load("bleu", experiment_id=experiment_id)
