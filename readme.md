@@ -42,8 +42,12 @@ python main.py \
 If the sequences were generated, but some of the subsequent steps failed, the task could be resumed as follows:
 ```bash
 python main.py \
- --preload_sequences 05-06-2024_09-45-06
+--preload_dir 562fb1 \
+--model_name pythia-1.4b \
+--actions run_eval_bleu
 ```
+
+The other arguments will be fetched from the `metadata.json` file in the `--preload_dir` directory.
 
 ### Arguments
 Run `python src/main.py --help` to see all available arguments and their descriptions.
