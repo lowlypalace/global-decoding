@@ -26,7 +26,7 @@ def top_p_filtering(logits, top_p):
 
 def top_k_filtering(logits, top_k):
     # Retrieve the top_k logits and their indices for each sequence in the batch
-    topk_values, topk_indices = torch.topk(logits, top_k, dim=-1)
+    _, topk_indices = torch.topk(logits, top_k, dim=-1)
     # Create a mask of the same shape as logits, initialized to False
     mask = torch.ones_like(logits).scatter_(-1, topk_indices, 0).bool()
     # Set all elements of logits that are not in the top_k to -float("inf")
