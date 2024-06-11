@@ -6,14 +6,28 @@ from src.utils.utils import timer, save_to_json, load_from_json
 from src.mcmc.metropolis_hastings import metropolis_hastings
 from src.mcmc.plots import plot_distribution, plot_chain, plot_logprob_diff
 
+
 def load_sampled_sequences(output_subdir):
-    sampled_sequences_ids = load_from_json(os.path.join(output_subdir, "sampled_sequences_ids"))
-    sampled_sequences_decoded = load_from_json(os.path.join(output_subdir, "sampled_sequences_decoded"))
-    sampled_target_logprobs = load_from_json(os.path.join(output_subdir, "sampled_target_logprobs"))
+    sampled_sequences_ids = load_from_json(
+        os.path.join(output_subdir, "sampled_sequences_ids")
+    )
+    sampled_sequences_decoded = load_from_json(
+        os.path.join(output_subdir, "sampled_sequences_decoded")
+    )
+    sampled_target_logprobs = load_from_json(
+        os.path.join(output_subdir, "sampled_target_logprobs")
+    )
     return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
 
 
-def run_multiple_mh(args, output_subdir, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs):
+def run_multiple_mh(
+    args,
+    output_subdir,
+    sequences_ids,
+    sequences_decoded,
+    target_logprobs,
+    proposal_logprobs,
+):
     num_samples = args.mcmc_num_samples
 
     # Calculate the number of sequences per subset
@@ -93,6 +107,7 @@ def run_multiple_mh(args, output_subdir, sequences_ids, sequences_decoded, targe
 
     return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
 
+
 def run_mcmc(
     args,
     output_subdir,
@@ -104,14 +119,25 @@ def run_mcmc(
 
     if "run_mcmc" in args.actions:
         logging.info("Running the MCMC algorithm...")
-        sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs = run_multiple_mh(args, output_subdir, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs)
+        sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs = (
+            run_multiple_mh(
+                args,
+                output_subdir,
+                sequences_ids,
+                sequences_decoded,
+                target_logprobs,
+                proposal_logprobs,
+            )
+        )
 
         logging.info(
             f"Sampled {len(sampled_sequences_ids)} sequences from the MCMC algorithm."
         )
         # Save the sampled sequences and their probabilities to JSON files
         save_to_json(sampled_sequences_ids, "sampled_sequences_ids", output_subdir)
-        save_to_json(sampled_sequences_decoded, "sampled_sequences_decoded", output_subdir)
+        save_to_json(
+            sampled_sequences_decoded, "sampled_sequences_decoded", output_subdir
+        )
         save_to_json(sampled_target_logprobs, "sampled_target_logprobs", output_subdir)
 
         # Plot the distribution of the generated probabilities
@@ -135,5 +161,7 @@ def run_mcmc(
 
     elif "run_eval_mauve" in args.actions or "run_eval_bleu" in args.actions:
         logging.info("Loading precomputed MCMC samples...")
-        sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs = load_sampled_sequences(output_subdir)
+        sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs = (
+            load_sampled_sequences(output_subdir)
+        )
         return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs

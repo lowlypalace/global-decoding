@@ -127,7 +127,6 @@ def get_sequences_probs(
     target_normalize_constants = torch.tensor([], device=sequences_ids.device)
     proposal_normalize_constants = torch.tensor([], device=sequences_ids.device)
 
-
     # Placeholder for the log probability sums
     target_logprob_sums = torch.tensor([], device=sequences_ids.device)
     proposal_logprob_sums = torch.tensor([], device=sequences_ids.device)

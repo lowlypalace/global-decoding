@@ -100,10 +100,14 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
             for j, reference in enumerate(texts):
                 if i != j:
                     if not prediction or not reference:
-                        logging.warning(f"Empty text detected. Skipping BLEU computation for pair i={i}, j={j}.")
+                        logging.warning(
+                            f"Empty text detected. Skipping BLEU computation for pair i={i}, j={j}."
+                        )
                         continue
                     # Log the lengths of the texts
-                    logging.debug(f"Computing BLEU for pair i={i}, j={j} with prediction length={len(prediction)}, reference length={len(reference)}")
+                    logging.debug(
+                        f"Computing BLEU for pair i={i}, j={j} with prediction length={len(prediction)}, reference length={len(reference)}"
+                    )
                     # Compute BLEU score for this prediction-reference pair
                     try:
                         bleu_score = bleu.compute(
@@ -111,7 +115,9 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
                         )["bleu"]
                         individual_bleu_scores.append(bleu_score)
                     except ZeroDivisionError as e:
-                        logging.error(f"ZeroDivisionError in BLEU computation for pair i={i}, j={j} - Prediction: '{prediction}', Reference: '{reference}' - Error: {e}")
+                        logging.error(
+                            f"ZeroDivisionError in BLEU computation for pair i={i}, j={j} - Prediction: '{prediction}', Reference: '{reference}' - Error: {e}"
+                        )
                         continue
 
             if individual_bleu_scores:
@@ -172,13 +178,13 @@ def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
     mauve_results_local, mauve_results_global = None, None
     bleu_results_local, bleu_results_global = None, None
 
-    if 'run_eval_mauve' in args.actions:
+    if "run_eval_mauve" in args.actions:
         # Evaluate the generated sequences using the MAUVE metric
         mauve_results_local, mauve_results_global = evaluate_mauve(
             args, output_subdir, local_decoding_texts, global_decoding_texts
         )
 
-    if 'run_eval_bleu' in args.actions:
+    if "run_eval_bleu" in args.actions:
         # Evaluate the generated sequences using the BLEU metric
         bleu_results_local, bleu_results_global = evaluate_bleu(
             args, output_subdir, local_decoding_texts, global_decoding_texts
