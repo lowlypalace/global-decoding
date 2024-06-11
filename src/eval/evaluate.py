@@ -99,18 +99,35 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
             individual_bleu_scores = []
             for j, reference in enumerate(texts):
                 if i != j:
+                    if not prediction or not reference:
+                        logging.warning(f"Empty text detected. Skipping BLEU computation for pair i={i}, j={j}.")
+                        continue
+                    # Log the lengths of the texts
+                    logging.debug(f"Computing BLEU for pair i={i}, j={j} with prediction length={len(prediction)}, reference length={len(reference)}")
                     # Compute BLEU score for this prediction-reference pair
-                    bleu_score = bleu.compute(
-                        predictions=[prediction], references=[[reference]]
-                    )["bleu"]
-                    individual_bleu_scores.append(bleu_score)
-            # Average BLEU scores for this prediction
-            self_bleu_scores.append(
-                sum(individual_bleu_scores) / len(individual_bleu_scores)
-            )
+                    try:
+                        bleu_score = bleu.compute(
+                            predictions=[prediction], references=[[reference]]
+                        )["bleu"]
+                        individual_bleu_scores.append(bleu_score)
+                    except ZeroDivisionError as e:
+                        logging.error(f"ZeroDivisionError in BLEU computation for pair i={i}, j={j} - Prediction: '{prediction}', Reference: '{reference}' - Error: {e}")
+                        continue
 
-        # Return the average Self-BLEU score
-        return sum(self_bleu_scores) / len(self_bleu_scores)
+            if individual_bleu_scores:
+                # Average BLEU scores for this prediction
+                self_bleu_scores.append(
+                    sum(individual_bleu_scores) / len(individual_bleu_scores)
+                )
+            else:
+                logging.warning(f"No valid BLEU scores for prediction index {i}.")
+
+        if self_bleu_scores:
+            # Return the average Self-BLEU score
+            return sum(self_bleu_scores) / len(self_bleu_scores)
+        else:
+            logging.error("No valid Self-BLEU scores computed.")
+            return 0.0
 
     # Parse command-line arguments
     eval_num_sequences = args.eval_num_sequences
@@ -151,7 +168,7 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
 
 
 def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
-    # Initialize result variables to None
+    # Initialize result variables to None as they may not be computed
     mauve_results_local, mauve_results_global = None, None
     bleu_results_local, bleu_results_global = None, None
 
