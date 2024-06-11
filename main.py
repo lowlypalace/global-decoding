@@ -208,7 +208,7 @@ def set_args_from_metadata(args, output_subdir):
 
     # Load args from metadata json
     for key, value in metadata.items():
-        # if key in immutable_params:
+        # The parameters below are loaded from the command line and should not be overwritten
         if key != "preload_dir" or key != "actions" or key != "model_name":
             setattr(args, key, value)
 
