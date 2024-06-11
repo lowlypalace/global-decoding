@@ -162,7 +162,7 @@ def generate_sequences_and_probs(args, output_subdir):
     # Get the probabilities for the generated sequences
     target_logprobs = None
     proposal_logprobs = None
-    
+
     if "compute_probs" in args.actions:
         with timer("Computing probabilities"):
             (
@@ -218,7 +218,7 @@ def generate_sequences_and_probs(args, output_subdir):
             show=False,
             output_dir=os.path.join(output_subdir, "plots"),
         )
-
+    # We need to load the probabilities if we want to run the MCMC
     elif "run_mcmc" in args.actions:
         logging.info("Loading precomputed probabilities...")
         (
