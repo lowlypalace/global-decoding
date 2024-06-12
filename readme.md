@@ -38,8 +38,9 @@ python main.py \
   --seed 0
 ```
 
-By default, all of the actions are performed in the following order: `generate_seqs`, `compute_probs`, `run_mcmc`, `run_eval_mauve`,`run_eval_bleu`. The actions to run can be specified using the `--actions` argument. The available actions can be seen by running `python main.py --help`.
+By default, all of the actions are performed in the following order: `generate_seqs`, `compute_probs`, `run_mcmc`, `run_eval_mauve`,`run_eval_bleu`. The actions to run can be specified using the `--actions` argument. The actions depend on each other, so the order of the actions should be preserved. Specifically, `run_eval_bleu` does not depend on  `run_eval_mauve`, but both require `run_mcmc` to have been completed first.
 
+ The available actions can be seen by running `python main.py --help`.
 
 ### Resume Computation
 If the sequences were generated, but some of the subsequent steps (e.g. BLEU evaluation) failed or timed out, the task could be resumed as follows:
