@@ -132,11 +132,13 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
     # Remove texts that contain only non-printable characters
     # As they raise divide by zero error in BLEU computation
     # https://github.com/huggingface/evaluate/issues/601
-    global_decoding_texts = [text for text in global_decoding_texts if not contains_only_nonprintable(text)]
+    global_decoding_texts = [
+        text for text in global_decoding_texts if not contains_only_nonprintable(text)
+    ]
     logging.warning(
         f"Removed {len(local_decoding_texts) - len(global_decoding_texts)} texts with non-printable characters"
     )
-    local_decoding_texts = local_decoding_texts[:len(global_decoding_texts)]
+    local_decoding_texts = local_decoding_texts[: len(global_decoding_texts)]
     logging.warning(
         f"Trimmed local decoding texts to match the number of global decoding texts"
     )
