@@ -30,8 +30,11 @@ def run_multiple_mh(
 ):
     num_samples = args.mcmc_num_samples
 
+    if args.mcmc_num_sequences:
+        subset_size = args.mcmc_num_sequences
     # Calculate the number of sequences per subset
-    subset_size = len(sequences_ids) // num_samples
+    else:
+        subset_size = len(sequences_ids) // num_samples
     logging.info(f"Number of sequences for each MCMC iteration: {subset_size}")
 
     sampled_sequences_ids = []

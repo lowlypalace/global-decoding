@@ -133,8 +133,14 @@ def parse_args():
     parser.add_argument(
         "--mcmc_num_samples",
         type=int,
-        default=100,
-        help="Number of MCMC samples to generate.",
+        default=100, help="Number of MCMC samples to generate.",help="Number of MCMC samples to generate . If not provided, all of the sequences will be split equally into --mcmc_num_samples"
+
+    )
+    parser.add_argument(
+        "--mcmc_num_sequences",
+        type=int,
+        default=None,
+        help="Number of sequences to consider for each MCMC chain. If not provided, --sequence count / --mcmc_num_samples will be used."
     )
 
     # Evaluation arguments
