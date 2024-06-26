@@ -10,6 +10,12 @@ import plotly.io as pio
 # To avoid bug in graphs
 pio.kaleido.scope.mathjax = None
 
+def print_bleu_scores(results):
+    for result in results:
+        print(f"Top-k: {result['top_k']}")
+        print(f"Global Self-BLEU: {result['global_bleu']}")
+        print(f"Local Self-BLEU: {result['local_bleu']}")
+        print("-" * 30)
 
 def filter_padding_tokens(sequence):
     """Helper function to filter out padding tokens (tokens with value 0)."""
@@ -110,6 +116,7 @@ def get_results(model_name):
                 ) as f:
                     sequences_decoded = json.load(f)
                 sequence_decoded = random.sample(sequences_decoded, 1)[0][:100]
+                sequence_decoded = sequence_decoded.replace('\n', '\\n')
 
                 with open(
                     os.path.join(mcmc_dir, "sampled_sequences_decoded.json"), "r"
@@ -118,6 +125,7 @@ def get_results(model_name):
                 sequence_decoded_sampled = random.sample(sampled_sequences_decoded, 1)[
                     0
                 ][:100]
+                sequence_decoded_sampled = sequence_decoded_sampled.replace('\n', '\\n')
 
                 ###################
                 # Decoding constants:
@@ -127,9 +135,14 @@ def get_results(model_name):
 
                 ###################
                 # Log likelihood
-                # TODO
-                # Compute average logprob_proposal of the selected samples by IMH (200th step)
                 ###################
+                with open(
+                    os.path.join(mcmc_dir, "sampled_target_logprobs.json"), "r"
+                ) as f:
+                    sampled_target_logprobs = json.load(f)
+
+                average_log_likelihood = sum(sampled_target_logprobs) / len(sampled_target_logprobs)
+
                 results.append(
                     {
                         "sub_dir": sub_dir,
@@ -139,10 +152,12 @@ def get_results(model_name):
                         "mauve_global": global_mauve,
                         "bleu_local": local_bleu,
                         "global_bleu": global_bleu,
+                        "average_log_likelihood": average_log_likelihood,
                         "avg_length_local": avg_length_sequences,
                         "avg_length_global": avg_length_mcmc,
                         "sequence_local": sequence_decoded,
                         "sequence_global": sequence_decoded_sampled,
+
                     }
                 )
             except Exception as e:
@@ -160,7 +175,7 @@ def get_results(model_name):
 def plot_sequences_lengths(top_k_df, top_p_df, results_dir):
 
     # Create subplots for top-k and top-p
-    fig = make_subplots(rows=1, cols=2, shared_xaxes=False, horizontal_spacing=0.15)
+    fig = make_subplots(rows=1, cols=2, shared_xaxes=False, horizontal_spacing=0.07)
     # subplot_titles=('Average Lengths by top-k', 'Average Lengths by Top-p')
 
     # Define colors
@@ -223,7 +238,7 @@ def plot_sequences_lengths(top_k_df, top_p_df, results_dir):
 
     # Update y-axis properties
     fig.update_yaxes(title_text="Average Length", row=1, col=1)
-    fig.update_yaxes(title_text="Average Length", row=1, col=2)
+    # fig.update_yaxes(title_text="Average Length", row=1, col=2)
 
     # Update x-axes properties
     fig.update_xaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
@@ -239,14 +254,125 @@ def plot_sequences_lengths(top_k_df, top_p_df, results_dir):
         height=360,
         width=1400,
         font=dict(family="Times New Roman", size=14),
-        # plot_bgcolor='white',
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5),
+        legend=dict(orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5),
     )
 
     # Save the figure as an EPS file
     fig.write_image(os.path.join(results_dir, "average_lengths.pdf"), format="pdf")
+
+def plot_average_log_likelihood(top_k_70, top_p_70, top_k_410, top_p_410, top_k_14, top_p_14, results_dir):
+    # Create subplots for top-k and top-p
+    fig = make_subplots(rows=1, cols=2, shared_xaxes=False, horizontal_spacing=0.07)
+
+    # Define colors
+    log_likelihood_color_70 = "#92268F"
+    log_likelihood_color_410 = "#FBB982"
+    log_likelihood_color_14 = "#41B0E4"
+
+    # Add line traces for top-k
+    fig.add_trace(
+        go.Scatter(
+            x=top_k_70["top_k"],
+            y=top_k_70["average_log_likelihood"],
+            mode="lines+markers",
+            name="pythia-70m",
+            marker_color=log_likelihood_color_70,
+
+        ),
+        row=1,
+        col=1,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=top_k_410["top_k"],
+            y=top_k_410["average_log_likelihood"],
+            mode="lines+markers",
+            name="pythia-410m",
+            marker_color=log_likelihood_color_410,
+        ),
+        row=1,
+        col=1,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=top_k_14["top_k"],
+            y=top_k_14["average_log_likelihood"],
+            mode="lines+markers",
+            name="pythia-1.4b",
+            marker_color=log_likelihood_color_14,
+        ),
+        row=1,
+        col=1,
+    )
+
+    # Add line traces for top-p
+    fig.add_trace(
+        go.Scatter(
+            x=top_p_70["top_p"],
+            y=top_p_70["average_log_likelihood"],
+            mode="lines+markers",
+            name="Average Log Likelihood",
+            marker_color=log_likelihood_color_70,
+            showlegend=False,
+        ),
+        row = 1,
+        col=2,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=top_p_410["top_p"],
+            y=top_p_410["average_log_likelihood"],
+            mode="lines+markers",
+            name="Average Log Likelihood",
+            marker_color=log_likelihood_color_410,
+            showlegend=False,
+        ),
+        row = 1,
+        col=2,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=top_p_14["top_p"],
+            y=top_p_14["average_log_likelihood"],
+            mode="lines+markers",
+            name="Average Log Likelihood",
+            marker_color=log_likelihood_color_14,
+            showlegend=False,
+        ),
+        row = 1,
+        col=2,
+    )
+
+    # Update x-axis properties
+    fig.update_xaxes(title_text="Top-k values", row=1, col=1, type="category")
+    fig.update_xaxes(title_text="Top-p values", row=1, col=2, type="category")
+
+    # Update y-axis properties
+    fig.update_yaxes(title_text="Average Log Likelihood", row=1, col=1)
+
+    # Update x-axes properties
+    fig.update_xaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
+
+    # Update y-axes properties
+    fig.update_yaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
+
+    # Update layout background color
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+
+    # Update layout
+    fig.update_layout(
+        height=360,
+        width=1400,
+        font=dict(family="Times New Roman", size=14),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        legend=dict(orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5),
+    )
+
+    # Save the figure as a PDF file
+    fig.write_image(os.path.join(results_dir, "average_log_likelihood.pdf"), format="pdf")
 
 
 def main():
@@ -256,12 +382,21 @@ def main():
     # Create a directory to save the output files
     os.makedirs(results_dir, exist_ok=True)
 
+    # print_bleu_scores(results)
+
     top_k_df, top_p_df = get_results(model_name)
 
     top_k_df.to_csv(os.path.join(results_dir, f"top_k_{model_name}.csv"), sep="\t")
     top_p_df.to_csv(os.path.join(results_dir, f"top_p_{model_name}.csv"), sep="\t")
 
-    plot_sequences_lengths(top_k_df, top_p_df, results_dir)
+    # plot_sequences_lengths(top_k_df, top_p_df, results_dir)
+
+    # top_k_70, top_p_70 = get_results('pythia-70m')
+    # top_k_410, top_p_410 = get_results('pythia-410m')
+    # top_k_14, top_p_14 = get_results('pythia-1.4b')
+
+    # # Plot average log likelihood
+    # plot_average_log_likelihood(top_k_70, top_p_70, top_k_410, top_p_410, top_k_14, top_p_14, results_dir)
 
     # TODO: plot MAUVE / BLEU for each model
 
