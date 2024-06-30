@@ -29,8 +29,6 @@ def get_results(model_name):
                 top_k = metadata.get("top_k")
                 top_p = metadata.get("top_p")
 
-                # TODO: handle missing results by skipping (if metadata exists but some files not)
-
                 # when top_k and top_p are equal to None
                 if top_k is None and top_p is None:
                     top_k = 50432
