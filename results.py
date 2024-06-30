@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pandas as pd
 import logging
+import argparse
 import plotly.io as pio
 
 # To avoid bug in graphs
@@ -25,6 +26,8 @@ def filter_padding_tokens(sequence):
 def get_results(model_name):
     base_dir = os.path.join("output", model_name)
     results = []
+
+    info.logging(f"Generating {model_name} results...")
 
     for sub_dir in os.listdir(base_dir):
         sequences_dir = os.path.join(base_dir, sub_dir, "sequences")
@@ -407,7 +410,7 @@ def main():
     results = {}
 
     for model_name in args.model_names:
-        top_k_df, top_p_df = get_results(model_name, args)
+        top_k_df, top_p_df = get_results(model_name)
 
         save_results(top_k_df, top_p_df, model_name, args.results_dir)
 
