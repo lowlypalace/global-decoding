@@ -11,6 +11,10 @@ import plotly.io as pio
 # To avoid bug in graphs
 pio.kaleido.scope.mathjax = None
 
+
+logging.basicConfig(level = logging.INFO)
+
+
 def filter_padding_tokens(sequence):
     """Helper function to filter out padding tokens (tokens with value 0)."""
     return [token for token in sequence if token != 0]
@@ -122,12 +126,6 @@ def get_results(model_name):
                 sequence_decoded_sampled = sequence_decoded_sampled.replace('\n', '\\n')
 
                 ###################
-                # Decoding constants:
-                # TODO
-                # Compute product of local normalization constants
-                ###################
-
-                ###################
                 # Log likelihood
                 ###################
                 with open(
@@ -154,8 +152,17 @@ def get_results(model_name):
 
                     }
                 )
+
+                ###################
+                # Decoding constants:
+                # TODO
+                # Compute product of local normalization constants
+                ###################
+
             except Exception as e:
                 print(f"Error processing {sub_dir}: {e}")
+
+
 
     results_df = pd.DataFrame(results)
 
@@ -257,8 +264,8 @@ def plot_sequences_lengths(results, results_dir):
         )
 
         # Save the figure
-        fig.write_image(os.path.join(results_dir, "average_lengths_{model_name}.pdf"), format="pdf")
-        fig.write_html(os.path.join(results_dir, "average_lengths_{model_name}.html"), format="html")
+        fig.write_image(os.path.join(results_dir, f"average_lengths_{model_name}.pdf"), "pdf")
+        fig.write_html(os.path.join(results_dir, f"average_lengths_{model_name}.html"), "html")
 
 def plot_average_log_likelihood(results, results_dir):
     # Create subplots for top-k and top-p
@@ -329,8 +336,8 @@ def plot_average_log_likelihood(results, results_dir):
     )
 
     # Save the figure as a PDF file
-    fig.write_image(os.path.join(results_dir, "average_log_likelihood.pdf"), format="pdf")
-    fig.write_html(os.path.join(results_dir, "average_log_likelihood.html"), format="html")
+    fig.write_image(os.path.join(results_dir, "average_log_likelihood.pdf"), "pdf")
+    fig.write_html(os.path.join(results_dir, "average_log_likelihood.html"), "html")
 
 
 def save_results(top_k_df, top_p_df, model_name, results_dir):
@@ -397,9 +404,6 @@ def main():
     # Create a directory to save the output files
     os.makedirs(args.results_dir, exist_ok=True)
 
-    # model_names = ['pythia-70m', 'pythia-410m', 'pythia-1.4b' , 'pythia-2.8b']
-    model_names = ['pythia-70m', 'pythia-410m', 'pythia-1.4b']
-
     results = {}
 
     for model_name in args.model_names:
@@ -412,6 +416,8 @@ def main():
             'top_p': top_p_df
         }
 
+    # Plot the results
+    logging.info("Plotting results...")
     plot_sequences_lengths(results, args.results_dir)
     plot_average_log_likelihood(results, args.results_dir)
 
