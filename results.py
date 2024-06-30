@@ -11,13 +11,6 @@ import plotly.io as pio
 # To avoid bug in graphs
 pio.kaleido.scope.mathjax = None
 
-def print_bleu_scores(results):
-    for result in results:
-        print(f"Top-k: {result['top_k']}")
-        print(f"Global Self-BLEU: {result['global_bleu']}")
-        print(f"Local Self-BLEU: {result['local_bleu']}")
-        print("-" * 30)
-
 def filter_padding_tokens(sequence):
     """Helper function to filter out padding tokens (tokens with value 0)."""
     return [token for token in sequence if token != 0]
