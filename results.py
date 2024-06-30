@@ -12,7 +12,7 @@ import plotly.io as pio
 pio.kaleido.scope.mathjax = None
 
 
-logging.basicConfig(level = logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 
 def filter_padding_tokens(sequence):
@@ -114,7 +114,7 @@ def get_results(model_name):
                 ) as f:
                     sequences_decoded = json.load(f)
                 sequence_decoded = random.sample(sequences_decoded, 1)[0][:100]
-                sequence_decoded = sequence_decoded.replace('\n', '\\n')
+                sequence_decoded = sequence_decoded.replace("\n", "\\n")
 
                 with open(
                     os.path.join(mcmc_dir, "sampled_sequences_decoded.json"), "r"
@@ -123,7 +123,7 @@ def get_results(model_name):
                 sequence_decoded_sampled = random.sample(sampled_sequences_decoded, 1)[
                     0
                 ][:100]
-                sequence_decoded_sampled = sequence_decoded_sampled.replace('\n', '\\n')
+                sequence_decoded_sampled = sequence_decoded_sampled.replace("\n", "\\n")
 
                 ###################
                 # Log likelihood
@@ -133,7 +133,9 @@ def get_results(model_name):
                 ) as f:
                     sampled_target_logprobs = json.load(f)
 
-                average_log_likelihood = sum(sampled_target_logprobs) / len(sampled_target_logprobs)
+                average_log_likelihood = sum(sampled_target_logprobs) / len(
+                    sampled_target_logprobs
+                )
 
                 results.append(
                     {
@@ -149,7 +151,6 @@ def get_results(model_name):
                         "avg_length_global": avg_length_mcmc,
                         "sequence_local": sequence_decoded,
                         "sequence_global": sequence_decoded_sampled,
-
                     }
                 )
 
@@ -161,8 +162,6 @@ def get_results(model_name):
 
             except Exception as e:
                 print(f"Error processing {sub_dir}: {e}")
-
-
 
     results_df = pd.DataFrame(results)
 
@@ -176,8 +175,8 @@ def get_results(model_name):
 # def plot_sequences_lengths(top_k_df, top_p_df, results_dir):
 def plot_sequences_lengths(results, results_dir):
     for model_name, data in results.items():
-        top_k_df = data['top_k']
-        top_p_df = data['top_p']
+        top_k_df = data["top_k"]
+        top_p_df = data["top_p"]
 
         # Create subplots for top-k and top-p
         fig = make_subplots(rows=1, cols=2, shared_xaxes=False, horizontal_spacing=0.07)
@@ -246,10 +245,14 @@ def plot_sequences_lengths(results, results_dir):
         # fig.update_yaxes(title_text="Average Length", row=1, col=2)
 
         # Update x-axes properties
-        fig.update_xaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
+        fig.update_xaxes(
+            mirror=True, ticks="outside", showline=True, gridcolor="lightgrey"
+        )
 
         # Update y-axes properties
-        fig.update_yaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
+        fig.update_yaxes(
+            mirror=True, ticks="outside", showline=True, gridcolor="lightgrey"
+        )
 
         # Update layout background color
         fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
@@ -260,12 +263,19 @@ def plot_sequences_lengths(results, results_dir):
             width=1400,
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            legend=dict(orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5),
+            legend=dict(
+                orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5
+            ),
         )
 
         # Save the figure
-        fig.write_image(os.path.join(results_dir, f"average_lengths_{model_name}.pdf"), "pdf")
-        fig.write_html(os.path.join(results_dir, f"average_lengths_{model_name}.html"), "html")
+        fig.write_image(
+            os.path.join(results_dir, f"average_lengths_{model_name}.pdf"), "pdf"
+        )
+        fig.write_html(
+            os.path.join(results_dir, f"average_lengths_{model_name}.html"), "html"
+        )
+
 
 def plot_average_log_likelihood(results, results_dir):
     # Create subplots for top-k and top-p
@@ -279,8 +289,8 @@ def plot_average_log_likelihood(results, results_dir):
     }
 
     for model_name, data in results.items():
-        top_k_df = data['top_k']
-        top_p_df = data['top_p']
+        top_k_df = data["top_k"]
+        top_p_df = data["top_p"]
         color = colors.get(model_name, "#000000")  # Default to black if color not found
 
         # Add line traces for top-k
@@ -345,7 +355,6 @@ def save_results(top_k_df, top_p_df, model_name, results_dir):
     top_p_df.to_csv(os.path.join(results_dir, f"top_p_{model_name}.csv"), sep="\t")
 
 
-
 # Define the function to parse command-line arguments
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -394,6 +403,7 @@ def parse_args():
 
     return args
 
+
 def main():
 
     args = parse_args()
@@ -411,10 +421,7 @@ def main():
 
         save_results(top_k_df, top_p_df, model_name, args.results_dir)
 
-        results[model_name] = {
-            'top_k': top_k_df,
-            'top_p': top_p_df
-        }
+        results[model_name] = {"top_k": top_k_df, "top_p": top_p_df}
 
     # Plot the results
     logging.info("Plotting results...")
@@ -422,7 +429,7 @@ def main():
     plot_average_log_likelihood(results, args.results_dir)
 
     # TODO: plot MAUVE / BLEU for each model
-
+    # TODO: plot decoding constants
 
 if __name__ == "__main__":
     main()
