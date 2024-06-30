@@ -99,6 +99,8 @@ def save_probs(
     proposal_logprobs_tokens,
     target_normalize_constants,
     proposal_normalize_constants,
+    target_normalize_constants_products,
+    proposal_normalize_constants_products
 ):
     save_to_json(target_logprobs, "logprobs_target", output_subdir)
     save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
@@ -109,6 +111,12 @@ def save_probs(
     )
     save_to_json(
         proposal_normalize_constants, "proposal_normalize_constants", output_subdir
+    )
+    save_to_json(
+        target_normalize_constants_products, "target_normalize_constants_products", output_subdir
+    )
+    save_to_json(
+        proposal_normalize_constants_products, "proposal_normalize_constants_products", output_subdir
     )
 
 
@@ -172,6 +180,8 @@ def generate_sequences_and_probs(args, output_subdir):
                 proposal_logprobs_tokens,
                 target_normalize_constants,
                 proposal_normalize_constants,
+                target_normalize_constants_products,
+                proposal_normalize_constants_products,
             ) = get_sequences_probs(
                 model=model,
                 sequences_ids=sequences_ids,
@@ -189,6 +199,13 @@ def generate_sequences_and_probs(args, output_subdir):
         proposal_normalize_constants = convert_tensor_to_list(
             proposal_normalize_constants
         )
+        target_normalize_constants_products = convert_tensor_to_list(
+            target_normalize_constants_products
+        )
+        proposal_normalize_constants_products = convert_tensor_to_list(
+            proposal_normalize_constants_products
+        )
+
 
         logging.info("Saving the log probabilities...")
         save_probs(
@@ -199,6 +216,8 @@ def generate_sequences_and_probs(args, output_subdir):
             proposal_logprobs_tokens,
             target_normalize_constants,
             proposal_normalize_constants,
+            target_normalize_constants_products,
+            proposal_normalize_constants_products
         )
 
         logging.info("Plotting the log probabilities distributions...")
