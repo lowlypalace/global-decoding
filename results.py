@@ -27,7 +27,7 @@ def get_results(model_name):
     base_dir = os.path.join("output", model_name)
     results = []
 
-    info.logging(f"Generating {model_name} results...")
+    logging.info(f"Generating {model_name} results...")
 
     for sub_dir in os.listdir(base_dir):
         sequences_dir = os.path.join(base_dir, sub_dir, "sequences")
