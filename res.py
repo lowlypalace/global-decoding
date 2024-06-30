@@ -8,6 +8,7 @@ from src.results.plots import (
     plot_sequences_lengths,
     plot_average_log_likelihood,
     plot_bleu_evaluation_metrics,
+    plot_mauve_evaluation_metrics,
 )
 
 
@@ -69,6 +70,8 @@ def main():
     logging.basicConfig(level=logging.INFO)
 
     args = parse_args()
+    model_names = args.model_names
+    results_dir = args.results_dir
 
     # Set seed for random number generators
     random.seed(args.seed)
@@ -87,11 +90,11 @@ def main():
 
     # Plot the results
     logging.info("Plotting results...")
-    plot_sequences_lengths(results, args.results_dir)
-    plot_average_log_likelihood(results, args.results_dir)
-    plot_bleu_evaluation_metrics(results, args.model_names, args.results_dir)
+    plot_sequences_lengths(results, results_dir)
+    plot_average_log_likelihood(results, results_dir)
+    plot_mauve_evaluation_metrics(results, model_names, results_dir)
+    plot_bleu_evaluation_metrics(results, model_names, results_dir)
 
-    # TODO: plot MAUVE / BLEU for each model
     # TODO: plot decoding constants
 
 

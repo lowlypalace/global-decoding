@@ -4,6 +4,7 @@ import random
 import logging
 import pandas as pd
 
+
 def filter_padding_tokens(sequence):
     """Helper function to filter out padding tokens (tokens with value 0)."""
     return [token for token in sequence if token != 0]
@@ -134,7 +135,7 @@ def get_results(model_name):
                         "mauve_local": local_mauve,
                         "mauve_global": global_mauve,
                         "bleu_local": local_bleu,
-                        "global_bleu": global_bleu,
+                        "bleu_global": global_bleu,
                         "average_log_likelihood": average_log_likelihood,
                         "avg_length_local": avg_length_sequences,
                         "avg_length_global": avg_length_mcmc,
