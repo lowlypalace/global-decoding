@@ -58,6 +58,7 @@ def run_multiple_mh(
                 collected_sequences_ids,
                 collected_sequences_decoded,
                 collected_target_logprobs,
+                collected_proposal_logprobs,
                 logprob_diff_proposed,
                 logprob_diff_current,
                 sequence_change_indices,
@@ -83,6 +84,11 @@ def run_multiple_mh(
             save_to_json(
                 collected_target_logprobs,
                 "collected_target_logprobs",
+                os.path.join(output_subdir, "plots", "runs", f"run_{i}"),
+            )
+            save_to_json(
+                collected_proposal_logprobs,
+                "collected_proposal_logprobs",
                 os.path.join(output_subdir, "plots", "runs", f"run_{i}"),
             )
 

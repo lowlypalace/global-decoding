@@ -20,6 +20,7 @@ def metropolis_hastings(
     collected_sequences_ids = []
     collected_sequences_decoded = []
     collected_target_logprobs = []
+    collected_proposal_logprobs = []
     # Lists to store the deltas for the acceptance ratio for plotting
     logprob_diff_proposed = []
     logprob_diff_current = []
@@ -92,11 +93,13 @@ def metropolis_hastings(
         collected_sequences_ids.append(current_sequence)
         collected_sequences_decoded.append(current_decoded_seq)
         collected_target_logprobs.append(current_target_logprob)
+        collected_proposal_logprobs.append(current_proposal_logprob)
 
     return (
         collected_sequences_ids,
         collected_sequences_decoded,
         collected_target_logprobs,
+        collected_proposal_logprobs,
         logprob_diff_proposed,
         logprob_diff_current,
         sequence_change_indices,
