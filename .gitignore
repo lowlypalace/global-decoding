@@ -1,6 +1,6 @@
 __pycache__
 .DS_Store
-output_test
-output
-data
-results
+/output_test
+/output
+/data
+/results
