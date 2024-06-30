@@ -1,5 +1,3 @@
-
-
 def filter_padding_tokens(sequence):
     """Helper function to filter out padding tokens (tokens with value 0)."""
     return [token for token in sequence if token != 0]

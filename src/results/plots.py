@@ -6,6 +6,7 @@ import os
 # To avoid bug in graphs
 pio.kaleido.scope.mathjax = None
 
+
 def plot_sequences_lengths(results, results_dir):
     for model_name, data in results.items():
         top_k_df = data["top_k"]
@@ -183,7 +184,6 @@ def plot_average_log_likelihood(results, results_dir):
     fig.write_html(os.path.join(results_dir, "average_log_likelihood.html"), "html")
 
 
-
 def plot_bleu_evaluation_metrics(results, model_names, results_dir):
     # Define colors
     local_color = "#006795"
@@ -335,4 +335,3 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
 
     fig_top_p.write_image(os.path.join(results_dir, "bleu_top_p.pdf"), "pdf")
     fig_top_p.write_html(os.path.join(results_dir, "bleu_top_p.html"), "html")
-
