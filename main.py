@@ -135,13 +135,12 @@ def parse_args():
         type=int,
         default=100,
         help="Number of MCMC samples to generate.",
-
     )
     parser.add_argument(
         "--mcmc_num_sequences",
         type=int,
         default=None,
-        help="Number of sequences to consider for each MCMC chain. If not provided, --sequence count / --mcmc_num_samples will be used."
+        help="Number of sequences to consider for each MCMC chain. If not provided, --sequence count / --mcmc_num_samples will be used.",
     )
 
     # Evaluation arguments
@@ -225,16 +224,18 @@ def main():
 
     output_subdir = get_output_subdir(args)
 
+    # Create a directory to save the output files
+    os.makedirs(output_subdir, exist_ok=True)
+    # Save log messages to a file
+    setup_logging(log_file=os.path.join(output_subdir, "log.txt"))
+
     if args.preload_dir:
         # Load metadata and parse arguments from it
         logging.info(f"Loading metadata from {output_subdir} as args...")
         set_args_from_metadata(args, output_subdir)
 
     logging.info(f"Args: {args}")
-    # Create a directory to save the output files
-    os.makedirs(output_subdir, exist_ok=True)
-    # Save log messages to a file
-    setup_logging(log_file=os.path.join(output_subdir, "log.txt"))
+
     # Save command-line arguments to JSON
     save_args(args, output_subdir)
     # Set the random seed for reproducibility
