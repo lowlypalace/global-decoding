@@ -374,3 +374,77 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
 
     fig_top_p.write_image(os.path.join(results_dir, "mauve_top_p.pdf"), "pdf")
     fig_top_p.write_html(os.path.join(results_dir, "mauve_top_p.html"), "html")
+
+
+# def plot_histograms(results, results_dir):
+#     for model_name, data in results.items():
+#         top_k_df = data["top_k"]
+#         top_p_df = data["top_p"]
+
+#         # TODO
+
+#         # Create subplots: each subplot for a different top_k value
+#         num_subplots = len(constants_products)
+#         fig = make_subplots(
+#             rows=1,
+#             cols=num_subplots,
+#             subplot_titles=[f"Top K = {top_k}" for top_k in constants_products.keys()],
+#         )
+
+#         # Add histograms to subplots
+#         for i, (top_k, constants) in enumerate(constants_products.items()):
+#             histogram = go.Histogram(
+#                 x=constants,
+#                 nbinsx=30,
+#                 name=f"Top K = {top_k}",
+#                 opacity=0.5,
+#                 hoverinfo="all",
+#             )
+#             fig.add_trace(histogram, row=1, col=i + 1)
+
+#         # Update layout for the entire figure
+#         fig.update_layout(
+#             height=400,  # Adjust height as needed
+#             width=300 * num_subplots,  # Adjust width as needed
+#             # title_text=f"Histograms of Local Decoding Constants ({model_name})",
+#             font=dict(family="Times New Roman"),
+#             paper_bgcolor="rgba(0,0,0,0)",
+#             plot_bgcolor="rgba(0,0,0,0)",
+#             showlegend=False,  # Hide legend to avoid clutter
+#         )
+
+#         # Update x-axis properties for each subplot
+#         for i in range(num_subplots):
+#             fig.update_xaxes(
+#                 title_text=r"Local decoding constant $\log \mathcal{c}_{\alpha}$",
+#                 title_font=dict(family="Times New Roman", size=18),
+#                 tickfont=dict(family="Times New Roman", size=14),
+#                 mirror=True,
+#                 ticks="outside",
+#                 showline=True,
+#                 gridcolor="lightgrey",
+#                 row=1,
+#                 col=i + 1,
+#             )
+
+#         # Update y-axis properties for each subplot
+#         for i in range(num_subplots):
+#             if i == 0:
+#                 title_text = "Frequency"
+#             else:
+#                 title_text = ""
+#             fig.update_yaxes(
+#                 title_text=title_text,
+#                 title_font=dict(family="Times New Roman", size=18),
+#                 tickfont=dict(family="Times New Roman", size=14),
+#                 mirror=True,
+#                 ticks="outside",
+#                 showline=True,
+#                 gridcolor="lightgrey",
+#                 row=1,
+#                 col=i + 1,
+#             )
+
+#         # Save the figure as a PDF file
+#         fig.write_image(os.path.join(results_dir, f"histogram_{model_name}.pdf"), "pdf")
+#         fig.write_html(os.path.join(results_dir, f"histogram_{model_name}.html"), "html")
