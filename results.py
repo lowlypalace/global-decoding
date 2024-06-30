@@ -404,6 +404,159 @@ def parse_args():
     return args
 
 
+def plot_bleu_evaluation_metrics(results, model_names, results_dir):
+    # Define colors
+    local_color = "#006795"
+    global_color = "#009B55"
+
+    # Get the top-k and top-p values
+    top_k_values = results[model_names[0]]["top_k"]["top_k"].tolist()
+    top_p_values = results[model_names[0]]["top_p"]["top_p"].tolist()
+
+    # Create subplots for top-k and top-p
+    fig_top_k = make_subplots(
+        rows=1,
+        cols=4,
+        shared_xaxes=True,
+        horizontal_spacing=0.035,
+        vertical_spacing=0,
+        subplot_titles=tuple(model_names),
+    )
+    fig_top_p = make_subplots(
+        rows=1,
+        cols=4,
+        shared_xaxes=True,
+        horizontal_spacing=0.035,
+        vertical_spacing=0,
+        subplot_titles=tuple(model_names),
+    )
+
+    for idx, model_name in enumerate(results.keys(), start=1):
+        top_k_df = results[model_name]["top_k"]
+        top_p_df = results[model_name]["top_p"]
+
+        fig_top_k.add_trace(
+            go.Scatter(
+                x=top_k_values,
+                y=top_k_df["bleu_local"].tolist(),
+                mode="lines+markers",
+                name=f"Local Decoding ({model_name})",
+                marker=dict(symbol="circle"),
+                line=dict(color=local_color),
+            ),
+            row=1,
+            col=idx,
+        )
+        fig_top_k.add_trace(
+            go.Scatter(
+                x=top_k_values,
+                y=top_k_df["global_bleu"].tolist(),
+                mode="lines+markers",
+                name=f"Global Decoding ({model_name})",
+                marker=dict(symbol="circle"),
+                line=dict(color=global_color),
+            ),
+            row=1,
+            col=idx,
+        )
+
+        fig_top_p.add_trace(
+            go.Scatter(
+                x=top_p_values,
+                y=top_p_df["bleu_local"].tolist(),
+                mode="lines+markers",
+                name=f"Local Decoding ({model_name})",
+                marker=dict(symbol="circle"),
+                line=dict(color=local_color),
+            ),
+            row=1,
+            col=idx,
+        )
+        fig_top_p.add_trace(
+            go.Scatter(
+                x=top_p_values,
+                y=top_p_df["global_bleu"].tolist(),
+                mode="lines+markers",
+                name=f"Global Decoding ({model_name})",
+                marker=dict(symbol="circle"),
+                line=dict(color=global_color),
+            ),
+            row=1,
+            col=idx,
+        )
+
+    # Update x-axis properties
+    fig_top_k.update_xaxes(title_text="Top-k values", type="category")
+    fig_top_p.update_xaxes(title_text="Top-p values", type="category")
+
+    # Get the highest score for the y-axis range
+    max_top_k_score = max(
+        [
+            score
+            for model in results.values()
+            for score in model["top_k"]["bleu_local"].tolist()
+            + model["top_k"]["global_bleu"].tolist()
+        ]
+    )
+    max_top_p_score = max(
+        [
+            score
+            for model in results.values()
+            for score in model["top_p"]["bleu_local"].tolist()
+            + model["top_p"]["global_bleu"].tolist()
+        ]
+    )
+
+    # Update y-axis properties to ensure they have the same range
+    fig_top_k.update_yaxes(
+        range=[0, max_top_k_score], title_text="Self-BLEU Score", row=1, col=1
+    )
+    fig_top_k.update_yaxes(range=[0, max_top_k_score], row=1, col=2)
+    fig_top_k.update_yaxes(range=[0, max_top_k_score], row=1, col=3)
+    fig_top_k.update_yaxes(range=[0, max_top_k_score], row=1, col=4)
+
+    fig_top_p.update_yaxes(
+        range=[0, max_top_p_score], title_text="Self-BLEU Score", row=1, col=1
+    )
+    fig_top_p.update_yaxes(range=[0, max_top_p_score], row=1, col=2)
+    fig_top_p.update_yaxes(range=[0, max_top_p_score], row=1, col=3)
+    fig_top_p.update_yaxes(range=[0, max_top_p_score], row=1, col=4)
+
+    # Update layout
+    fig_top_k.update_layout(
+        height=360,
+        width=1400,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.6, xanchor="center", x=0.5),
+    )
+    fig_top_k.update_xaxes(
+        mirror=True, ticks="outside", showline=True, gridcolor="lightgrey"
+    )
+    fig_top_k.update_yaxes(
+        mirror=True, ticks="outside", showline=True, gridcolor="lightgrey"
+    )
+
+    fig_top_k.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+
+    fig_top_p.update_layout(
+        height=360,
+        width=1400,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.6, xanchor="center", x=0.5),
+    )
+    fig_top_p.update_xaxes(
+        mirror=True, ticks="outside", showline=True, gridcolor="lightgrey"
+    )
+    fig_top_p.update_yaxes(
+        mirror=True, ticks="outside", showline=True, gridcolor="lightgrey"
+    )
+
+    # Save the figure as an EPS file
+    fig_top_k.write_image(os.path.join(results_dir, "bleu_top_k.pdf"), format="pdf")
+    fig_top_k.write_html(os.path.join(results_dir, "bleu_top_k.html"), format="html")
+
+    fig_top_p.write_image(os.path.join(results_dir, "bleu_top_p.pdf"), format="pdf")
+    fig_top_p.write_html(os.path.join(results_dir, "bleu_top_p.html"), format="html")
+
+
 def main():
 
     args = parse_args()
@@ -427,9 +580,11 @@ def main():
     logging.info("Plotting results...")
     plot_sequences_lengths(results, args.results_dir)
     plot_average_log_likelihood(results, args.results_dir)
+    plot_bleu_evaluation_metrics(results, args.model_names, args.results_dir)
 
     # TODO: plot MAUVE / BLEU for each model
     # TODO: plot decoding constants
+
 
 if __name__ == "__main__":
     main()
