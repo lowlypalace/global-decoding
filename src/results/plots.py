@@ -291,6 +291,10 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
         + model["top_p"]["bleu_global"].tolist()
     )
 
+    # Add 10% padding to the maximum score
+    max_top_k_score = max_top_k_score + 0.1 * max_top_k_score
+    max_top_p_score = max_top_p_score + 0.1 * max_top_p_score
+
     update_fig(fig_top_k, max_top_k_score, "Top-k values", "Self-BLEU Score")
     update_fig(fig_top_p, max_top_p_score, "Top-p values", "Self-BLEU Score")
 
