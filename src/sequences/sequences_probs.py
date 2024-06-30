@@ -200,7 +200,9 @@ def get_sequences_probs(
             )
 
     target_normalize_constants_products = torch.prod(target_normalize_constants, dim=1)
-    proposal_normalize_constants_products = torch.prod(proposal_normalize_constants, dim=1)
+    proposal_normalize_constants_products = torch.prod(
+        proposal_normalize_constants, dim=1
+    )
 
     return (
         target_logprob_sums,
@@ -210,5 +212,5 @@ def get_sequences_probs(
         target_normalize_constants,
         proposal_normalize_constants,
         target_normalize_constants_products,
-        proposal_normalize_constants_products
+        proposal_normalize_constants_products,
     )
