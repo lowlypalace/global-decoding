@@ -128,9 +128,13 @@ def get_results(model_name):
                 ###################
                 # Decoding constants:
                 ###################
-                with open(os.path.join(sequences_dir, "proposal_normalize_constants_products.json"), "r") as f:
+                with open(
+                    os.path.join(
+                        sequences_dir, "proposal_normalize_constants_products.json"
+                    ),
+                    "r",
+                ) as f:
                     constants_products = json.load(f)
-
 
                 results.append(
                     {
@@ -146,10 +150,9 @@ def get_results(model_name):
                         "avg_length_global": avg_length_mcmc,
                         "sequence_local": sequence_decoded,
                         "sequence_global": sequence_decoded_sampled,
-                        "constants_products": constants_products
+                        "constants_products": constants_products,
                     }
                 )
-
 
             except Exception as e:
                 print(f"Error processing {sub_dir}: {e}")

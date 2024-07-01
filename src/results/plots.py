@@ -458,4 +458,6 @@ def plot_histograms(results, results_dir):
 
         # Save the figure as a PDF file
         fig.write_image(os.path.join(results_dir, f"histogram_{model_name}.pdf"), "pdf")
-        fig.write_html(os.path.join(results_dir, f"histogram_{model_name}.html"), "html")
+        fig.write_html(
+            os.path.join(results_dir, f"histogram_{model_name}.html"), "html"
+        )
