@@ -121,8 +121,17 @@ def get_results(model_name):
                 ) as f:
                     sampled_target_logprobs = json.load(f)
 
-                average_log_likelihood = sum(sampled_target_logprobs) / len(
+                log_likelihood_global = sum(sampled_target_logprobs) / len(
                     sampled_target_logprobs
+                )
+
+                with open(
+                    os.path.join(mcmc_dir, "sampled_proposal_logprobs.json"), "r"
+                ) as f:
+                    sampled_proposal_logprobs = json.load(f)
+
+                log_likelihood_local = sum(sampled_proposal_logprobs) / len(
+                    sampled_proposal_logprobs
                 )
 
                 ###################
@@ -145,7 +154,8 @@ def get_results(model_name):
                         "mauve_global": global_mauve,
                         "bleu_local": local_bleu,
                         "bleu_global": global_bleu,
-                        "average_log_likelihood": average_log_likelihood,
+                        "log_likelihood_global": log_likelihood_global,
+                        "log_likelihood_local": log_likelihood_local,
                         "avg_length_local": avg_length_sequences,
                         "avg_length_global": avg_length_mcmc,
                         "sequence_local": sequence_decoded,
