@@ -40,6 +40,7 @@ def run_multiple_mh(
     sampled_sequences_ids = []
     sampled_sequences_decoded = []
     sampled_target_logprobs = []
+    sampled_proposal_logprobs = []
 
     # Run the Independent Metropolis-Hastings algorithm
     with timer("Running MCMC algorithm"):
@@ -113,8 +114,9 @@ def run_multiple_mh(
             sampled_sequences_ids.append(collected_sequences_ids[-1])
             sampled_sequences_decoded.append(collected_sequences_decoded[-1])
             sampled_target_logprobs.append(collected_target_logprobs[-1])
+            sampled_proposal_logprobs.append(collected_proposal_logprobs[-1])
 
-    return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
+    return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs, sampled_proposal_logprobs
 
 
 def run_mcmc(
@@ -128,7 +130,7 @@ def run_mcmc(
 
     if "run_mcmc" in args.actions:
         logging.info("Running the MCMC algorithm...")
-        sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs = (
+        sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs, sampled_proposal_logprobs = (
             run_multiple_mh(
                 args,
                 output_subdir,
@@ -148,6 +150,7 @@ def run_mcmc(
             sampled_sequences_decoded, "sampled_sequences_decoded", output_subdir
         )
         save_to_json(sampled_target_logprobs, "sampled_target_logprobs", output_subdir)
+        save_to_json(sampled_proposal_logprobs, "sampled_proposal_logprobs", output_subdir)
 
         # Plot the distribution of the generated probabilities
         logging.info("Plotting the distribution of the sampled sequences...")
