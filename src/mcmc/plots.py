@@ -211,13 +211,13 @@ def plot_chain(
         paper_bgcolor="rgba(255, 255, 255, 1)",
         font=dict(family="Times New Roman", size=14),
     )
+    fig = go.Figure(plots, layout=layout)
 
     fig.update_xaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
     fig.update_yaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
 
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
 
-    fig = go.Figure(plots, layout=layout)
     # Write the plot to an HTML file
     fig.write_html(create_filename(f"{prefix}_chain", "html", output_dir))
     if show:
