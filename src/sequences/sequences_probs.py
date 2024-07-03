@@ -183,17 +183,6 @@ def get_sequences_probs(
             target_logprob_sum = sum_logprobs(target_logprobs)
             proposal_logprob_sum = sum_logprobs(proposal_logprobs)
 
-            # Check for non-finite values and log if found
-            if not torch.isfinite(target_logprob_sum).all():
-                logging.warning(
-                    f"Non-finite values detected in target log probabilities for batch {i}."
-                )
-
-            if not torch.isfinite(proposal_logprob_sum).all():
-                logging.warning(
-                    f"Non-finite values detected in proposal log probabilities for batch {i}."
-                )
-
             # Append the results to the placeholders
             target_logprob_sums = torch.cat((target_logprob_sums, target_logprob_sum))
             proposal_logprob_sums = torch.cat(

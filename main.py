@@ -13,7 +13,7 @@ from src.utils.utils import (
 )
 from src.utils.validate import validate_args
 
-from src.sequences import generate_sequences_and_probs
+from src.sequences import generate_sequences_and_probs, prune_sequences
 from src.mcmc import run_mcmc
 from src.eval import evaluate
 
@@ -248,6 +248,12 @@ def main():
         proposal_logprobs,
     ) = generate_sequences_and_probs(
         args, output_subdir=os.path.join(output_subdir, "sequences")
+    )
+
+    sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = (
+        prune_sequences(
+            args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
+        )
     )
 
     _, sampled_sequences_decoded, _ = run_mcmc(

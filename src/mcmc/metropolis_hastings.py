@@ -1,5 +1,3 @@
-import logging
-
 import numpy as np
 
 
@@ -45,21 +43,6 @@ def metropolis_hastings(
         # Get the probabilities for the proposed sequences
         proposed_target_logprob = target_logprobs[i]
         proposed_proposal_logprob = proposal_logprobs[i]
-
-        # Skip the iteration if the proposed proposal log probability is -inf
-        # This is happening because of precision issues when getting logits from the model directly
-        # https://github.com/huggingface/transformers/issues/31127
-        if proposed_proposal_logprob == float("-inf"):
-            logprob_diff_proposed.append(
-                None
-            )  # Placeholder indicating skipped iteration
-            logprob_diff_current.append(
-                None
-            )  # Placeholder indicating skipped iteration
-            logging.warning(
-                f"Skipping iteration {i} due to -inf proposal log probability."
-            )
-            continue
 
         # Calculate differences for plotting
         logprob_diff_proposed.append(

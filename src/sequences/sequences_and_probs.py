@@ -160,7 +160,9 @@ def generate_sequences_and_probs(args, output_subdir):
                 max_length=max_length,
                 top_k=top_k,
                 top_p=top_p,
-                sequence_count=sequence_count,
+                sequence_count=int(
+                    args.sequence_count * 1.01
+                ),  # Generate 1% more sequences than needed
                 batch_size=batch_size_seq,
             )
 

@@ -1,1 +1,2 @@
 from .sequences_and_probs import generate_sequences_and_probs
+from .prune_sequences import prune_sequences
