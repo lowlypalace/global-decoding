@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Gareev
+    given-names: Daniel
+  - family-names: Pimentel
+    given-names: Tiago
+title: "Global and Local Decoding for Language Models"
+version: 1.0.0
+date-released: 2024-07-14
