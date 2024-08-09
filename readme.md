@@ -63,7 +63,32 @@ To run the tests, use the following command:
 ```
 ## Output
 
-Outputs are saved in the specified `--output_dir` directory, including generated sequences, logs, and evaluation results.
+Outputs are saved in the specified `--output_dir` directory, including generated sequences, logs, and evaluation results. Example of the output directory structure:
+```
+pythia-1.4b
+└── 0bb090
+    └── eval
+        ├── mauve_results_global.json
+        ├── mauve_results_local.json
+        ├── self_bleu_results.json
+        ├── mcmc
+        │   └── plots
+        ├── sampled_sequences_decoded.json
+        ├── sampled_sequences_ids.json
+        ├── sampled_target_logprobs.json
+        ├── sequences
+        │   └── plots
+        ├── logprobs_proposal_tokens.json
+        ├── logprobs_proposal.json
+        ├── logprobs_target_tokens.json
+        ├── logprobs_target.json
+        ├── sequences_decoded.json
+        ├── sequences_ids.json
+        ├── log.txt
+    ├── metadata.json
+    ├── 1c0331
+    └── 1dbe15
+```
 
 ## Linting
 
