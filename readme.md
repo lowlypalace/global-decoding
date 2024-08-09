@@ -73,7 +73,7 @@ pythia-1.4b
 │   │   ├── self_bleu_results.json
 │   ├──  mcmc
 │   │   └── plots
-│  │   ├── sampled_sequences_decoded.json
+│   │   ├── sampled_sequences_decoded.json
 │   │   ├── sampled_sequences_ids.json
 │   │   ├── sampled_target_logprobs.json
 │   ├── sequences
@@ -84,7 +84,7 @@ pythia-1.4b
 │   │   ├── logprobs_target.json
 │   │   ├── sequences_decoded.json
 │   │   ├── sequences_ids.json
-│  ├── log.txt
+│   ├── log.txt
 │   ├── metadata.json
 ├── 1c0331
 └── 1dbe15
