@@ -96,38 +96,38 @@ The `res.py` script is responsible for generating results for the experiments. I
 
 ### Functions
 
-- **`save_results(top_k_df, top_p_df, model_name, results_dir)`**: Saves the DataFrames to CSV files.
-- **`parse_args()`**: Parses command-line arguments for model names, seed, and results directory.
-- **`main()`**: Main function that orchestrates the result generation, saving, and plotting.
+- `save_results(top_k_df, top_p_df, model_name, results_dir)`: Saves the DataFrames to CSV files.
+- `parse_args()`: Parses command-line arguments for model names, seed, and results directory.
+- `main()`: Main function that orchestrates the result generation, saving, and plotting.
 
 ### DataFrame Columns
 
 The results are stored in two DataFrames: `top_k_df` and `top_p_df`. Below are the columns and their descriptions:
 
-- **`sub_dir`**: Subdirectory name where the results are stored.
-- **`top_k`**: The top-k value used in generation.
-- **`top_p`**: The top-p value used in generation.
-- **`mauve_local`**: Local MAUVE evaluation score.
-- **`mauve_global`**: Global MAUVE evaluation score.
-- **`bleu_local`**: Local BLEU evaluation score.
-- **`bleu_global`**: Global BLEU evaluation score.
-- **`log_likelihood_local`**: Local log likelihood of sequences.
-- **`log_likelihood_global`**: Global log likelihood of sequences.
-- **`avg_length_local`**: Average length of sequences without padding.
-- **`avg_length_global`**: Average length of MCMC sampled sequences without padding.
-- **`sequence_local`**: Example of a locally decoded sequence.
-- **`sequence_global`**: Example of a globally decoded sequence.
-- **`constants_products`**: Decoding constants used in normalization.
+- `sub_dir`: Subdirectory name where the results are stored.
+- `top_k`: The top-k value used in generation.
+- `top_p`: The top-p value used in generation.
+- `mauve_local`: Local MAUVE evaluation score.
+- `mauve_global`: Global MAUVE evaluation score.
+- `bleu_local`: Local BLEU evaluation score.
+- `bleu_global`: Global BLEU evaluation score.
+- `log_likelihood_local`: Local log likelihood of sequences.
+- `log_likelihood_global`: Global log likelihood of sequences.
+- `avg_length_local`: Average length of sequences without padding.
+- `avg_length_global`: Average length of MCMC sampled sequences without padding.
+- `sequence_local`: Example of a locally decoded sequence.
+- `sequence_global`: Example of a globally decoded sequence.
+- `constants_products`: Decoding constants used in normalization.
 
 The output CSV files are saved in the specified `--results_dir` directory. The directory contains:
 
-- **CSV Files**: Raw data with MAUVE, BLEU, log likelihoods, and average sequence lengths for various models and decoding strategies.
+- CSV Files: Raw data with MAUVE, BLEU, log likelihoods, and average sequence lengths for various models and decoding strategies.
 
-- **HTML and PDF Files**: Visualizations of evaluation metrics:
-  - **`average_lengths`**: Average sequence lengths for different models and strategies.
-  - **`average_log_likelihood`**: Average log likelihoods of generated sequences.
-  - **`bleu_top_k` and `bleu_top_p`**: BLEU scores for top-k and top-p strategies.
-  - **`mauve_top_k` and `mauve_top_p`**: MAUVE scores indicating distribution divergence.
+- HTML and PDF Files: Visualizations of evaluation metrics:
+  - `average_lengths`: Average sequence lengths for different models and strategies.
+  - `average_log_likelihood`: Average log likelihoods of generated sequences.
+  - `bleu_top_k` and `bleu_top_p`: BLEU scores for top-k and top-p strategies.
+  - `mauve_top_k` and `mauve_top_p`: MAUVE scores indicating distribution divergence.
 
 These outputs help compare the performance and characteristics of different decoding strategies.
 
