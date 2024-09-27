@@ -115,18 +115,8 @@ def parse_args():
     parser.add_argument(
         "--actions",
         nargs="+",
-        default=[
-            "generate_seqs",
-            "compute_probs",
-            "run_mcmc",
-            "run_eval"
-        ],
-        choices=[
-            "generate_seqs",
-            "compute_probs",
-            "run_mcmc",
-            "run_eval"
-        ],
+        default=["generate_seqs", "compute_probs", "run_mcmc", "run_eval"],
+        choices=["generate_seqs", "compute_probs", "run_mcmc", "run_eval"],
         help="Specify which actions to perform. Defaults to all actions.",
     )
 
@@ -219,8 +209,20 @@ def load_metadata(args, output_subdir):
     """Loads metadata from a previously saved run and sets args from it."""
     metadata = load_from_json(os.path.join(output_subdir, "metadata"))
     for key, value in metadata.items():
-        # The parameters below are loaded from the command line and should not be overwritten
-        if key not in {"preload_dir", "actions", "model_name"}:
+        # The parameters below are loaded from the command line and should be overwritten
+        if key in {
+            "device",
+            "batch_size_seq",
+            "batch_size_prob",
+            "preload_dir",
+            "actions",
+            "mcmc_num_samples",
+            "mcmc_num_sequences",
+            "eval_dataset_name",
+            "eval_split",
+            "eval_num_sequences",
+            "eval_num_runs",
+        }:
             setattr(args, key, value)
 
 
@@ -328,4 +330,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
