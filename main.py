@@ -303,8 +303,8 @@ def main():
         )
 
         # Accumulate scores
-        mauve_scores_local.append(mauve_results_local["mauve"])
-        mauve_scores_global.append(mauve_results_global["mauve"])
+        mauve_scores_local.append(mauve_results_local.mauve)
+        mauve_scores_global.append(mauve_results_global.mauve)
         bleu_scores_local.append(bleu_local)
         bleu_scores_global.append(bleu_global)
 
