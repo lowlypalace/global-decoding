@@ -1,5 +1,6 @@
 import os
 import logging
+import random
 import secrets
 
 from evaluate import load
@@ -9,14 +10,12 @@ from src.utils.utils import save_to_json, timer, convert_to_dict, load_data_from
 from src.eval.download_dataset import download_dataset
 
 
-def evaluate_mauve(args, output_subdir, local_decoding_texts, global_decoding_texts):
+def evaluate_mauve(args, output_subdir, eval_local_decoding_texts, eval_global_decoding_texts, eval_num_sequences, seed):
     # Parse command-line arguments
     eval_dataset_name = args.eval_dataset_name
     eval_split = args.eval_split
-    eval_num_sequences = args.eval_num_sequences
     max_length = args.max_length
     mcmc_num_samples = args.mcmc_num_samples
-    seed = args.seed
 
     # Set the device ID
     device_id = 1 if args.device == "cuda" else 0
@@ -37,10 +36,8 @@ def evaluate_mauve(args, output_subdir, local_decoding_texts, global_decoding_te
     # Load the reference texts
     reference_texts = [item["text"] for item in data]
 
-    # Trim the sequences to the specified number of sequences
-    reference_texts = reference_texts[:eval_num_sequences]
-    local_decoding_texts = local_decoding_texts[:eval_num_sequences]
-    global_decoding_texts = global_decoding_texts[:eval_num_sequences]
+    # Pick random run_eval_sequences
+    reference_texts = random.sample(reference_texts, eval_num_sequences)
 
     with timer("Evaluating the generated sequences..."):
         # Generate a unique experiment ID
@@ -49,21 +46,21 @@ def evaluate_mauve(args, output_subdir, local_decoding_texts, global_decoding_te
         mauve = load("mauve", experiment_id=experiment_id)
         # Compute MAUVE results for locally decoded strings
         logging.info(
-            f"Evaluating {len(local_decoding_texts)} locally decoded strings and {len(reference_texts)} reference strings..."
+            f"Evaluating {len(eval_local_decoding_texts)} locally decoded strings and {len(reference_texts)} reference strings..."
         )
         mauve_results_local = mauve.compute(
-            predictions=local_decoding_texts,
+            predictions=eval_local_decoding_texts,
             references=reference_texts,
             device_id=device_id,
             max_text_length=max_length,
             seed=seed,
         )
         logging.info(
-            f"Evaluating {len(global_decoding_texts)} globally decoded strings and {len(reference_texts)} reference strings..."
+            f"Evaluating {len(eval_global_decoding_texts)} globally decoded strings and {len(reference_texts)} reference strings..."
         )
         # Compute MAUVE results for globally decoded strings
         mauve_results_global = mauve.compute(
-            predictions=global_decoding_texts,
+            predictions=eval_global_decoding_texts,
             references=reference_texts,
             device_id=device_id,
             max_text_length=max_length,
@@ -87,7 +84,7 @@ def evaluate_mauve(args, output_subdir, local_decoding_texts, global_decoding_te
     return mauve_results_local, mauve_results_global
 
 
-def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_texts):
+def evaluate_bleu(output_subdir, eval_local_decoding_texts, eval_global_decoding_texts):
 
     def compute_self_bleu(texts):
         # Generate a unique experiment ID
@@ -114,29 +111,17 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
         # Return the average Self-BLEU score
         return sum(self_bleu_scores) / len(self_bleu_scores)
 
-    # Parse command-line arguments
-    eval_num_sequences = args.eval_num_sequences
-    mcmc_num_samples = args.mcmc_num_samples
-
-    # Set the number of evaluated sequnces to the number of sampled sequences
-    if eval_num_sequences is None:
-        eval_num_sequences = mcmc_num_samples
-
-    # Trim the sequences to the specified number of sequences
-    local_decoding_texts = local_decoding_texts[:eval_num_sequences]
-    global_decoding_texts = global_decoding_texts[:eval_num_sequences]
-
     # Compute Self-BLEU for local decoding texts
     logging.info(
-        f"Evaluating Self-BLEU for {len(local_decoding_texts)} locally decoded texts..."
+        f"Evaluating Self-BLEU for {len(eval_local_decoding_texts)} locally decoded texts..."
     )
-    local_self_bleu = compute_self_bleu(local_decoding_texts)
+    local_self_bleu = compute_self_bleu(eval_local_decoding_texts)
 
     # Compute Self-BLEU for global decoding texts
     logging.info(
-        f"Evaluating Self-BLEU for {len(global_decoding_texts)} globally decoded texts..."
+        f"Evaluating Self-BLEU for {len(eval_global_decoding_texts)} globally decoded texts..."
     )
-    global_self_bleu = compute_self_bleu(global_decoding_texts)
+    global_self_bleu = compute_self_bleu(eval_global_decoding_texts)
 
     logging.info(f"Self-BLEU score for locally decoded texts: {local_self_bleu}")
     logging.info(f"Self-BLEU score for globally decoded texts: {global_self_bleu}")
@@ -152,22 +137,20 @@ def evaluate_bleu(args, output_subdir, local_decoding_texts, global_decoding_tex
     return local_self_bleu, global_self_bleu
 
 
-def evaluate(args, output_subdir, local_decoding_texts, global_decoding_texts):
-    # Initialize result variables to None as they may not be computed
-    mauve_results_local, mauve_results_global = None, None
-    bleu_results_local, bleu_results_global = None, None
+def evaluate(args, output_subdir, eval_local_decoding_texts, eval_global_decoding_texts, eval_num_sequences):
+    # # Initialize result variables to None as they may not be computed
+    # mauve_results_local, mauve_results_global = None, None
+    # bleu_results_local, bleu_results_global = None, None
 
-    if "run_eval_mauve" in args.actions:
-        # Evaluate the generated sequences using the MAUVE metric
-        mauve_results_local, mauve_results_global = evaluate_mauve(
-            args, output_subdir, local_decoding_texts, global_decoding_texts
-        )
+    # Evaluate the generated sequences using the MAUVE metric
+    mauve_results_local, mauve_results_global = evaluate_mauve(
+        args, output_subdir, eval_local_decoding_texts, eval_global_decoding_texts, eval_num_sequences
+    )
 
-    if "run_eval_bleu" in args.actions:
-        # Evaluate the generated sequences using the BLEU metric
-        bleu_results_local, bleu_results_global = evaluate_bleu(
-            args, output_subdir, local_decoding_texts, global_decoding_texts
-        )
+    # Evaluate the generated sequences using the BLEU metric
+    bleu_results_local, bleu_results_global = evaluate_bleu(
+        output_subdir, eval_local_decoding_texts, eval_global_decoding_texts, eval_num_sequences
+    )
 
     return (
         mauve_results_local,
