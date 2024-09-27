@@ -161,7 +161,7 @@ def generate_sequences_and_probs(args, output_subdir):
                 top_k=top_k,
                 top_p=top_p,
                 sequence_count=int(
-                    args.sequence_count * 1.01
+                    sequence_count * 1.01
                 ),  # Generate 1% more sequences than needed
                 batch_size=batch_size_seq,
             )
@@ -243,7 +243,7 @@ def generate_sequences_and_probs(args, output_subdir):
             output_dir=os.path.join(output_subdir, "plots"),
         )
     # We need to load the probabilities if we want to run the MCMC
-    elif "run_mcmc" in args.actions:
+    else:
         logging.info("Loading precomputed probabilities...")
         (
             target_logprobs,
