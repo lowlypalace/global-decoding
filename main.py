@@ -314,10 +314,26 @@ def main():
     avg_bleu_global, ci_bleu_global = calculate_statistics(bleu_scores_global)
 
     results = {
-        "mauve_local": {"mean": avg_mauve_local, "ci": ci_mauve_local},
-        "mauve_global": {"mean": avg_mauve_global, "ci": ci_mauve_global},
-        "bleu_local": {"mean": avg_bleu_local, "ci": ci_bleu_local},
-        "bleu_global": {"mean": avg_bleu_global, "ci": ci_bleu_global},
+        "mauve_local": {
+            "mean": avg_mauve_local,
+            "ci": ci_mauve_local,
+            "scores": mauve_scores_local,
+        },
+        "mauve_global": {
+            "mean": avg_mauve_global,
+            "ci": ci_mauve_global,
+            "scores": mauve_scores_global,
+        },
+        "bleu_local": {
+            "mean": avg_bleu_local,
+            "ci": ci_bleu_local,
+            "scores": bleu_scores_local,
+        },
+        "bleu_global": {
+            "mean": avg_bleu_global,
+            "ci": ci_bleu_global,
+            "scores": bleu_scores_global,
+        },
     }
 
     save_to_json(results, "evaluation_results", output_subdir)
