@@ -209,7 +209,7 @@ def load_metadata(args, output_subdir):
     """Loads metadata from a previously saved run and sets args from it."""
     metadata = load_from_json(os.path.join(output_subdir, "metadata"))
     for key, value in metadata.items():
-        # The parameters below are loaded from the command line and should be overwritten
+        # The parameters below are loaded from the command line and can be overwritten
         if key in {
             "device",
             "batch_size_seq",
