@@ -234,6 +234,7 @@ def init_run(args, run_idx):
     seed = args.seed + run_idx
     set_seed(seed)
     logging.info(f"Starting run {run_idx + 1}/{args.eval_num_runs} with seed {seed}")
+    return seed
 
 
 def main():
@@ -276,7 +277,7 @@ def main():
     eval_num_sequences = args.eval_num_sequences or args.mcmc_num_samples
 
     for run_idx in range(args.eval_num_runs):
-        init_run(args, run_idx)
+        seed = init_run(args, run_idx)
 
         _, sampled_sequences_decoded, _ = run_mcmc(
             args=args,
@@ -298,6 +299,7 @@ def main():
             eval_local_decoding_texts=eval_local_decoding_texts,  # eval_local_decoding_texts are the sequences sampled from the local normalized distribution
             eval_global_decoding_texts=eval_global_decoding_texts,  # eval_global_decoding_texts are the sequences sampled from the global unnormalized distribution
             eval_num_sequences=eval_num_sequences,
+            seed=seed,
         )
 
         # Accumulate scores

@@ -149,6 +149,7 @@ def evaluate(
     eval_local_decoding_texts,
     eval_global_decoding_texts,
     eval_num_sequences,
+    seed
 ):
     # # Initialize result variables to None as they may not be computed
     # mauve_results_local, mauve_results_global = None, None
@@ -161,6 +162,7 @@ def evaluate(
         eval_local_decoding_texts,
         eval_global_decoding_texts,
         eval_num_sequences,
+        seed
     )
 
     # Evaluate the generated sequences using the BLEU metric
@@ -168,7 +170,6 @@ def evaluate(
         output_subdir,
         eval_local_decoding_texts,
         eval_global_decoding_texts,
-        eval_num_sequences,
     )
 
     return (
