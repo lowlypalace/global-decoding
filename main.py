@@ -324,7 +324,7 @@ def main():
         },
     }
 
-    save_to_json(results, "results", output_subdir)
+    save_to_json(results, "results", os.path.join(output_subdir, "eval"))
     logging.info(f"Results saved: {results}")
 
 
