@@ -119,15 +119,13 @@ def parse_args():
             "generate_seqs",
             "compute_probs",
             "run_mcmc",
-            "run_eval_mauve",
-            "run_eval_bleu",
+            "run_eval"
         ],
         choices=[
             "generate_seqs",
             "compute_probs",
             "run_mcmc",
-            "run_eval_mauve",
-            "run_eval_bleu",
+            "run_eval"
         ],
         help="Specify which actions to perform. Defaults to all actions.",
     )
@@ -331,4 +329,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-    # if "run_eval_mauve" in args.actions:

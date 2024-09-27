@@ -133,60 +133,60 @@ def run_mcmc(
     proposal_logprobs,
 ):
 
-    if "run_mcmc" in args.actions:
-        logging.info("Running the MCMC algorithm...")
-        (
-            sampled_sequences_ids,
-            sampled_sequences_decoded,
-            sampled_target_logprobs,
-            sampled_proposal_logprobs,
-        ) = run_multiple_mh(
-            args,
-            output_subdir,
-            sequences_ids,
-            sequences_decoded,
-            target_logprobs,
-            proposal_logprobs,
-        )
+    # if "run_mcmc" in args.actions:
+    logging.info("Running the MCMC algorithm...")
+    (
+        sampled_sequences_ids,
+        sampled_sequences_decoded,
+        sampled_target_logprobs,
+        sampled_proposal_logprobs,
+    ) = run_multiple_mh(
+        args,
+        output_subdir,
+        sequences_ids,
+        sequences_decoded,
+        target_logprobs,
+        proposal_logprobs,
+    )
 
-        logging.info(
-            f"Sampled {len(sampled_sequences_ids)} sequences from the MCMC algorithm."
-        )
-        # Save the sampled sequences and their probabilities to JSON files
-        save_to_json(sampled_sequences_ids, "sampled_sequences_ids", output_subdir)
-        save_to_json(
-            sampled_sequences_decoded, "sampled_sequences_decoded", output_subdir
-        )
-        save_to_json(sampled_target_logprobs, "sampled_target_logprobs", output_subdir)
-        save_to_json(
-            sampled_proposal_logprobs, "sampled_proposal_logprobs", output_subdir
-        )
+    logging.info(
+        f"Sampled {len(sampled_sequences_ids)} sequences from the MCMC algorithm."
+    )
+    # Save the sampled sequences and their probabilities to JSON files
+    save_to_json(sampled_sequences_ids, "sampled_sequences_ids", output_subdir)
+    save_to_json(
+        sampled_sequences_decoded, "sampled_sequences_decoded", output_subdir
+    )
+    save_to_json(sampled_target_logprobs, "sampled_target_logprobs", output_subdir)
+    save_to_json(
+        sampled_proposal_logprobs, "sampled_proposal_logprobs", output_subdir
+    )
 
-        # Plot the distribution of the generated probabilities
-        logging.info("Plotting the distribution of the sampled sequences...")
-        plot_distribution(
-            sampled_target_logprobs,
-            plot_type="histogram",
-            prefix="mcmc",
-            show=False,
-            output_dir=os.path.join(output_subdir, "plots"),
-        )
-        plot_distribution(
-            sampled_target_logprobs,
-            plot_type="kde",
-            prefix="mcmc",
-            show=False,
-            output_dir=os.path.join(output_subdir, "plots"),
-        )
+    # Plot the distribution of the generated probabilities
+    logging.info("Plotting the distribution of the sampled sequences...")
+    plot_distribution(
+        sampled_target_logprobs,
+        plot_type="histogram",
+        prefix="mcmc",
+        show=False,
+        output_dir=os.path.join(output_subdir, "plots"),
+    )
+    plot_distribution(
+        sampled_target_logprobs,
+        plot_type="kde",
+        prefix="mcmc",
+        show=False,
+        output_dir=os.path.join(output_subdir, "plots"),
+    )
 
-        return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
+    return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
 
-    # We need to load the sampled sequences for evaluation
-    elif "run_eval_mauve" in args.actions or "run_eval_bleu" in args.actions:
-        logging.info("Loading precomputed MCMC samples...")
-        (
-            sampled_sequences_ids,
-            sampled_sequences_decoded,
-            sampled_target_logprobs,
-        ) = load_sampled_sequences(output_subdir)
-        return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
+    # # We need to load the sampled sequences for evaluation
+    # elif "run_eval" in args.actions:
+    #     logging.info("Loading precomputed MCMC samples...")
+    #     (
+    #         sampled_sequences_ids,
+    #         sampled_sequences_decoded,
+    #         sampled_target_logprobs,
+    #     ) = load_sampled_sequences(output_subdir)
+    #     return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
