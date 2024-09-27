@@ -204,17 +204,15 @@ def parse_args():
 
     return args
 
+def get_unique_name(length):
+     # Generate a unique hex alphanumeric string
+    return secrets.token_hex(length)
 
-def get_output_subdir(args):
-    # Generate a unique 6-character alphanumeric string
-    unique_name = secrets.token_hex(3)  # Generates 6 hex characters
 
-    if args.preload_dir:
-        # Use the preload directory as the output directory
-        output_subdir = os.path.join(args.output_dir, args.model_name, args.preload_dir)
-    else:
-        output_subdir = os.path.join(args.output_dir, args.model_name, unique_name)
-
+def create_output_subdir(args):
+    subdir = args.preload_dir or get_unique_name()
+    output_subdir = os.path.join(args.output_dir, args.model_name, subdir)
+    os.makedirs(output_subdir, exist_ok=True)
     return output_subdir
 
 
@@ -233,13 +231,17 @@ def calculate_statistics(scores):
     ci = stats.norm.interval(0.95, loc=mean, scale=stats.sem(scores))
     return mean, ci
 
+def init_run(args, run_idx):
+    seed = args.seed + run_idx
+    set_seed(seed)
+    logging.info(f"Starting run {run_idx + 1}/{args.eval_num_runs} with seed {seed}")
+
+
 def main():
     args = parse_args()
 
-    output_subdir = get_output_subdir(args)
+    output_subdir = create_output_subdir(args)
 
-    # Create a directory to save the output files
-    os.makedirs(output_subdir, exist_ok=True)
     # Save log messages to a file
     setup_logging(log_file=os.path.join(output_subdir, "log.txt"))
 
@@ -278,65 +280,57 @@ def main():
     )
 
 
-# TODO: figure out paths
-
     # Set the number of evaluated sequnces to the number of sampled sequences
-    if "run_eval_mauve" in args.actions:
-        if eval_num_sequences is None:
-            eval_num_sequences = args.mcmc_num_samples
+    if eval_num_sequences is None:
+        eval_num_sequences = args.mcmc_num_samples
 
     for run_idx in range(args.eval_num_runs):
-        logging.info(f"Run {run_idx + 1}/{args.num_runs}")
-
-        # Set the random seed fo reproducibility
-        seed = args.seed + run_idx
-        set_seed(seed)
+        init_run(args, run_idx)
 
         _, sampled_sequences_decoded, _ = run_mcmc(
             args=args,
-            output_subdir=os.path.join(output_subdir, "mcmc"),
+            output_subdir=os.path.join(output_subdir, "mcmc", get_unique_name(6)),
             sequences_ids=sequences_ids,
             sequences_decoded=sequences_decoded,
             target_logprobs=target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
             proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
         )
 
-        if "run_eval" in args.actions:
+        # Pick random eval_num_sequences
+        eval_local_decoding_texts = random.sample(sequences_decoded, eval_num_sequences)
+        eval_global_decoding_texts = random.sample(sampled_sequences_decoded, eval_num_sequences)
 
-            # Pick random eval_num_sequences
-            eval_local_decoding_texts = random.sample(sequences_decoded, eval_num_sequences)
-            eval_global_decoding_texts = random.sample(sampled_sequences_decoded, eval_num_sequences)
+        # Run evaluation
+        mauve_results_local, mauve_results_global, bleu_local, bleu_global = evaluate(
+            args,
+            output_subdir=os.path.join(output_subdir, "eval", get_unique_name(6)),
+            eval_local_decoding_texts=eval_local_decoding_texts,  # eval_local_decoding_texts are the sequences sampled from the local normalized distribution
+            eval_global_decoding_texts=eval_global_decoding_texts,  # eval_global_decoding_texts are the sequences sampled from the global unnormalized distribution
+            eval_num_sequences=eval_num_sequences,
+        )
 
-            # Run evaluation
-            mauve_results_local, mauve_results_global, bleu_local, bleu_global = evaluate(
-                args,
-                output_subdir=os.path.join(output_subdir, "eval"),
-                eval_local_decoding_texts=eval_local_decoding_texts,  # eval_local_decoding_texts are the sequences sampled from the local normalized distribution
-                eval_global_decoding_texts=eval_global_decoding_texts,  # eval_global_decoding_texts are the sequences sampled from the global unnormalized distribution
-                eval_num_sequences=eval_num_sequences,
-            )
+        # Accumulate scores
+        mauve_scores_local.append(mauve_results_local['mauve'])
+        mauve_scores_global.append(mauve_results_global['mauve'])
+        bleu_scores_local.append(bleu_local)
+        bleu_scores_global.append(bleu_global)
 
-            mauve_scores_local.append(mauve_results_local['mauve'])
-            mauve_scores_global.append(mauve_results_global['mauve'])
-            bleu_scores_local.append(bleu_local)
-            bleu_scores_global.append(bleu_global)
+    avg_mauve_local, ci_mauve_local = calculate_statistics(mauve_scores_local)
+    avg_mauve_global, ci_mauve_global = calculate_statistics(mauve_scores_global)
+    avg_bleu_local, ci_bleu_local = calculate_statistics(bleu_scores_local)
+    avg_bleu_global, ci_bleu_global = calculate_statistics(bleu_scores_global)
 
-    if "run_eval_mauve" in args.actions:
+    results = {
+        "mauve_local": {"mean": avg_mauve_local, "ci": ci_mauve_local},
+        "mauve_global": {"mean": avg_mauve_global, "ci": ci_mauve_global},
+        "bleu_local": {"mean": avg_bleu_local, "ci": ci_bleu_local},
+        "bleu_global": {"mean": avg_bleu_global, "ci": ci_bleu_global},
+    }
 
-        avg_mauve_local, ci_mauve_local = calculate_statistics(mauve_scores_local)
-        avg_mauve_global, ci_mauve_global = calculate_statistics(mauve_scores_global)
-        avg_bleu_local, ci_bleu_local = calculate_statistics(bleu_scores_local)
-        avg_bleu_global, ci_bleu_global = calculate_statistics(bleu_scores_global)
-
-        results = {
-            "mauve_local": {"mean": avg_mauve_local, "ci": ci_mauve_local},
-            "mauve_global": {"mean": avg_mauve_global, "ci": ci_mauve_global},
-            "bleu_local": {"mean": avg_bleu_local, "ci": ci_bleu_local},
-            "bleu_global": {"mean": avg_bleu_global, "ci": ci_bleu_global},
-        }
-
-        save_to_json(results, "evaluation_results", output_subdir)
-        logging.info(f"Results saved: {results}")
+    save_to_json(results, "evaluation_results", output_subdir)
+    logging.info(f"Results saved: {results}")
 
 if __name__ == "__main__":
     main()
+
+    # if "run_eval_mauve" in args.actions:
