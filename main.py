@@ -217,13 +217,10 @@ def create_output_subdir(args):
 
 
 def set_args_from_metadata(args, output_subdir):
-    metadata_file_path = os.path.join(output_subdir, "metadata")
-    metadata = load_from_json(metadata_file_path)
-
-    # Load args from metadata json
+    metadata = load_from_json(os.path.join(output_subdir, "metadata"))
     for key, value in metadata.items():
         # The parameters below are loaded from the command line and should not be overwritten
-        if key != "preload_dir" and key != "actions" and key != "model_name":
+        if key not in {"preload_dir", "actions", "model_name"}:
             setattr(args, key, value)
 
 def calculate_statistics(scores):
