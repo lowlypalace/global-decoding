@@ -112,13 +112,6 @@ def parse_args():
         default=None,
         help="Directory name to preload generated sequences from to resume computations.",
     )
-    parser.add_argument(
-        "--actions",
-        nargs="+",
-        default=["generate_seqs", "compute_probs", "run_mcmc", "run_eval"],
-        choices=["generate_seqs", "compute_probs", "run_mcmc", "run_eval"],
-        help="Specify which actions to perform. Defaults to all actions.",
-    )
 
     # MCMC arguments
     parser.add_argument(
@@ -215,7 +208,6 @@ def load_metadata(args, output_subdir):
             "batch_size_seq",
             "batch_size_prob",
             "preload_dir",
-            "actions",
             "mcmc_num_samples",
             "mcmc_num_sequences",
             "eval_dataset_name",

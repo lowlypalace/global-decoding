@@ -151,7 +151,10 @@ def generate_sequences_and_probs(args, output_subdir):
 
     max_length = set_max_length(model, max_length)
 
-    if "generate_seqs" in args.actions:
+    if args.preload_dir and os.path.exists(os.path.join(output_subdir, "sequences_ids.json")):
+        logging.info("Loading preloaded sequences...")
+        sequences_ids, sequences_decoded = load_sequences(output_subdir, device)
+    else:
         with timer("Generating new sequences"):
             sequences_ids, sequences_decoded = generate_sequences(
                 model=model,
@@ -169,15 +172,21 @@ def generate_sequences_and_probs(args, output_subdir):
         # Convert tensors to lists
         logging.info("Saving the generated sequences...")
         save_sequences(output_subdir, sequences_ids, sequences_decoded)
+
+    if args.preload_dir and os.path.exists(os.path.join(output_subdir, "logprobs_target.json")):
+        logging.info("Loading precomputed probabilities...")
+        (
+            target_logprobs,
+            proposal_logprobs,
+            target_logprobs_tokens,
+            proposal_logprobs_tokens,
+        ) = load_probs(output_subdir, device)
+        target_logprobs = convert_tensor_to_list(target_logprobs)
+        proposal_logprobs = convert_tensor_to_list(proposal_logprobs)
+        target_logprobs_tokens = convert_tensor_to_list(target_logprobs_tokens)
+        proposal_logprobs_tokens = convert_tensor_to_list(proposal_logprobs_tokens)
+
     else:
-        logging.info("Loading preloaded sequences...")
-        sequences_ids, sequences_decoded = load_sequences(output_subdir, device)
-
-    # Get the probabilities for the generated sequences
-    target_logprobs = None
-    proposal_logprobs = None
-
-    if "compute_probs" in args.actions:
         with timer("Computing probabilities"):
             (
                 target_logprobs,
@@ -242,19 +251,8 @@ def generate_sequences_and_probs(args, output_subdir):
             show=False,
             output_dir=os.path.join(output_subdir, "plots"),
         )
-    # We need to load the probabilities if we want to run the MCMC
-    else:
-        logging.info("Loading precomputed probabilities...")
-        (
-            target_logprobs,
-            proposal_logprobs,
-            target_logprobs_tokens,
-            proposal_logprobs_tokens,
-        ) = load_probs(output_subdir, device)
-        target_logprobs = convert_tensor_to_list(target_logprobs)
-        proposal_logprobs = convert_tensor_to_list(proposal_logprobs)
-        target_logprobs_tokens = convert_tensor_to_list(target_logprobs_tokens)
-        proposal_logprobs_tokens = convert_tensor_to_list(proposal_logprobs_tokens)
+
+
 
     # Convert the list of tensors to a list of lists
     sequences_ids = convert_tensor_to_list(sequences_ids)
