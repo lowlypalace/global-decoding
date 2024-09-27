@@ -239,27 +239,20 @@ def main():
 
     output_subdir = create_output_subdir(args)
 
-    # Save log messages to a file
     setup_logging(log_file=os.path.join(output_subdir, "log.txt"))
 
     if args.preload_dir:
-        # Load metadata and parse arguments from it
         logging.info(f"Loading metadata from {output_subdir} as args...")
         set_args_from_metadata(args, output_subdir)
 
     logging.info(f"Args: {args}")
 
-    # Save command-line arguments to JSON
     save_args(args, output_subdir)
-    # Set the random seed for reproducibility
     set_seed(args.seed)
 
-    mauve_scores_local = []
-    mauve_scores_global = []
-    bleu_scores_local = []
-    bleu_scores_global = []
+    mauve_scores_local, mauve_scores_global = [], []
+    bleu_scores_local, bleu_scores_global = [], []
 
-    # Generate sequences
     (
         sequences_ids,
         sequences_decoded,
@@ -269,17 +262,13 @@ def main():
         args, output_subdir=os.path.join(output_subdir, "sequences")
     )
 
-    # Prune sequences
     sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = (
         prune_sequences(
             args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
         )
     )
 
-
-    # Set the number of evaluated sequnces to the number of sampled sequences
-    if eval_num_sequences is None:
-        eval_num_sequences = args.mcmc_num_samples
+    eval_num_sequences = args.eval_num_sequences or args.mcmc_num_samples
 
     for run_idx in range(args.eval_num_runs):
         init_run(args, run_idx)
@@ -293,11 +282,9 @@ def main():
             proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
         )
 
-        # Pick random eval_num_sequences
         eval_local_decoding_texts = random.sample(sequences_decoded, eval_num_sequences)
         eval_global_decoding_texts = random.sample(sampled_sequences_decoded, eval_num_sequences)
 
-        # Run evaluation
         mauve_results_local, mauve_results_global, bleu_local, bleu_global = evaluate(
             args,
             output_subdir=os.path.join(output_subdir, "eval", get_unique_name()),
