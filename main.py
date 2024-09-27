@@ -181,7 +181,7 @@ def parse_args():
         "--eval_num_runs",
         type=int,
         default=1,
-        help = "Number of runs for MAUVE and BLEU evaluations."
+        help="Number of runs for MAUVE and BLEU evaluations.",
     )
 
     # Other arguments
@@ -198,14 +198,14 @@ def parse_args():
         help="Directory to save the output files.",
     )
 
-
     args = parser.parse_args()
     validate_args(args)
 
     return args
 
+
 def get_unique_name(length=6):
-     # Generate a unique hex alphanumeric string
+    # Generate a unique hex alphanumeric string
     return secrets.token_hex(length)
 
 
@@ -223,10 +223,12 @@ def set_args_from_metadata(args, output_subdir):
         if key not in {"preload_dir", "actions", "model_name"}:
             setattr(args, key, value)
 
+
 def calculate_statistics(scores):
     mean = np.mean(scores)
     ci = stats.norm.interval(0.95, loc=mean, scale=stats.sem(scores))
     return mean, ci
+
 
 def init_run(args, run_idx):
     seed = args.seed + run_idx
@@ -262,10 +264,13 @@ def main():
         args, output_subdir=os.path.join(output_subdir, "sequences")
     )
 
-    sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = (
-        prune_sequences(
-            args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
-        )
+    (
+        sequences_ids,
+        sequences_decoded,
+        target_logprobs,
+        proposal_logprobs,
+    ) = prune_sequences(
+        args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
     )
 
     eval_num_sequences = args.eval_num_sequences or args.mcmc_num_samples
@@ -283,7 +288,9 @@ def main():
         )
 
         eval_local_decoding_texts = random.sample(sequences_decoded, eval_num_sequences)
-        eval_global_decoding_texts = random.sample(sampled_sequences_decoded, eval_num_sequences)
+        eval_global_decoding_texts = random.sample(
+            sampled_sequences_decoded, eval_num_sequences
+        )
 
         mauve_results_local, mauve_results_global, bleu_local, bleu_global = evaluate(
             args,
@@ -294,8 +301,8 @@ def main():
         )
 
         # Accumulate scores
-        mauve_scores_local.append(mauve_results_local['mauve'])
-        mauve_scores_global.append(mauve_results_global['mauve'])
+        mauve_scores_local.append(mauve_results_local["mauve"])
+        mauve_scores_global.append(mauve_results_global["mauve"])
         bleu_scores_local.append(bleu_local)
         bleu_scores_global.append(bleu_global)
 
@@ -313,6 +320,7 @@ def main():
 
     save_to_json(results, "evaluation_results", output_subdir)
     logging.info(f"Results saved: {results}")
+
 
 if __name__ == "__main__":
     main()

@@ -184,7 +184,9 @@ def run_mcmc(
     # We need to load the sampled sequences for evaluation
     elif "run_eval_mauve" in args.actions or "run_eval_bleu" in args.actions:
         logging.info("Loading precomputed MCMC samples...")
-        sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs = (
-            load_sampled_sequences(output_subdir)
-        )
+        (
+            sampled_sequences_ids,
+            sampled_sequences_decoded,
+            sampled_target_logprobs,
+        ) = load_sampled_sequences(output_subdir)
         return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs

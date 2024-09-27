@@ -10,7 +10,14 @@ from src.utils.utils import save_to_json, timer, convert_to_dict, load_data_from
 from src.eval.download_dataset import download_dataset
 
 
-def evaluate_mauve(args, output_subdir, eval_local_decoding_texts, eval_global_decoding_texts, eval_num_sequences, seed):
+def evaluate_mauve(
+    args,
+    output_subdir,
+    eval_local_decoding_texts,
+    eval_global_decoding_texts,
+    eval_num_sequences,
+    seed,
+):
     # Parse command-line arguments
     eval_dataset_name = args.eval_dataset_name
     eval_split = args.eval_split
@@ -85,7 +92,6 @@ def evaluate_mauve(args, output_subdir, eval_local_decoding_texts, eval_global_d
 
 
 def evaluate_bleu(output_subdir, eval_local_decoding_texts, eval_global_decoding_texts):
-
     def compute_self_bleu(texts):
         # Generate a unique experiment ID
         experiment_id = secrets.token_hex(3)
@@ -137,19 +143,32 @@ def evaluate_bleu(output_subdir, eval_local_decoding_texts, eval_global_decoding
     return local_self_bleu, global_self_bleu
 
 
-def evaluate(args, output_subdir, eval_local_decoding_texts, eval_global_decoding_texts, eval_num_sequences):
+def evaluate(
+    args,
+    output_subdir,
+    eval_local_decoding_texts,
+    eval_global_decoding_texts,
+    eval_num_sequences,
+):
     # # Initialize result variables to None as they may not be computed
     # mauve_results_local, mauve_results_global = None, None
     # bleu_results_local, bleu_results_global = None, None
 
     # Evaluate the generated sequences using the MAUVE metric
     mauve_results_local, mauve_results_global = evaluate_mauve(
-        args, output_subdir, eval_local_decoding_texts, eval_global_decoding_texts, eval_num_sequences
+        args,
+        output_subdir,
+        eval_local_decoding_texts,
+        eval_global_decoding_texts,
+        eval_num_sequences,
     )
 
     # Evaluate the generated sequences using the BLEU metric
     bleu_results_local, bleu_results_global = evaluate_bleu(
-        output_subdir, eval_local_decoding_texts, eval_global_decoding_texts, eval_num_sequences
+        output_subdir,
+        eval_local_decoding_texts,
+        eval_global_decoding_texts,
+        eval_num_sequences,
     )
 
     return (
