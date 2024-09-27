@@ -204,7 +204,7 @@ def parse_args():
     return args
 
 
-def get_unique_name(length=6):
+def get_unique_name(length=3):
     # Generate a unique hex alphanumeric string
     return secrets.token_hex(length)
 
@@ -287,6 +287,8 @@ def main():
             target_logprobs=target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
             proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
         )
+
+        random.shuffle(sampled_sequences_decoded)
 
         eval_local_decoding_texts = random.sample(sequences_decoded, eval_num_sequences)
         eval_global_decoding_texts = random.sample(
