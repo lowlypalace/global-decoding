@@ -151,10 +151,6 @@ def evaluate(
     eval_num_sequences,
     seed,
 ):
-    # # Initialize result variables to None as they may not be computed
-    # mauve_results_local, mauve_results_global = None, None
-    # bleu_results_local, bleu_results_global = None, None
-
     # Evaluate the generated sequences using the MAUVE metric
     mauve_results_local, mauve_results_global = evaluate_mauve(
         args,
