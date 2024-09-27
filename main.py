@@ -205,18 +205,20 @@ def parse_args():
 
 
 def get_unique_name(length=3):
-    # Generate a unique hex alphanumeric string
+    """Generates a unique hex alphanumeric string."""
     return secrets.token_hex(length)
 
 
 def create_output_subdir(args):
+    """Creates the output directory."""
     subdir = args.preload_dir or get_unique_name()
     output_subdir = os.path.join(args.output_dir, args.model_name, subdir)
     os.makedirs(output_subdir, exist_ok=True)
     return output_subdir
 
 
-def set_args_from_metadata(args, output_subdir):
+def load_metadata(args, output_subdir):
+    """Loads metadata from a previously saved run and sets args from it."""
     metadata = load_from_json(os.path.join(output_subdir, "metadata"))
     for key, value in metadata.items():
         # The parameters below are loaded from the command line and should not be overwritten
@@ -225,6 +227,7 @@ def set_args_from_metadata(args, output_subdir):
 
 
 def calculate_statistics(scores):
+    """Calculates the mean and confidence interval for a given list of scores."""
     mean = np.mean(scores)
     ci = stats.norm.interval(0.95, loc=mean, scale=stats.sem(scores))
     return mean, ci
@@ -239,42 +242,33 @@ def init_run(args, run_idx):
 
 def main():
     args = parse_args()
-
     output_subdir = create_output_subdir(args)
-
     setup_logging(log_file=os.path.join(output_subdir, "log.txt"))
 
     if args.preload_dir:
         logging.info(f"Loading metadata from {output_subdir} as args...")
-        set_args_from_metadata(args, output_subdir)
+        load_metadata(args, output_subdir)
 
     logging.info(f"Args: {args}")
-
     save_args(args, output_subdir)
     set_seed(args.seed)
 
     mauve_scores_local, mauve_scores_global = [], []
     bleu_scores_local, bleu_scores_global = [], []
 
-    (
-        sequences_ids,
-        sequences_decoded,
-        target_logprobs,
-        proposal_logprobs,
-    ) = generate_sequences_and_probs(
-        args, output_subdir=os.path.join(output_subdir, "sequences")
-    )
-
-    (
-        sequences_ids,
-        sequences_decoded,
-        target_logprobs,
-        proposal_logprobs,
-    ) = prune_sequences(
-        args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
-    )
-
     eval_num_sequences = args.eval_num_sequences or args.mcmc_num_samples
+
+    # Generate and prune sequences
+    sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = (
+        generate_sequences_and_probs(
+            args, output_subdir=os.path.join(output_subdir, "sequences")
+        )
+    )
+    sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = (
+        prune_sequences(
+            args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
+        )
+    )
 
     for run_idx in range(args.eval_num_runs):
         seed = init_run(args, run_idx)
@@ -289,11 +283,8 @@ def main():
         )
 
         random.shuffle(sampled_sequences_decoded)
-
-        eval_local_decoding_texts = random.sample(sequences_decoded, eval_num_sequences)
-        eval_global_decoding_texts = random.sample(
-            sampled_sequences_decoded, eval_num_sequences
-        )
+        eval_local_decoding_texts = sequences_decoded[:eval_num_sequences]
+        eval_global_decoding_texts = sampled_sequences_decoded[:eval_num_sequences]
 
         mauve_results_local, mauve_results_global, bleu_local, bleu_global = evaluate(
             args,
@@ -310,35 +301,30 @@ def main():
         bleu_scores_local.append(bleu_local)
         bleu_scores_global.append(bleu_global)
 
-    avg_mauve_local, ci_mauve_local = calculate_statistics(mauve_scores_local)
-    avg_mauve_global, ci_mauve_global = calculate_statistics(mauve_scores_global)
-    avg_bleu_local, ci_bleu_local = calculate_statistics(bleu_scores_local)
-    avg_bleu_global, ci_bleu_global = calculate_statistics(bleu_scores_global)
-
     results = {
         "mauve_local": {
-            "mean": avg_mauve_local,
-            "ci": ci_mauve_local,
+            "mean": calculate_statistics(mauve_scores_local)[0],
+            "ci": calculate_statistics(mauve_scores_local)[1],
             "scores": mauve_scores_local,
         },
         "mauve_global": {
-            "mean": avg_mauve_global,
-            "ci": ci_mauve_global,
+            "mean": calculate_statistics(mauve_scores_global)[0],
+            "ci": calculate_statistics(mauve_scores_global)[1],
             "scores": mauve_scores_global,
         },
         "bleu_local": {
-            "mean": avg_bleu_local,
-            "ci": ci_bleu_local,
+            "mean": calculate_statistics(bleu_scores_local)[0],
+            "ci": calculate_statistics(bleu_scores_local)[1],
             "scores": bleu_scores_local,
         },
         "bleu_global": {
-            "mean": avg_bleu_global,
-            "ci": ci_bleu_global,
+            "mean": calculate_statistics(bleu_scores_global)[0],
+            "ci": calculate_statistics(bleu_scores_global)[1],
             "scores": bleu_scores_global,
         },
     }
 
-    save_to_json(results, "evaluation_results", output_subdir)
+    save_to_json(results, "results", output_subdir)
     logging.info(f"Results saved: {results}")
 
 
