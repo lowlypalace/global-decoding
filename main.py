@@ -148,7 +148,7 @@ def parse_args():
     parser.add_argument(
         "--eval_split",
         type=str,
-        default="train",
+        default="test",
         choices=["train", "valid", "test"],
         help="Split of the dataset to use as reference.",
     )
@@ -202,18 +202,17 @@ def load_metadata(args, output_subdir):
     """Loads metadata from a previously saved run and sets args from it."""
     metadata = load_from_json(os.path.join(output_subdir, "metadata"))
     for key, value in metadata.items():
-        # The parameters below are loaded from the command line and can be overwritten
         if key in {
+            "model_name",
+            "text",
+            "top_k",
+            "top_p",
+            "sequence_count",
+            "max_length",
             "device",
-            "batch_size_seq",
-            "batch_size_prob",
-            "preload_dir",
-            "mcmc_num_samples",
-            "mcmc_num_sequences",
-            "eval_dataset_name",
-            "eval_split",
-            "eval_num_sequences",
-            "eval_num_runs",
+            "precision",
+            "seed",
+            "output_dir",
         }:
             setattr(args, key, value)
 
