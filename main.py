@@ -202,17 +202,10 @@ def load_metadata(args, output_subdir):
     """Loads metadata from a previously saved run and sets args from it."""
     metadata = load_from_json(os.path.join(output_subdir, "metadata"))
     for key, value in metadata.items():
-        if key in {
+        if key not in {
+            "preload_dir",
             "model_name",
-            "text",
-            "top_k",
-            "top_p",
-            "sequence_count",
-            "max_length",
-            "device",
-            "precision",
-            "seed",
-            "output_dir",
+            "output_dir"
         }:
             setattr(args, key, value)
 
