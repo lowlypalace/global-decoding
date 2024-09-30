@@ -265,6 +265,15 @@ def main():
     for run_idx in range(args.eval_num_runs):
         seed = init_run(args, run_idx)
 
+        # Bootstrapping: generate indices to select elements for all arrays
+        bootstrap_indices = random.choices(range(len(sequences_decoded)), k=len(sequences_decoded))
+
+        # Overwrite the original arrays with the bootstrapped versions
+        sequences_decoded = [sequences_decoded[i] for i in bootstrap_indices]
+        sequences_ids = [sequences_ids[i] for i in bootstrap_indices]
+        target_logprobs = [target_logprobs[i] for i in bootstrap_indices]
+        proposal_logprobs = [proposal_logprobs[i] for i in bootstrap_indices]
+
         _, sampled_sequences_decoded, _ = run_mcmc(
             args=args,
             output_subdir=os.path.join(output_subdir, "mcmc", get_unique_name()),
