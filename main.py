@@ -268,7 +268,6 @@ def main():
         # Bootstrapping: generate indices to select elements for all arrays
         bootstrap_indices = random.choices(range(len(sequences_decoded)), k=len(sequences_decoded))
 
-        # Overwrite the original arrays with the bootstrapped versions
         bootstrapped_sequences_decoded = [sequences_decoded[i] for i in bootstrap_indices]
         bootstrapped_sequences_ids = [sequences_ids[i] for i in bootstrap_indices]
         bootstrapped_target_logprobs = [target_logprobs[i] for i in bootstrap_indices]
