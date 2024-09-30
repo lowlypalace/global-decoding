@@ -269,22 +269,22 @@ def main():
         bootstrap_indices = random.choices(range(len(sequences_decoded)), k=len(sequences_decoded))
 
         # Overwrite the original arrays with the bootstrapped versions
-        sequences_decoded = [sequences_decoded[i] for i in bootstrap_indices]
-        sequences_ids = [sequences_ids[i] for i in bootstrap_indices]
-        target_logprobs = [target_logprobs[i] for i in bootstrap_indices]
-        proposal_logprobs = [proposal_logprobs[i] for i in bootstrap_indices]
+        bootstrapped_sequences_decoded = [sequences_decoded[i] for i in bootstrap_indices]
+        bootstrapped_sequences_ids = [sequences_ids[i] for i in bootstrap_indices]
+        bootstrapped_target_logprobs = [target_logprobs[i] for i in bootstrap_indices]
+        bootstrapped_proposal_logprobs = [proposal_logprobs[i] for i in bootstrap_indices]
 
         _, sampled_sequences_decoded, _ = run_mcmc(
             args=args,
             output_subdir=os.path.join(output_subdir, "mcmc", get_unique_name()),
-            sequences_ids=sequences_ids,
-            sequences_decoded=sequences_decoded,
-            target_logprobs=target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
-            proposal_logprobs=proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
+            sequences_ids=bootstrapped_sequences_ids,
+            sequences_decoded=bootstrapped_sequences_decoded,
+            target_logprobs=bootstrapped_target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
+            proposal_logprobs=bootstrapped_proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
         )
 
-        random.shuffle(sampled_sequences_decoded)
-        eval_local_decoding_texts = sequences_decoded[:eval_num_sequences]
+        # random.shuffle(sampled_sequences_decoded)
+        eval_local_decoding_texts = bootstrapped_sequences_decoded[:eval_num_sequences]
         eval_global_decoding_texts = sampled_sequences_decoded[:eval_num_sequences]
 
         mauve_results_local, mauve_results_global, bleu_local, bleu_global = evaluate(
