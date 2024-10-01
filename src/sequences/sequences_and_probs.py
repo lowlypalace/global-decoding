@@ -151,7 +151,9 @@ def generate_sequences_and_probs(args, output_subdir):
 
     max_length = set_max_length(model, max_length)
 
-    if args.preload_dir and os.path.exists(os.path.join(output_subdir, "sequences_ids.json")):
+    if args.preload_dir and os.path.exists(
+        os.path.join(output_subdir, "sequences_ids.json")
+    ):
         logging.info("Loading preloaded sequences...")
         sequences_ids, sequences_decoded = load_sequences(output_subdir, device)
     else:
@@ -173,7 +175,9 @@ def generate_sequences_and_probs(args, output_subdir):
         logging.info("Saving the generated sequences...")
         save_sequences(output_subdir, sequences_ids, sequences_decoded)
 
-    if args.preload_dir and os.path.exists(os.path.join(output_subdir, "logprobs_target.json")):
+    if args.preload_dir and os.path.exists(
+        os.path.join(output_subdir, "logprobs_target.json")
+    ):
         logging.info("Loading precomputed probabilities...")
         (
             target_logprobs,
@@ -251,8 +255,6 @@ def generate_sequences_and_probs(args, output_subdir):
             show=False,
             output_dir=os.path.join(output_subdir, "plots"),
         )
-
-
 
     # Convert the list of tensors to a list of lists
     sequences_ids = convert_tensor_to_list(sequences_ids)

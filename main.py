@@ -280,7 +280,6 @@ def main():
             proposal_logprobs=bootstrapped_proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
         )
 
-        # random.shuffle(sampled_sequences_decoded)
         eval_local_decoding_texts = bootstrapped_sequences_decoded[:eval_num_sequences]
         eval_global_decoding_texts = sampled_sequences_decoded[:eval_num_sequences]
 
