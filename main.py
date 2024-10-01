@@ -273,7 +273,7 @@ def main():
 
         _, sampled_sequences_decoded, _ = run_mcmc(
             args=args,
-            output_subdir=os.path.join(output_subdir, "mcmc", get_unique_name()),
+            output_subdir=os.path.join(output_subdir, "mcmc", str(seed)),
             sequences_ids=bootstrapped_sequences_ids,
             sequences_decoded=bootstrapped_sequences_decoded,
             target_logprobs=bootstrapped_target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
@@ -286,7 +286,7 @@ def main():
 
         mauve_results_local, mauve_results_global, bleu_local, bleu_global = evaluate(
             args,
-            output_subdir=os.path.join(output_subdir, "eval", get_unique_name()),
+            output_subdir=os.path.join(output_subdir, "eval", str(seed)),
             eval_local_decoding_texts=eval_local_decoding_texts,  # eval_local_decoding_texts are the sequences sampled from the local normalized distribution
             eval_global_decoding_texts=eval_global_decoding_texts,  # eval_global_decoding_texts are the sequences sampled from the global unnormalized distribution
             eval_num_sequences=eval_num_sequences,
