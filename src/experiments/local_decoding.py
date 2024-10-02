@@ -25,9 +25,7 @@ def normalization_constant(logits, top_indices):
     return normalization_const.item()
 
 
-def generate_sequence(
-    tokenizer, model, input_ids, max_length, top_k, max_model_length, device
-):
+def generate_sequence(tokenizer, model, input_ids, max_length, top_k, max_model_length, device):
     # Initialize list to store local constants for the sequence
     constants_list = []
     # Clone the initial input_ids tensor to avoid modifying the original
@@ -88,9 +86,7 @@ def generate_and_compute_constants(
     verbose=False,
 ):
     # Encode the input text to tensor
-    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
-        device
-    )
+    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(device)
     # Define dictionary that will hold the product of local constants for each sequence
     # The sequences are mapped to the top k value
     constants_products = {top_k: [] for top_k in top_k_values}
@@ -148,9 +144,7 @@ def plot_histograms(constants_products, decoded_sequences, show=True):
         log_constants = np.log(constants)
         # Generate hover text
         hover_text = [
-            "c_alpha: {:.2f}<br>Sequence: {}".format(
-                const, "<br>".join(re.findall(".{1,90}(?:\\s|$)", seq))
-            )
+            "c_alpha: {:.2f}<br>Sequence: {}".format(const, "<br>".join(re.findall(".{1,90}(?:\\s|$)", seq)))
             for const, seq in zip(constants, decoded_sequences[top_k])
         ]
         # Create a histogram for the current set of constants
@@ -182,9 +176,7 @@ def plot_histograms(constants_products, decoded_sequences, show=True):
 
 
 # Plotting the constants against their respective sequence lengths
-def plot_constants_vs_length(
-    constants_products, sequence_lengths, decoded_sequences, show=True
-):
+def plot_constants_vs_length(constants_products, sequence_lengths, decoded_sequences, show=True):
     data = []
 
     for top_k in constants_products:
@@ -230,9 +222,7 @@ def plot_constants_vs_length(
 
 
 # Save the data to a CSV file
-def save_data(
-    constants_products, constants_lists, sequence_lengths, decoded_sequences, filename
-):
+def save_data(constants_products, constants_lists, sequence_lengths, decoded_sequences, filename):
     # Open the file in write mode
     with open(filename, mode="w", newline="") as file:
         # Create a CSV writer object
@@ -255,9 +245,7 @@ def save_data(
                 sequence_lengths[top_k],
                 decoded_sequences[top_k],
             ):
-                csv_writer.writerow(
-                    [top_k, constant_product, constant_list, seq_length, decoded_seq]
-                )
+                csv_writer.writerow([top_k, constant_product, constant_list, seq_length, decoded_seq])
 
 
 def main():
@@ -283,12 +271,7 @@ def main():
     max_length = None
 
     # Generate sequences and compute constants
-    (
-        constants_products,
-        constants_lists,
-        sequence_lengths,
-        decoded_sequences,
-    ) = generate_and_compute_constants(
+    (constants_products, constants_lists, sequence_lengths, decoded_sequences,) = generate_and_compute_constants(
         tokenizer=tokenizer,
         model=model,
         text=text,

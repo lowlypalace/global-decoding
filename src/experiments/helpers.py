@@ -29,8 +29,6 @@ def calculate_context_length(input_ids, max_length, max_model_length):
     input_length = input_ids.size(1)
     # Calculate the max_length based on the input length and model's max position embeddings
     max_length = (
-        max_model_length - input_length
-        if max_length is None
-        else min(max_length, max_model_length - input_length)
+        max_model_length - input_length if max_length is None else min(max_length, max_model_length - input_length)
     )
     return max_length

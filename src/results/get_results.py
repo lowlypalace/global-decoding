@@ -38,9 +38,7 @@ def get_results(model_name):
                 # MAUVE
                 ##################
 
-                with open(
-                    os.path.join(eval_dir, "mauve_results_global.json"), "r"
-                ) as f:
+                with open(os.path.join(eval_dir, "mauve_results_global.json"), "r") as f:
                     global_result = json.load(f)
                 global_mauve = global_result.get("mauve")
 
@@ -65,82 +63,53 @@ def get_results(model_name):
                 with open(os.path.join(sequences_dir, "sequences_ids.json"), "r") as f:
                     sequences_data = json.load(f)
 
-                with open(
-                    os.path.join(mcmc_dir, "sampled_sequences_ids.json"), "r"
-                ) as f:
+                with open(os.path.join(mcmc_dir, "sampled_sequences_ids.json"), "r") as f:
                     mcmc_data = json.load(f)
 
                 # Sample first 200 random sequences
-                random_sequences = random.sample(
-                    sequences_data, min(len(sequences_data), 200)
-                )
+                random_sequences = random.sample(sequences_data, min(len(sequences_data), 200))
 
                 # Filter padding tokens and compute average lengths
-                filtered_sequences = [
-                    filter_padding_tokens(seq) for seq in random_sequences
-                ]
+                filtered_sequences = [filter_padding_tokens(seq) for seq in random_sequences]
                 filtered_mcmc = [filter_padding_tokens(seq) for seq in mcmc_data]
 
                 avg_length_sequences = (
-                    sum(len(seq) for seq in filtered_sequences)
-                    / len(filtered_sequences)
-                    if filtered_sequences
-                    else 0
+                    sum(len(seq) for seq in filtered_sequences) / len(filtered_sequences) if filtered_sequences else 0
                 )
-                avg_length_mcmc = (
-                    sum(len(seq) for seq in filtered_mcmc) / len(filtered_mcmc)
-                    if filtered_mcmc
-                    else 0
-                )
+                avg_length_mcmc = sum(len(seq) for seq in filtered_mcmc) / len(filtered_mcmc) if filtered_mcmc else 0
 
                 ##################
                 # Example Sequences
                 ##################
 
-                with open(
-                    os.path.join(sequences_dir, "sequences_decoded.json"), "r"
-                ) as f:
+                with open(os.path.join(sequences_dir, "sequences_decoded.json"), "r") as f:
                     sequences_decoded = json.load(f)
                 sequence_decoded = random.sample(sequences_decoded, 1)[0][:100]
                 sequence_decoded = sequence_decoded.replace("\n", "\\n")
 
-                with open(
-                    os.path.join(mcmc_dir, "sampled_sequences_decoded.json"), "r"
-                ) as f:
+                with open(os.path.join(mcmc_dir, "sampled_sequences_decoded.json"), "r") as f:
                     sampled_sequences_decoded = json.load(f)
-                sequence_decoded_sampled = random.sample(sampled_sequences_decoded, 1)[
-                    0
-                ][:100]
+                sequence_decoded_sampled = random.sample(sampled_sequences_decoded, 1)[0][:100]
                 sequence_decoded_sampled = sequence_decoded_sampled.replace("\n", "\\n")
 
                 ###################
                 # Log likelihood
                 ###################
-                with open(
-                    os.path.join(mcmc_dir, "sampled_target_logprobs.json"), "r"
-                ) as f:
+                with open(os.path.join(mcmc_dir, "sampled_target_logprobs.json"), "r") as f:
                     sampled_target_logprobs = json.load(f)
 
-                log_likelihood_global = sum(sampled_target_logprobs) / len(
-                    sampled_target_logprobs
-                )
+                log_likelihood_global = sum(sampled_target_logprobs) / len(sampled_target_logprobs)
 
-                with open(
-                    os.path.join(mcmc_dir, "sampled_proposal_logprobs.json"), "r"
-                ) as f:
+                with open(os.path.join(mcmc_dir, "sampled_proposal_logprobs.json"), "r") as f:
                     sampled_proposal_logprobs = json.load(f)
 
-                log_likelihood_local = sum(sampled_proposal_logprobs) / len(
-                    sampled_proposal_logprobs
-                )
+                log_likelihood_local = sum(sampled_proposal_logprobs) / len(sampled_proposal_logprobs)
 
                 ###################
                 # Decoding constants:
                 ###################
                 with open(
-                    os.path.join(
-                        sequences_dir, "proposal_normalize_constants_products.json"
-                    ),
+                    os.path.join(sequences_dir, "proposal_normalize_constants_products.json"),
                     "r",
                 ) as f:
                     constants_products = json.load(f)

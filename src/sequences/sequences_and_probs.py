@@ -10,6 +10,7 @@ from transformers import (
 from src.utils.utils import timer, save_to_json, load_from_json, convert_tensor_to_list
 from src.sequences.sequences_probs import get_sequences_probs
 from src.sequences.generate_sequences import generate_sequences
+
 # from src.mcmc.plots import plot_distribution
 
 
@@ -51,10 +52,12 @@ class ModelHandler:
     def get_model_and_tokenizer(self):
         return self.setup_model_and_tokenizer()
 
+
 def encode_input_text(tokenizer, text, device):
     text = text or tokenizer.eos_token
     input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(device)
     return input_ids
+
 
 def load_sequences(output_subdir, device):
     sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
@@ -81,9 +84,17 @@ def load_probs(output_subdir, device):
     )
 
 
-def save_probs(output_subdir, target_logprobs, proposal_logprobs, target_logprobs_tokens,
-               proposal_logprobs_tokens, target_normalize_constants, proposal_normalize_constants,
-               target_normalize_constants_products, proposal_normalize_constants_products):
+def save_probs(
+    output_subdir,
+    target_logprobs,
+    proposal_logprobs,
+    target_logprobs_tokens,
+    proposal_logprobs_tokens,
+    target_normalize_constants,
+    proposal_normalize_constants,
+    target_normalize_constants_products,
+    proposal_normalize_constants_products,
+):
     save_to_json(target_logprobs, "logprobs_target", output_subdir)
     save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
     save_to_json(target_logprobs_tokens, "logprobs_target_tokens", output_subdir)
@@ -123,16 +134,23 @@ def generate_sequences_and_probs(args, output_subdir):
 
     if args.preload_dir and os.path.exists(os.path.join(output_subdir, "logprobs_target.json")):
         logging.info("Loading precomputed probabilities...")
-        target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens = load_probs(output_subdir, device)
+        target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens = load_probs(
+            output_subdir, device
+        )
     else:
         with timer("Computing probabilities"):
             model, tokenizer = model_handler.get_model_and_tokenizer()
             input_ids = encode_input_text(tokenizer, args.text, device)
 
             (
-                target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens,
-                target_normalize_constants, proposal_normalize_constants,
-                target_normalize_constants_products, proposal_normalize_constants_products
+                target_logprobs,
+                proposal_logprobs,
+                target_logprobs_tokens,
+                proposal_logprobs_tokens,
+                target_normalize_constants,
+                proposal_normalize_constants,
+                target_normalize_constants_products,
+                proposal_normalize_constants_products,
             ) = get_sequences_probs(
                 model=model,
                 sequences_ids=sequences_ids,
@@ -144,9 +162,17 @@ def generate_sequences_and_probs(args, output_subdir):
             )
 
             logging.info("Saving the log probabilities...")
-            save_probs(output_subdir, target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens,
-                       target_normalize_constants, proposal_normalize_constants, target_normalize_constants_products,
-                       proposal_normalize_constants_products)
+            save_probs(
+                output_subdir,
+                target_logprobs,
+                proposal_logprobs,
+                target_logprobs_tokens,
+                proposal_logprobs_tokens,
+                target_normalize_constants,
+                proposal_normalize_constants,
+                target_normalize_constants_products,
+                proposal_normalize_constants_products,
+            )
 
             # logging.info("Plotting the log probabilities distributions...")
             # plot_distribution(target_logprobs, plot_type="histogram", prefix="target_logprobs",

@@ -19,9 +19,7 @@ def save_results(top_k_df, top_p_df, model_name, results_dir):
 
 # Define the function to parse command-line arguments
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Generate results for the experiments."
-    )
+    parser = argparse.ArgumentParser(description="Generate results for the experiments.")
 
     parser.add_argument(
         "--model_names",

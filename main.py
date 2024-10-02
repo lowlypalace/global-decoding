@@ -26,11 +26,10 @@ class NonDefaultAction(argparse.Action):
         setattr(namespace, self.dest, values)
         setattr(namespace, f"{self.dest}_nondefault", True)
 
+
 # Define the function to parse command-line arguments
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Generate text sequences, run MCMC, and evaluate the results."
-    )
+    parser = argparse.ArgumentParser(description="Generate text sequences, run MCMC, and evaluate the results.")
 
     # Sequence generation arguments
     parser.add_argument(
@@ -262,33 +261,29 @@ def main():
     eval_num_sequences = args.eval_num_sequences or args.mcmc_num_samples
 
     # Generate and prune sequences
-    sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = (
-        generate_sequences_and_probs(
-            args, output_subdir=os.path.join(output_subdir, "sequences")
-        )
-    )
-    sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = (
-        prune_sequences(
-            args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
-        )
-    )
+    (
+        sequences_ids,
+        sequences_decoded,
+        target_logprobs,
+        proposal_logprobs,
+    ) = generate_sequences_and_probs(args, output_subdir=os.path.join(output_subdir, "sequences"))
+    (
+        sequences_ids,
+        sequences_decoded,
+        target_logprobs,
+        proposal_logprobs,
+    ) = prune_sequences(args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs)
 
     for run_idx in range(args.eval_num_runs):
         seed = init_run(args, run_idx)
 
         # Bootstrapping: generate indices to select elements for all arrays
-        bootstrap_indices = random.choices(
-            range(len(sequences_decoded)), k=len(sequences_decoded)
-        )
+        bootstrap_indices = random.choices(range(len(sequences_decoded)), k=len(sequences_decoded))
 
-        bootstrapped_sequences_decoded = [
-            sequences_decoded[i] for i in bootstrap_indices
-        ]
+        bootstrapped_sequences_decoded = [sequences_decoded[i] for i in bootstrap_indices]
         bootstrapped_sequences_ids = [sequences_ids[i] for i in bootstrap_indices]
         bootstrapped_target_logprobs = [target_logprobs[i] for i in bootstrap_indices]
-        bootstrapped_proposal_logprobs = [
-            proposal_logprobs[i] for i in bootstrap_indices
-        ]
+        bootstrapped_proposal_logprobs = [proposal_logprobs[i] for i in bootstrap_indices]
 
         _, sampled_sequences_decoded, _ = run_mcmc(
             args=args,

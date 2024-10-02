@@ -14,9 +14,7 @@ def generate_sequences(
     batch_size,
     sequence_count,
 ):
-    logging.info(
-        f"Generating {sequence_count} sequences in batches of size {batch_size}..."
-    )
+    logging.info(f"Generating {sequence_count} sequences in batches of size {batch_size}...")
 
     # Container for all generated sequences
     sequences_ids = []

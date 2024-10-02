@@ -79,14 +79,10 @@ def plot_sequences_lengths(results, results_dir):
         # fig.update_yaxes(title_text="Average Length", row=1, col=2)
 
         # Update x-axes properties
-        fig.update_xaxes(
-            mirror=True, ticks="outside", showline=True, gridcolor="lightgrey"
-        )
+        fig.update_xaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
 
         # Update y-axes properties
-        fig.update_yaxes(
-            mirror=True, ticks="outside", showline=True, gridcolor="lightgrey"
-        )
+        fig.update_yaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
 
         # Update layout background color
         fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
@@ -97,18 +93,12 @@ def plot_sequences_lengths(results, results_dir):
             width=1400,
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            legend=dict(
-                orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5
-            ),
+            legend=dict(orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5),
         )
 
         # Save the figure
-        fig.write_image(
-            os.path.join(results_dir, f"average_lengths_{model_name}.pdf"), "pdf"
-        )
-        fig.write_html(
-            os.path.join(results_dir, f"average_lengths_{model_name}.html"), "html"
-        )
+        fig.write_image(os.path.join(results_dir, f"average_lengths_{model_name}.pdf"), "pdf")
+        fig.write_html(os.path.join(results_dir, f"average_lengths_{model_name}.html"), "html")
 
 
 def plot_average_log_likelihood(results, results_dir):
@@ -201,9 +191,7 @@ def update_fig(fig, max_score, xaxis_title_text, y_axis_title_text):
     fig.update_yaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
 
 
-def add_traces(
-    fig, values, local_scores, global_scores, local_color, global_color, row, col
-):
+def add_traces(fig, values, local_scores, global_scores, local_color, global_color, row, col):
     fig.add_trace(
         go.Scatter(
             x=values,
@@ -281,14 +269,12 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
     max_top_k_score = max(
         score
         for model in results.values()
-        for score in model["top_k"]["bleu_local"].tolist()
-        + model["top_k"]["bleu_global"].tolist()
+        for score in model["top_k"]["bleu_local"].tolist() + model["top_k"]["bleu_global"].tolist()
     )
     max_top_p_score = max(
         score
         for model in results.values()
-        for score in model["top_p"]["bleu_local"].tolist()
-        + model["top_p"]["bleu_global"].tolist()
+        for score in model["top_p"]["bleu_local"].tolist() + model["top_p"]["bleu_global"].tolist()
     )
 
     # Add 10% padding to the maximum score
@@ -356,14 +342,12 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
     max_top_k_score = max(
         score
         for model in results.values()
-        for score in model["top_k"]["mauve_local"].tolist()
-        + model["top_k"]["mauve_global"].tolist()
+        for score in model["top_k"]["mauve_local"].tolist() + model["top_k"]["mauve_global"].tolist()
     )
     max_top_p_score = max(
         score
         for model in results.values()
-        for score in model["top_p"]["mauve_local"].tolist()
-        + model["top_p"]["mauve_global"].tolist()
+        for score in model["top_p"]["mauve_local"].tolist() + model["top_p"]["mauve_global"].tolist()
     )
 
     update_fig(fig_top_k, max_top_k_score, "Top-k values", "MAUVE Score")
@@ -389,9 +373,7 @@ def plot_histograms(results, results_dir):
         # Use only top_k for now and make a dict top-k value to constants_products
         constants_products = {
             top_k: constants_products
-            for top_k, constants_products in zip(
-                top_k_df["top_k"].tolist(), top_k_df["constants_products"].tolist()
-            )
+            for top_k, constants_products in zip(top_k_df["top_k"].tolist(), top_k_df["constants_products"].tolist())
         }
 
         # Create subplots: each subplot for a different top_k value
@@ -458,6 +440,4 @@ def plot_histograms(results, results_dir):
 
         # Save the figure as a PDF file
         fig.write_image(os.path.join(results_dir, f"histogram_{model_name}.pdf"), "pdf")
-        fig.write_html(
-            os.path.join(results_dir, f"histogram_{model_name}.html"), "html"
-        )
+        fig.write_html(os.path.join(results_dir, f"histogram_{model_name}.html"), "html")

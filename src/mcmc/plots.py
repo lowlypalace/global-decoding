@@ -96,16 +96,8 @@ def plot_chain(
 
     window = int(0.2 * num_samples)
     df = pd.DataFrame(samples, columns=["samples"])
-    df["low_q"] = (
-        df["samples"]
-        .rolling(window=window, center=True, min_periods=0)
-        .quantile(quantile=0.05)
-    )
-    df["high_q"] = (
-        df["samples"]
-        .rolling(window=window, center=True, min_periods=0)
-        .quantile(quantile=0.95)
-    )
+    df["low_q"] = df["samples"].rolling(window=window, center=True, min_periods=0).quantile(quantile=0.05)
+    df["high_q"] = df["samples"].rolling(window=window, center=True, min_periods=0).quantile(quantile=0.95)
 
     estimate = np.mean(samples)
     stddev = np.std(samples)

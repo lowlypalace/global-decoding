@@ -152,9 +152,7 @@ def get_sequences_probs(
             index = create_index_tensor(sequences_ids_batch, input_ids)
 
             # Get the log probabilities for the original sequence in the current batch
-            target_logprobs, target_constants = get_logprobs(
-                logits=logits, index=index, pad_token_id=pad_token_id
-            )
+            target_logprobs, target_constants = get_logprobs(logits=logits, index=index, pad_token_id=pad_token_id)
 
             # Get the log probabilities for the proposed sequence in the current batch
             proposal_logprobs, proposal_constants = get_logprobs(
@@ -165,19 +163,11 @@ def get_sequences_probs(
                 top_p=top_p,
             )
 
-            target_logprobs_tokens = torch.cat(
-                (target_logprobs_tokens, target_logprobs)
-            )
-            proposal_logprobs_tokens = torch.cat(
-                (proposal_logprobs_tokens, proposal_logprobs)
-            )
+            target_logprobs_tokens = torch.cat((target_logprobs_tokens, target_logprobs))
+            proposal_logprobs_tokens = torch.cat((proposal_logprobs_tokens, proposal_logprobs))
 
-            target_normalize_constants = torch.cat(
-                (target_normalize_constants, target_constants)
-            )
-            proposal_normalize_constants = torch.cat(
-                (proposal_normalize_constants, proposal_constants)
-            )
+            target_normalize_constants = torch.cat((target_normalize_constants, target_constants))
+            proposal_normalize_constants = torch.cat((proposal_normalize_constants, proposal_constants))
 
             # Sum the log probabilities for the entire sequence for both distributions
             target_logprob_sum = sum_logprobs(target_logprobs)
@@ -185,14 +175,10 @@ def get_sequences_probs(
 
             # Append the results to the placeholders
             target_logprob_sums = torch.cat((target_logprob_sums, target_logprob_sum))
-            proposal_logprob_sums = torch.cat(
-                (proposal_logprob_sums, proposal_logprob_sum)
-            )
+            proposal_logprob_sums = torch.cat((proposal_logprob_sums, proposal_logprob_sum))
 
     target_normalize_constants_products = torch.prod(target_normalize_constants, dim=1)
-    proposal_normalize_constants_products = torch.prod(
-        proposal_normalize_constants, dim=1
-    )
+    proposal_normalize_constants_products = torch.prod(proposal_normalize_constants, dim=1)
 
     return (
         target_logprob_sums,

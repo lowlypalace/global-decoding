@@ -18,9 +18,7 @@ def indicator_top_k(sequence):
     return 1
 
 
-def generate_sequence(
-    tokenizer, model, input_ids, max_length, top_k, max_model_length, device
-):
+def generate_sequence(tokenizer, model, input_ids, max_length, top_k, max_model_length, device):
     # Clone the initial input_ids tensor to avoid modifying the original
     curr_input_ids = input_ids.clone()
     # Initialize sequence length
@@ -38,22 +36,16 @@ def generate_sequence(
         # Retrieve the logits for the last token from the output
         last_token_logits = predict_logits(curr_input_ids, model)
         # Calculate probabilities from logits before top-k filtering
-        original_probs_distribution = torch.nn.functional.log_softmax(
-            last_token_logits, dim=-1
-        )
+        original_probs_distribution = torch.nn.functional.log_softmax(last_token_logits, dim=-1)
         # Get top-k values
         _, top_indices = torch.topk(last_token_logits, top_k)
 
         # Apply top-k filtering to logits
         filtered_logits = top_k_filtering(last_token_logits, top_indices)
         # Normalize the filtered logits to probabilities
-        proposal_probs_distribution = torch.nn.functional.log_softmax(
-            filtered_logits, dim=-1
-        )
+        proposal_probs_distribution = torch.nn.functional.log_softmax(filtered_logits, dim=-1)
         # Sample from the filtered distribution
-        next_token = torch.multinomial(
-            proposal_probs_distribution.exp(), num_samples=1
-        ).to(device)
+        next_token = torch.multinomial(proposal_probs_distribution.exp(), num_samples=1).to(device)
 
         # Append the probabilities of the selected token
         original_prob = original_probs_distribution[0, next_token.item()].item()
@@ -95,9 +87,7 @@ def metropolis_hastings(
     device,
 ):
     # Encode the input text to tensor
-    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
-        device
-    )
+    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(device)
 
     # List to store the generated samples, each sample is a tuple of (sequence, prob_sequence, prob_proposal)
     samples = []
@@ -130,12 +120,8 @@ def metropolis_hastings(
         )
 
         # Calculate the acceptance ratio
-        numerator = (
-            prob_proposed + indicator_top_k(proposed_sequence) + prob_proposal_current
-        )
-        denominator = (
-            prob_current + indicator_top_k(current_sequence) + prob_proposal_proposed
-        )
+        numerator = prob_proposed + indicator_top_k(proposed_sequence) + prob_proposal_current
+        denominator = prob_current + indicator_top_k(current_sequence) + prob_proposal_proposed
         acceptance_ratio = min(1, np.exp(numerator - denominator))
 
         # Accept or reject the new sequence based on the acceptance ratio

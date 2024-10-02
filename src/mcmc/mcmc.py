@@ -8,15 +8,9 @@ from src.mcmc.plots import plot_distribution, plot_chain, plot_logprob_diff
 
 
 def load_sampled_sequences(output_subdir):
-    sampled_sequences_ids = load_from_json(
-        os.path.join(output_subdir, "sampled_sequences_ids")
-    )
-    sampled_sequences_decoded = load_from_json(
-        os.path.join(output_subdir, "sampled_sequences_decoded")
-    )
-    sampled_target_logprobs = load_from_json(
-        os.path.join(output_subdir, "sampled_target_logprobs")
-    )
+    sampled_sequences_ids = load_from_json(os.path.join(output_subdir, "sampled_sequences_ids"))
+    sampled_sequences_decoded = load_from_json(os.path.join(output_subdir, "sampled_sequences_decoded"))
+    sampled_target_logprobs = load_from_json(os.path.join(output_subdir, "sampled_target_logprobs"))
     return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
 
 
@@ -46,9 +40,7 @@ def run_multiple_mh(
     with timer("Running MCMC algorithm"):
         for i in range(num_samples):
             start_idx = i * subset_size
-            end_idx = (
-                (i + 1) * subset_size if (i + 1) < num_samples else len(sequences_ids)
-            )
+            end_idx = (i + 1) * subset_size if (i + 1) < num_samples else len(sequences_ids)
 
             subset_sequences_ids = sequences_ids[start_idx:end_idx]
             subset_sequences_decoded = sequences_decoded[start_idx:end_idx]
@@ -149,9 +141,7 @@ def run_mcmc(
         proposal_logprobs,
     )
 
-    logging.info(
-        f"Sampled {len(sampled_sequences_ids)} sequences from the MCMC algorithm."
-    )
+    logging.info(f"Sampled {len(sampled_sequences_ids)} sequences from the MCMC algorithm.")
     # Save the sampled sequences and their probabilities to JSON files
     save_to_json(sampled_sequences_ids, "sampled_sequences_ids", output_subdir)
     save_to_json(sampled_sequences_decoded, "sampled_sequences_decoded", output_subdir)

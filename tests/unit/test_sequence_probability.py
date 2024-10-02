@@ -35,9 +35,7 @@ class TestSequenceProbability(unittest.TestCase):
 
     def test_sum_logprobs(self):
         # Create a tensor of log probabilities for testing
-        logprobs = torch.tensor(
-            [[-2.3026, -1.6094, -1.2039], [-1.6094, -2.3026, -0.9163]]
-        )
+        logprobs = torch.tensor([[-2.3026, -1.6094, -1.2039], [-1.6094, -2.3026, -0.9163]])
         # Call the sum_logprobs method
         summed_logprobs = sum_logprobs(logprobs)
         # The expected result is the sum along the last dimension (dim=-1)
@@ -97,14 +95,10 @@ class TestSequenceProbability(unittest.TestCase):
         )
         # Run the mask_out_pad_token function
         output_logprobs = mask_out_pad_token(logprobs.clone(), index, pad_token_id)
-        output_logprobs_with_top_k = mask_out_pad_token(
-            logprobs_with_top_k.clone(), index, pad_token_id
-        )
+        output_logprobs_with_top_k = mask_out_pad_token(logprobs_with_top_k.clone(), index, pad_token_id)
         # Check if the output matches the expected_output
         self.assertTrue(torch.equal(output_logprobs, expected_output_logprobs))
-        self.assertTrue(
-            torch.equal(output_logprobs_with_top_k, expected_output_logprobs_with_top_k)
-        )
+        self.assertTrue(torch.equal(output_logprobs_with_top_k, expected_output_logprobs_with_top_k))
 
 
 if __name__ == "__main__":

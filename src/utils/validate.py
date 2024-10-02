@@ -24,19 +24,12 @@ def validate_args(args):
         sys.exit(f"--batch_size_prob must be an int > 0, but is {args.batch_size_prob}")
 
     if args.mcmc_num_samples <= 0:
-        sys.exit(
-            f"--mcmc_num_samples must be an int > 0, but is {args.mcmc_num_samples}"
-        )
+        sys.exit(f"--mcmc_num_samples must be an int > 0, but is {args.mcmc_num_samples}")
 
     if args.mcmc_num_samples > args.sequence_count:
-        sys.exit(
-            f"--mcmc_num_samples must be less than or equal to --sequence_count, but is {args.mcmc_num_samples}"
-        )
+        sys.exit(f"--mcmc_num_samples must be less than or equal to --sequence_count, but is {args.mcmc_num_samples}")
 
-    if (
-        args.eval_num_sequences is not None
-        and args.eval_num_sequences > args.sequence_count
-    ):
+    if args.eval_num_sequences is not None and args.eval_num_sequences > args.sequence_count:
         sys.exit(
             f"--eval_num_sequences must be less than or equal to --sequence_count, but is {args.eval_num_sequences}"
         )

@@ -12,11 +12,7 @@ class TestTopKFiltering(unittest.TestCase):
         logits = torch.tensor([[1.0, 2.0, 3.0]])
         top_k = 1
         filtered_logits = top_k_filtering(logits, top_k)
-        self.assertTrue(
-            torch.allclose(
-                filtered_logits, torch.tensor([[-float("inf"), -float("inf"), 3.0]])
-            )
-        )
+        self.assertTrue(torch.allclose(filtered_logits, torch.tensor([[-float("inf"), -float("inf"), 3.0]])))
 
     def test_all_values(self):
         logits = torch.tensor([[1.0, 2.0, 3.0]])
@@ -28,9 +24,7 @@ class TestTopKFiltering(unittest.TestCase):
         logits = torch.tensor([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
         top_k = 2
         filtered_logits = top_k_filtering(logits, top_k)
-        expected_output = torch.tensor(
-            [[-float("inf"), 2.0, 3.0], [-float("inf"), 5.0, 6.0]]
-        )
+        expected_output = torch.tensor([[-float("inf"), 2.0, 3.0], [-float("inf"), 5.0, 6.0]])
         self.assertTrue(torch.allclose(filtered_logits, expected_output))
 
     def test_top_k_filtering_on_large_batch(self):
@@ -46,9 +40,7 @@ class TestTopKFiltering(unittest.TestCase):
         # For each item in the batch, check that there are exactly top_k values not equal to -inf
         for i in range(batch_size):
             for j in range(sequence_length):
-                self.assertEqual(
-                    torch.isfinite(filtered_logits[i, j]).sum().item(), top_k
-                )
+                self.assertEqual(torch.isfinite(filtered_logits[i, j]).sum().item(), top_k)
 
 
 # class TestTopPFiltering(unittest.TestCase):

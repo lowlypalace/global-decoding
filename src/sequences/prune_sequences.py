@@ -5,6 +5,7 @@ def contains_only_nonprintable(text):
     # Check if all characters in the text are non-printable
     return all(not char.isprintable() for char in text.strip())
 
+
 def is_valid_sequence(text):
     """Check if the sequence is non-empty, non-printable, and has sufficient length."""
     return text.strip() and not contains_only_nonprintable(text)
@@ -15,9 +16,7 @@ def is_negative_inf(prop_prob):
         return True
 
 
-def prune_sequences(
-    args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
-):
+def prune_sequences(args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs):
     logging.info(f"Pruning sequences...")
     # Filter out the sequences that contain only non-printable characters or are empty
     # These sequences raise divide by zero error in BLEU computation
@@ -30,9 +29,7 @@ def prune_sequences(
         if is_valid_sequence(text)
     ]
 
-    logging.info(
-        f"Removed {len(sequences_ids) - len(filtered_data)} sequences with non-printable or empty characters"
-    )
+    logging.info(f"Removed {len(sequences_ids) - len(filtered_data)} sequences with non-printable or empty characters")
     # Filter out the sequences if the proposed proposal log probability is -inf
     # This is happening because of precision issues when getting logits from the model directly
     # https://github.com/huggingface/transformers/issues/31127
@@ -42,14 +39,10 @@ def prune_sequences(
         if not is_negative_inf(prop_prob)
     ]
 
-    logging.warning(
-        f"Removed {len(filtered_data) - len(filtered_data_)} sequences with -inf proposal log probability"
-    )
+    logging.warning(f"Removed {len(filtered_data) - len(filtered_data_)} sequences with -inf proposal log probability")
 
     # Unzip the filtered data back into separate lists
-    sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = zip(
-        *filtered_data_
-    )
+    sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = zip(*filtered_data_)
 
     # Truncate the sequences if there are more than needed
     sequences_ids = sequences_ids[: args.sequence_count]

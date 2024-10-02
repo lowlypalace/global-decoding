@@ -83,16 +83,8 @@ class TestIntegration(unittest.TestCase):
         )
 
         self.assertEqual(sequences_decoded_custom, sequences_decoded_hf)
-        self.assertTrue(
-            torch.allclose(
-                target_logprobs_custom, target_logprobs_hf, rtol=1e-03, atol=1e-03
-            )
-        )
-        self.assertTrue(
-            torch.allclose(
-                proposal_logprobs_custom, proposal_logprobs_hf, rtol=1e-03, atol=1e-03
-            )
-        )
+        self.assertTrue(torch.allclose(target_logprobs_custom, target_logprobs_hf, rtol=1e-03, atol=1e-03))
+        self.assertTrue(torch.allclose(proposal_logprobs_custom, proposal_logprobs_hf, rtol=1e-03, atol=1e-03))
         self.assertTrue(
             torch.allclose(
                 proposal_logprobs_tokens_custom,
@@ -165,16 +157,8 @@ class TestIntegration(unittest.TestCase):
         )
 
         self.assertEqual(sequences_decoded_custom, sequences_decoded_hf)
-        self.assertTrue(
-            torch.allclose(
-                target_logprobs_custom, target_logprobs_hf, rtol=1e-03, atol=1e-03
-            )
-        )
-        self.assertTrue(
-            torch.allclose(
-                proposal_logprobs_custom, proposal_logprobs_hf, rtol=1e-03, atol=1e-03
-            )
-        )
+        self.assertTrue(torch.allclose(target_logprobs_custom, target_logprobs_hf, rtol=1e-03, atol=1e-03))
+        self.assertTrue(torch.allclose(proposal_logprobs_custom, proposal_logprobs_hf, rtol=1e-03, atol=1e-03))
         self.assertTrue(
             torch.allclose(
                 proposal_logprobs_tokens_custom,
@@ -224,9 +208,7 @@ class TestIntegration(unittest.TestCase):
             batch_size=16,
         )
 
-        self.assertTrue(
-            torch.allclose(target_logprobs, proposal_logprobs, rtol=1e-03, atol=1e-03)
-        )
+        self.assertTrue(torch.allclose(target_logprobs, proposal_logprobs, rtol=1e-03, atol=1e-03))
         self.assertTrue(
             torch.allclose(
                 proposal_logprobs_tokens,
