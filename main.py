@@ -20,6 +20,11 @@ from src.sequences import generate_sequences_and_probs, prune_sequences
 from src.mcmc import run_mcmc
 from src.eval import evaluate
 
+# Custom action to track if the argument was provided on the command line
+class NonDefaultAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, values)
+        setattr(namespace, f"{self.dest}_nondefault", True)
 
 # Define the function to parse command-line arguments
 def parse_args():
@@ -46,6 +51,7 @@ def parse_args():
             "pythia-6.9b",
             "pythia-12b",
         ],
+        action=NonDefaultAction,
         help="Model to use for text generation. Supports GPT-2 and Pythia.",
     )
 
@@ -53,30 +59,35 @@ def parse_args():
         "--text",
         type=str,
         default=None,
+        action=NonDefaultAction,
         help="Text to use as a prompt. Defaults to the EOS token.",
     )
     parser.add_argument(
         "--top_k",
         type=int,
         default=None,
+        action=NonDefaultAction,
         help="Top-k value for text generation. No default value; must be specified if used.",
     )
     parser.add_argument(
         "--top_p",
         type=float,
         default=None,
+        action=NonDefaultAction,
         help="Top-p value for text generation. No default value; must be specified if used.",
     )
     parser.add_argument(
         "--sequence_count",
         type=int,
         default=1000,
+        action=NonDefaultAction,
         help="Number of sequence samples to generate and use for MCMC analysis.",
     )
     parser.add_argument(
         "--max_length",
         type=int,
         default=None,
+        action=NonDefaultAction,
         help="Maximum sequence length. If not provided, it will be set to the maximum model length minus the length of the input text.",
     )
     parser.add_argument(
@@ -84,18 +95,21 @@ def parse_args():
         type=str,
         choices=["cpu", "cuda"],
         default="cuda" if torch.cuda.is_available() else "cpu",
+        action=NonDefaultAction,
         help='Device to use for computation. Defaults to "cuda" if available.',
     )
     parser.add_argument(
         "--batch_size_seq",
         type=int,
         default=64,
+        action=NonDefaultAction,
         help="Batch size for generating sequences.",
     )
     parser.add_argument(
         "--batch_size_prob",
         type=int,
         default=16,
+        action=NonDefaultAction,
         help="Batch size for computing probabilities.",
     )
     parser.add_argument(
@@ -103,6 +117,7 @@ def parse_args():
         type=str,
         default="fp64",
         choices=["fp16", "fp32", "fp64"],
+        action=NonDefaultAction,
         help="Precision to use for the model. Defaults to fp64.",
     )
 
@@ -110,6 +125,7 @@ def parse_args():
         "--preload_dir",
         type=str,
         default=None,
+        action=NonDefaultAction,
         help="Directory name to preload generated sequences from to resume computations.",
     )
 
@@ -124,6 +140,7 @@ def parse_args():
         "--mcmc_num_sequences",
         type=int,
         default=None,
+        action=NonDefaultAction,
         help="Number of sequences to consider for each MCMC chain. If not provided, --sequence count / --mcmc_num_samples will be used.",
     )
 
@@ -143,6 +160,7 @@ def parse_args():
             "xl-1542M",
             "xl-1542M-k40",
         ],
+        action=NonDefaultAction,
         help="Name of the dataset to use as reference.",
     )
     parser.add_argument(
@@ -150,18 +168,21 @@ def parse_args():
         type=str,
         default="test",
         choices=["train", "valid", "test"],
+        action=NonDefaultAction,
         help="Split of the dataset to use as reference.",
     )
     parser.add_argument(
         "--eval_num_sequences",
         type=int,
         default=None,
+        action=NonDefaultAction,
         help="Number of sequences to evaluate. If not provided, --num_mcmc_samples will be evaluated.",
     )
     parser.add_argument(
         "--eval_num_runs",
         type=int,
         default=1,
+        action=NonDefaultAction,
         help="Number of runs for MAUVE and BLEU evaluations.",
     )
 
@@ -170,12 +191,14 @@ def parse_args():
         "--seed",
         type=int,
         default=42,
+        action=NonDefaultAction,
         help="Random seed for reproducibility.",
     )
     parser.add_argument(
         "--output_dir",
         type=str,
         default="output",
+        action=NonDefaultAction,
         help="Directory to save the output files.",
     )
 
@@ -202,11 +225,7 @@ def load_metadata(args, output_subdir):
     """Loads metadata from a previously saved run and sets args from it."""
     metadata = load_from_json(os.path.join(output_subdir, "metadata"))
     for key, value in metadata.items():
-        if key not in {
-            "preload_dir",
-            "model_name",
-            "output_dir"
-        }:
+        if not hasattr(args, f"{key}_nondefault"):
             setattr(args, key, value)
 
 

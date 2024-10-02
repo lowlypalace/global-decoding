@@ -159,21 +159,21 @@ def run_mcmc(
     save_to_json(sampled_proposal_logprobs, "sampled_proposal_logprobs", output_subdir)
 
     # Plot the distribution of the generated probabilities
-    logging.info("Plotting the distribution of the sampled sequences...")
-    plot_distribution(
-        sampled_target_logprobs,
-        plot_type="histogram",
-        prefix="mcmc",
-        show=False,
-        output_dir=os.path.join(output_subdir, "plots"),
-    )
-    plot_distribution(
-        sampled_target_logprobs,
-        plot_type="kde",
-        prefix="mcmc",
-        show=False,
-        output_dir=os.path.join(output_subdir, "plots"),
-    )
+    # logging.info("Plotting the distribution of the sampled sequences...")
+    # plot_distribution(
+    #     sampled_target_logprobs,
+    #     plot_type="histogram",
+    #     prefix="mcmc",
+    #     show=False,
+    #     output_dir=os.path.join(output_subdir, "plots"),
+    # )
+    # plot_distribution(
+    #     sampled_target_logprobs,
+    #     plot_type="kde",
+    #     prefix="mcmc",
+    #     show=False,
+    #     output_dir=os.path.join(output_subdir, "plots"),
+    # )
 
     return sampled_sequences_ids, sampled_sequences_decoded, sampled_target_logprobs
 
