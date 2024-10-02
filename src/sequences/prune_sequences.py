@@ -31,7 +31,7 @@ def prune_sequences(
     ]
 
     logging.info(
-        f"Removed {len(sequences_ids) - len(filtered_data)} sequences with non-printable characters"
+        f"Removed {len(sequences_ids) - len(filtered_data)} sequences with non-printable or empty characters"
     )
     # Filter out the sequences if the proposed proposal log probability is -inf
     # This is happening because of precision issues when getting logits from the model directly
