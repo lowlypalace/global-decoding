@@ -83,8 +83,22 @@ def create_filename(name, extension, directory):
     return full_path
 
 
+# def save_to_json(data, base_name, subdir):
+#     filename = create_filename(base_name, "json", subdir)
+#     with open(filename, "w") as f:
+#         json.dump(data, f)
 def save_to_json(data, base_name, subdir):
+    # Check if data is a tensor and convert to list if necessary
+    if isinstance(data, torch.Tensor):
+        data = data.tolist()
+    elif isinstance(data, list):
+        # Recursively check for tensors in lists of lists
+        data = [item.tolist() if isinstance(item, torch.Tensor) else item for item in data]
+
+    # Create the filename
     filename = create_filename(base_name, "json", subdir)
+
+    # Write the data to a JSON file
     with open(filename, "w") as f:
         json.dump(data, f)
 

@@ -1,267 +1,158 @@
 import os
 import logging
-
 import torch
-
 from transformers import (
     GPT2Tokenizer,
     GPT2LMHeadModel,
     AutoTokenizer,
     GPTNeoXForCausalLM,
 )
-
 from src.utils.utils import timer, save_to_json, load_from_json, convert_tensor_to_list
-
 from src.sequences.sequences_probs import get_sequences_probs
 from src.sequences.generate_sequences import generate_sequences
+# from src.mcmc.plots import plot_distribution
 
-from src.mcmc.plots import plot_distribution
 
+class ModelHandler:
+    def __init__(self, model_name, precision, device):
+        self.model_name = model_name
+        self.precision = precision
+        self.device = device
+        self.model = None
+        self.tokenizer = None
 
-def setup_model_and_tokenizer(model_name, precision, device):
-    # Load model and tokenizer based on the selected model
-    if model_name.startswith("pythia"):
-        tokenizer = AutoTokenizer.from_pretrained(f"EleutherAI/{model_name}")
-        model = GPTNeoXForCausalLM.from_pretrained(f"EleutherAI/{model_name}")
-    else:
-        tokenizer = GPT2Tokenizer.from_pretrained(model_name)
-        model = GPT2LMHeadModel.from_pretrained(model_name)
+    def setup_model_and_tokenizer(self):
+        if not self.model or not self.tokenizer:
+            logging.info("Loading model and tokenizer...")
+            if self.model_name.startswith("pythia"):
+                self.tokenizer = AutoTokenizer.from_pretrained(f"EleutherAI/{self.model_name}")
+                self.model = GPTNeoXForCausalLM.from_pretrained(f"EleutherAI/{self.model_name}")
+            else:
+                self.tokenizer = GPT2Tokenizer.from_pretrained(self.model_name)
+                self.model = GPT2LMHeadModel.from_pretrained(self.model_name)
 
-    # Set the model precision
-    if precision == "fp16":
-        model = model.half()
-    elif precision == "fp64":
-        model = model.double()
+            # Set precision
+            if self.precision == "fp16":
+                self.model = self.model.half()
+            elif self.precision == "fp64":
+                self.model = self.model.double()
 
-    # Set the model to evaluation mode
-    model.eval()
-    # Move the model to the specified device
-    model.to(device)
+            # Move model to device and set to evaluation mode
+            self.model.eval()
+            self.model.to(self.device)
 
-    # Set the padding token to the EOS token
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    # Set the padding side to the right
-    tokenizer.padding_side = "right"
+            # Adjust tokenizer
+            if self.tokenizer.pad_token is None:
+                self.tokenizer.pad_token = self.tokenizer.eos_token
+            self.tokenizer.padding_side = "right"
 
-    return model, tokenizer
+        return self.model, self.tokenizer
 
+    def get_model_and_tokenizer(self):
+        return self.setup_model_and_tokenizer()
+
+def encode_input_text(tokenizer, text, device):
+    text = text or tokenizer.eos_token
+    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(device)
+    return input_ids
 
 def load_sequences(output_subdir, device):
     sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
     sequences_decoded = load_from_json(os.path.join(output_subdir, "sequences_decoded"))
-    # Convert the list of lists to a list of tensors
     return torch.tensor(sequences_ids).to(device), sequences_decoded
 
 
 def save_sequences(output_subdir, sequences_ids, sequences_decoded):
-    # Save the encoded and decoded sequences
-    save_to_json(
-        # Convert the list of tensors to a list of lists
-        convert_tensor_to_list(sequences_ids),
-        "sequences_ids",
-        output_subdir,
-    )
+    save_to_json(convert_tensor_to_list(sequences_ids), "sequences_ids", output_subdir)
     save_to_json(sequences_decoded, "sequences_decoded", output_subdir)
 
 
 def set_max_length(model, max_length):
-    # Assume max_model_length is the maximum sequence length the model can handle
     max_model_length = model.config.max_position_embeddings
-    # Calculate the max_length so it is bound by the model context length
-    max_length = max_length if max_length is not None else max_model_length
-
-    return max_length
+    return min(max_length, max_model_length) if max_length else max_model_length
 
 
 def load_probs(output_subdir, device):
-    target_logprobs = load_from_json(os.path.join(output_subdir, "logprobs_target"))
-    proposal_logprobs = load_from_json(os.path.join(output_subdir, "logprobs_proposal"))
-    target_logprobs_tokens = load_from_json(
-        os.path.join(output_subdir, "logprobs_target_tokens")
-    )
-    proposal_logprobs_tokens = load_from_json(
-        os.path.join(output_subdir, "logprobs_proposal_tokens")
-    )
     return (
-        torch.tensor(target_logprobs).to(device),
-        torch.tensor(proposal_logprobs).to(device),
-        torch.tensor(target_logprobs_tokens).to(device),
-        torch.tensor(proposal_logprobs_tokens).to(device),
+        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_target"))).to(device),
+        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_proposal"))).to(device),
+        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_target_tokens"))).to(device),
+        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_proposal_tokens"))).to(device),
     )
 
 
-def save_probs(
-    output_subdir,
-    target_logprobs,
-    proposal_logprobs,
-    target_logprobs_tokens,
-    proposal_logprobs_tokens,
-    target_normalize_constants,
-    proposal_normalize_constants,
-    target_normalize_constants_products,
-    proposal_normalize_constants_products,
-):
+def save_probs(output_subdir, target_logprobs, proposal_logprobs, target_logprobs_tokens,
+               proposal_logprobs_tokens, target_normalize_constants, proposal_normalize_constants,
+               target_normalize_constants_products, proposal_normalize_constants_products):
     save_to_json(target_logprobs, "logprobs_target", output_subdir)
     save_to_json(proposal_logprobs, "logprobs_proposal", output_subdir)
     save_to_json(target_logprobs_tokens, "logprobs_target_tokens", output_subdir)
     save_to_json(proposal_logprobs_tokens, "logprobs_proposal_tokens", output_subdir)
-    save_to_json(
-        target_normalize_constants, "target_normalize_constants", output_subdir
-    )
-    save_to_json(
-        proposal_normalize_constants, "proposal_normalize_constants", output_subdir
-    )
-    save_to_json(
-        target_normalize_constants_products,
-        "target_normalize_constants_products",
-        output_subdir,
-    )
-    save_to_json(
-        proposal_normalize_constants_products,
-        "proposal_normalize_constants_products",
-        output_subdir,
-    )
+    save_to_json(target_normalize_constants, "target_normalize_constants", output_subdir)
+    save_to_json(proposal_normalize_constants, "proposal_normalize_constants", output_subdir)
+    save_to_json(target_normalize_constants_products, "target_normalize_constants_products", output_subdir)
+    save_to_json(proposal_normalize_constants_products, "proposal_normalize_constants_products", output_subdir)
 
 
 def generate_sequences_and_probs(args, output_subdir):
-    # Parse command-line arguments
-    top_k = args.top_k
-    top_p = args.top_p
-    sequence_count = args.sequence_count
-    max_length = args.max_length
-    text = args.text
-    batch_size_seq = args.batch_size_seq
-    batch_size_prob = args.batch_size_prob
-    model_name = args.model_name
-    precision = args.precision
     device = torch.device(args.device)
+    model_handler = ModelHandler(args.model_name, args.precision, device)
 
-    # Setup the model and tokenizer
-    logging.info("Setting up the model and tokenizer...")
-    model, tokenizer = setup_model_and_tokenizer(model_name, precision, device)
-    # Set the text to the EOS token if it is not set
-    if text is None:
-        text = tokenizer.eos_token
-
-    # Encode the input text to tensor
-    input_ids = tokenizer.encode(text, add_special_tokens=True, return_tensors="pt").to(
-        device
-    )
-
-    max_length = set_max_length(model, max_length)
-
-    if args.preload_dir and os.path.exists(
-        os.path.join(output_subdir, "sequences_ids.json")
-    ):
+    if args.preload_dir and os.path.exists(os.path.join(output_subdir, "sequences_ids.json")):
         logging.info("Loading preloaded sequences...")
         sequences_ids, sequences_decoded = load_sequences(output_subdir, device)
     else:
         with timer("Generating new sequences"):
+            model, tokenizer = model_handler.get_model_and_tokenizer()
+            input_ids = encode_input_text(tokenizer, args.text, device)
+            max_length = set_max_length(model, args.max_length)
+
             sequences_ids, sequences_decoded = generate_sequences(
                 model=model,
                 tokenizer=tokenizer,
                 input_ids=input_ids,
                 max_length=max_length,
-                top_k=top_k,
-                top_p=top_p,
-                sequence_count=int(
-                    sequence_count * 1.01
-                ),  # Generate 1% more sequences than needed
-                batch_size=batch_size_seq,
+                top_k=args.top_k,
+                top_p=args.top_p,
+                sequence_count=int(args.sequence_count * 1.01),  # Generate 1% more sequences
+                batch_size=args.batch_size_seq,
             )
 
-        # Convert tensors to lists
-        logging.info("Saving the generated sequences...")
-        save_sequences(output_subdir, sequences_ids, sequences_decoded)
+            logging.info("Saving the generated sequences...")
+            save_sequences(output_subdir, sequences_ids, sequences_decoded)
 
-    if args.preload_dir and os.path.exists(
-        os.path.join(output_subdir, "logprobs_target.json")
-    ):
+    if args.preload_dir and os.path.exists(os.path.join(output_subdir, "logprobs_target.json")):
         logging.info("Loading precomputed probabilities...")
-        (
-            target_logprobs,
-            proposal_logprobs,
-            target_logprobs_tokens,
-            proposal_logprobs_tokens,
-        ) = load_probs(output_subdir, device)
-        target_logprobs = convert_tensor_to_list(target_logprobs)
-        proposal_logprobs = convert_tensor_to_list(proposal_logprobs)
-        target_logprobs_tokens = convert_tensor_to_list(target_logprobs_tokens)
-        proposal_logprobs_tokens = convert_tensor_to_list(proposal_logprobs_tokens)
-
+        target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens = load_probs(output_subdir, device)
     else:
         with timer("Computing probabilities"):
+            model, tokenizer = model_handler.get_model_and_tokenizer()
+            input_ids = encode_input_text(tokenizer, args.text, device)
+
             (
-                target_logprobs,
-                proposal_logprobs,
-                target_logprobs_tokens,
-                proposal_logprobs_tokens,
-                target_normalize_constants,
-                proposal_normalize_constants,
-                target_normalize_constants_products,
-                proposal_normalize_constants_products,
+                target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens,
+                target_normalize_constants, proposal_normalize_constants,
+                target_normalize_constants_products, proposal_normalize_constants_products
             ) = get_sequences_probs(
                 model=model,
                 sequences_ids=sequences_ids,
-                top_k=top_k,
-                top_p=top_p,
+                top_k=args.top_k,
+                top_p=args.top_p,
                 pad_token_id=tokenizer.pad_token_id,
                 input_ids=input_ids,
-                batch_size=batch_size_prob,
+                batch_size=args.batch_size_prob,
             )
-        target_logprobs = convert_tensor_to_list(target_logprobs)
-        proposal_logprobs = convert_tensor_to_list(proposal_logprobs)
-        target_logprobs_tokens = convert_tensor_to_list(target_logprobs_tokens)
-        proposal_logprobs_tokens = convert_tensor_to_list(proposal_logprobs_tokens)
-        target_normalize_constants = convert_tensor_to_list(target_normalize_constants)
-        proposal_normalize_constants = convert_tensor_to_list(
-            proposal_normalize_constants
-        )
-        target_normalize_constants_products = convert_tensor_to_list(
-            target_normalize_constants_products
-        )
-        proposal_normalize_constants_products = convert_tensor_to_list(
-            proposal_normalize_constants_products
-        )
 
-        logging.info("Saving the log probabilities...")
-        save_probs(
-            output_subdir,
-            target_logprobs,
-            proposal_logprobs,
-            target_logprobs_tokens,
-            proposal_logprobs_tokens,
-            target_normalize_constants,
-            proposal_normalize_constants,
-            target_normalize_constants_products,
-            proposal_normalize_constants_products,
-        )
+            logging.info("Saving the log probabilities...")
+            save_probs(output_subdir, target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens,
+                       target_normalize_constants, proposal_normalize_constants, target_normalize_constants_products,
+                       proposal_normalize_constants_products)
 
-        logging.info("Plotting the log probabilities distributions...")
-        # Plot the distribution of the target log-probabilities
-        plot_distribution(
-            target_logprobs,
-            plot_type="histogram",
-            prefix="target_logprobs",
-            show=False,
-            output_dir=os.path.join(output_subdir, "plots"),
-        )
-        # Plot the distribution of the proposal log-probabilities
-        plot_distribution(
-            proposal_logprobs,
-            plot_type="histogram",
-            prefix="proposal_logprobs",
-            show=False,
-            output_dir=os.path.join(output_subdir, "plots"),
-        )
+            # logging.info("Plotting the log probabilities distributions...")
+            # plot_distribution(target_logprobs, plot_type="histogram", prefix="target_logprobs",
+            #                   show=False, output_dir=os.path.join(output_subdir, "plots"))
+            # plot_distribution(proposal_logprobs, plot_type="histogram", prefix="proposal_logprobs",
+            #                   show=False, output_dir=os.path.join(output_subdir, "plots"))
 
-    # Convert the list of tensors to a list of lists
     sequences_ids = convert_tensor_to_list(sequences_ids)
-
-    return (
-        sequences_ids,
-        sequences_decoded,
-        target_logprobs,
-        proposal_logprobs,
-    )
+    return sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
