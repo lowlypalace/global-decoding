@@ -93,22 +93,22 @@ def run_multiple_mh(
                 os.path.join(output_subdir, "plots", "runs", f"run_{i}"),
             )
 
-            # Plot the chain of generated samples
-            plot_chain(
-                collected_target_logprobs,
-                prefix="mcmc",
-                show=False,
-                output_dir=os.path.join(output_subdir, "plots", "runs", f"run_{i}"),
-            )
-            # Plot the deltas for the acceptance ratio
-            plot_logprob_diff(
-                logprob_diff_proposed,
-                logprob_diff_current,
-                sequence_change_indices,
-                prefix="mcmc",
-                show=False,
-                output_dir=os.path.join(output_subdir, "plots", "runs", f"run_{i}"),
-            )
+            # # Plot the chain of generated samples
+            # plot_chain(
+            #     collected_target_logprobs,
+            #     prefix="mcmc",
+            #     show=False,
+            #     output_dir=os.path.join(output_subdir, "plots", "runs", f"run_{i}"),
+            # )
+            # # Plot the deltas for the acceptance ratio
+            # plot_logprob_diff(
+            #     logprob_diff_proposed,
+            #     logprob_diff_current,
+            #     sequence_change_indices,
+            #     prefix="mcmc",
+            #     show=False,
+            #     output_dir=os.path.join(output_subdir, "plots", "runs", f"run_{i}"),
+            # )
 
             # Take the last sample from each Metropolis iteration and add it to the sampled sequences arrays
             sampled_sequences_ids.append(collected_sequences_ids[-1])
