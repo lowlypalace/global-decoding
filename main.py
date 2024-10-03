@@ -16,15 +16,15 @@ from src.mcmc import run_mcmc
 from src.eval import evaluate
 
 
-# Custom action to track if the argument was provided on the command line
 class NonDefaultAction(argparse.Action):
+    """Custom action to track if an argument was provided via command line."""
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, self.dest, values)
         setattr(namespace, f"{self.dest}_nondefault", True)
 
 
-# Define the function to parse command-line arguments
 def parse_args():
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Generate text sequences, run MCMC, and evaluate the results.")
 
     # Sequence generation arguments
@@ -241,6 +241,7 @@ def calculate_stats(scores):
 
 
 def init_run(args, run_idx):
+    """Initialize a run with a specific seed."""
     seed = args.seed + run_idx
     set_seed(seed)
     logging.info(f"Starting run {run_idx + 1}/{args.eval_num_runs} with seed {seed}")
@@ -248,6 +249,7 @@ def init_run(args, run_idx):
 
 
 def load_sequences(output_subdir, device):
+    """Load preloaded sequences."""
     logging.info("Loading preloaded sequences...")
     sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
     sequences_decoded = load_from_json(os.path.join(output_subdir, "sequences_decoded"))
@@ -255,6 +257,7 @@ def load_sequences(output_subdir, device):
 
 
 def load_probs(output_subdir, device):
+    """Load precomputed probabilities."""
     logging.info("Loading precomputed probabilities...")
     return (
         torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_target"))).to(device),
@@ -306,7 +309,6 @@ def main():
 
             # Bootstrapping: generate indices to select elements for all arrays
             bootstrap_indices = random.choices(range(len(sequences_decoded)), k=len(sequences_decoded))
-
             bootstrapped_sequences_decoded = [sequences_decoded[i] for i in bootstrap_indices]
             bootstrapped_sequences_ids = [sequences_ids[i] for i in bootstrap_indices]
             bootstrapped_target_logprobs = [target_logprobs[i] for i in bootstrap_indices]
