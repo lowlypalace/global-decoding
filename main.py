@@ -277,22 +277,25 @@ def main():
 
     eval_num_sequences = args.eval_num_sequences or args.mcmc_num_samples
 
+    output_subdir_seqs = os.path.join(output_subdir, "sequences")
+    output_subdir_mcmc = os.path.join(output_subdir, "mcmc")
+    output_subdir_eval = os.path.join(output_subdir, "eval")
 
     # Check if preloaded sequences exist
-    if args.preload_dir and os.path.exists(os.path.join(output_subdir, "sequences_ids.json")):
+    if args.preload_dir and os.path.exists(os.path.join(output_subdir_seqs, "sequences_ids.json")):
         logging.info("Loading preloaded sequences...")
-        sequences_ids, sequences_decoded = load_sequences(output_subdir, args.device)
+        sequences_ids, sequences_decoded = load_sequences(output_subdir_seqs, args.device)
     else:
         # Generate sequences
-        sequences_ids, sequences_decoded = generate_sequences(args, output_subdir)
+        sequences_ids, sequences_decoded = generate_sequences(args, output_subdir_seqs)
 
     # Check if preloaded probabilities exist
-    if args.preload_dir and os.path.exists(os.path.join(output_subdir, "logprobs_target.json")):
+    if args.preload_dir and os.path.exists(os.path.join(output_subdir_seqs, "logprobs_target.json")):
         logging.info("Loading precomputed probabilities...")
-        target_logprobs, proposal_logprobs, _, _ = load_probs(output_subdir, args.device)
+        target_logprobs, proposal_logprobs, _, _ = load_probs(output_subdir_seqs, args.device)
     else:
         # Compute probabilities
-        target_logprobs, proposal_logprobs = compute_probs(args, sequences_ids, output_subdir)
+        target_logprobs, proposal_logprobs = compute_probs(args, sequences_ids, output_subdir_seqs)
 
     sequences_ids = convert_tensor_to_list(sequences_ids)
 
@@ -315,7 +318,7 @@ def main():
 
         _, sampled_sequences_decoded, _ = run_mcmc(
             args=args,
-            output_subdir=os.path.join(output_subdir, "mcmc", str(seed)),
+            output_subdir=os.path.join(output_subdir_mcmc, str(seed)),
             sequences_ids=bootstrapped_sequences_ids,
             sequences_decoded=bootstrapped_sequences_decoded,
             target_logprobs=bootstrapped_target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
@@ -327,7 +330,7 @@ def main():
 
         mauve_results_local, mauve_results_global, bleu_local, bleu_global = evaluate(
             args,
-            output_subdir=os.path.join(output_subdir, "eval", str(seed)),
+            output_subdir=os.path.join(output_subdir_eval, str(seed)),
             eval_local_decoding_texts=eval_local_decoding_texts,  # eval_local_decoding_texts are the sequences sampled from the local normalized distribution
             eval_global_decoding_texts=eval_global_decoding_texts,  # eval_global_decoding_texts are the sequences sampled from the global unnormalized distribution
             eval_num_sequences=eval_num_sequences,
