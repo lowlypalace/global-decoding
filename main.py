@@ -237,11 +237,7 @@ def calculate_statistics(scores):
     """Calculates the mean and confidence interval for a given list of scores."""
     mean = np.mean(scores)
     ci = stats.norm.interval(0.95, loc=mean, scale=stats.sem(scores))
-    return {
-        "mean": mean,
-        "ci": ci,
-        "scores": scores
-    }
+    return {"mean": mean, "ci": ci, "scores": scores}
 
 
 def init_run(args, run_idx):
@@ -321,8 +317,8 @@ def main():
                 output_subdir=os.path.join(output_subdir_mcmc, str(seed)),
                 sequences_ids=bootstrapped_sequences_ids,
                 sequences_decoded=bootstrapped_sequences_decoded,
-                target_logprobs=bootstrapped_target_logprobs, # Probabilities sampled from the global unnormalized distribution
-                proposal_logprobs=bootstrapped_proposal_logprobs, # Probabilities sampled from the local normalized distribution
+                target_logprobs=bootstrapped_target_logprobs,  # Probabilities sampled from the global unnormalized distribution
+                proposal_logprobs=bootstrapped_proposal_logprobs,  # Probabilities sampled from the local normalized distribution
             )
     # TODO elif load sequences
 
@@ -352,7 +348,7 @@ def main():
             "mauve_local": calculate_statistics(mauve_scores_local),
             "mauve_global": calculate_statistics(mauve_scores_global),
             "bleu_local": calculate_statistics(bleu_scores_local),
-            "bleu_global": calculate_statistics(bleu_scores_global)
+            "bleu_global": calculate_statistics(bleu_scores_global),
         }
 
         save_to_json(results, "results", os.path.join(output_subdir, "eval"))
