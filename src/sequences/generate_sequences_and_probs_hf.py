@@ -45,7 +45,7 @@ def generate_sequences_and_probs_hf(
                 top_k=top_k,
                 top_p=top_p,
                 do_sample=True,
-                num_return_sequences=batch_size,
+                num_return_sequences=int(batch_size * 1.01),
                 min_new_tokens=1,  # We don't want to generate empty sequences
                 return_dict_in_generate=True,
                 output_scores=True,
@@ -98,16 +98,6 @@ def generate_sequences_and_probs_hf(
             del target_logprob_sum
             torch.cuda.empty_cache()
 
-    # If we have more sequences than needed due to the last batch, truncate the list
-    sequences_ids = sequences_ids[:sequence_count]
-    logging.info(f"Generated {len(sequences_ids)} sequence in total.")
-
-    # If we have more probabilities than needed due to the last batch, truncate the list
-    target_logprob_sums = target_logprob_sums[:sequence_count]
-    proposal_logprob_sums = proposal_logprob_sums[:sequence_count]
-
-    proposal_logprobs_tokens = proposal_logprobs_tokens[:sequence_count]
-    target_logprobs_tokens = target_logprobs_tokens[:sequence_count]
 
     # Decode sequences to text
     sequences_decoded = tokenizer.batch_decode(sequences_ids, skip_special_tokens=True)

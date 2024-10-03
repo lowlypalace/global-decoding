@@ -4,27 +4,28 @@ import torch
 from src.sequences.generate_sequences_and_probs_hf import (
     generate_sequences_and_probs_hf,
 )
-from src.sequences.generate_sequences import generate_sequences
-from src.sequences.sequences_and_probs import setup_model_and_tokenizer
+from src.sequences.generate_sequences_util import generate_sequences_util
+from src.sequences.sequences_and_probs import ModelHandler
 from src.sequences.sequences_probs import get_sequences_probs
 
 from src.utils.utils import (
     set_seed,
 )
 
-
+# Utility function to set up the model and tokenizer
 def setup(model_name="pythia-70m", precision="fp64", seed=42):
     # Get device
     device = "cuda" if torch.cuda.is_available() else "cpu"
     # Set the seed for reproducibility
     set_seed(seed)
-    # Initialize tokenizer and model, set to evaluation mode
-    model, tokenizer = setup_model_and_tokenizer(model_name, precision, device)
+    # Initialize the model handler
+    model_handler = ModelHandler(model_name, precision, device)
+    # Get model and tokenizer
+    model, tokenizer = model_handler.get_model_and_tokenizer()
     # Encode the input text
     input_ids = tokenizer.encode(tokenizer.eos_token, return_tensors="pt").to(device)
 
     return tokenizer, model, input_ids
-
 
 class TestIntegration(unittest.TestCase):
     def test_top_k(self):
@@ -33,7 +34,7 @@ class TestIntegration(unittest.TestCase):
         tokenizer, model, input_ids = setup()
 
         # Get sequences and their probabilities using custom implementation
-        sequences_ids_custom, sequences_decoded_custom = generate_sequences(
+        sequences_ids_custom, sequences_decoded_custom = generate_sequences_util(
             model=model,
             tokenizer=tokenizer,
             input_ids=input_ids,
@@ -50,6 +51,8 @@ class TestIntegration(unittest.TestCase):
             proposal_logprobs_tokens_custom,
             target_normalize_constants,
             proposal_normalize_constants,
+            _,
+            _
         ) = get_sequences_probs(
             model=model,
             sequences_ids=sequences_ids_custom,
@@ -107,7 +110,7 @@ class TestIntegration(unittest.TestCase):
         tokenizer, model, input_ids = setup()
 
         # Get sequences and their probabilities using custom implementation
-        sequences_ids_custom, sequences_decoded_custom = generate_sequences(
+        sequences_ids_custom, sequences_decoded_custom = generate_sequences_util(
             model=model,
             tokenizer=tokenizer,
             input_ids=input_ids,
@@ -124,6 +127,8 @@ class TestIntegration(unittest.TestCase):
             proposal_logprobs_tokens_custom,
             target_normalize_constants,
             proposal_normalize_constants,
+            _,
+            _
         ) = get_sequences_probs(
             model=model,
             sequences_ids=sequences_ids_custom,
@@ -181,7 +186,7 @@ class TestIntegration(unittest.TestCase):
         tokenizer, model, input_ids = setup()
 
         # Get sequences and their probabilities using custom implementation
-        sequences_ids, sequences_decoded = generate_sequences(
+        sequences_ids, sequences_decoded = generate_sequences_util(
             model=model,
             tokenizer=tokenizer,
             input_ids=input_ids,
@@ -198,6 +203,8 @@ class TestIntegration(unittest.TestCase):
             proposal_logprobs_tokens,
             target_normalize_constants,
             proposal_normalize_constants,
+            _,
+            _
         ) = get_sequences_probs(
             model=model,
             sequences_ids=sequences_ids,
