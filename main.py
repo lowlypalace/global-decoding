@@ -183,6 +183,24 @@ def parse_args():
 
     # Other arguments
     parser.add_argument(
+        "--actions",
+        nargs="+",
+        default=[
+            "generate_seqs",
+            "compute_probs",
+            "run_mcmc",
+            "run_eval"
+        ],
+        choices=[
+            "generate_seqs",
+            "compute_probs",
+            "run_mcmc",
+            "run_eval"
+        ],
+        action=NonDefaultAction,
+        help="Specify which actions to perform. Defaults to all actions.",
+    )
+    parser.add_argument(
         "--seed",
         type=int,
         default=42,
