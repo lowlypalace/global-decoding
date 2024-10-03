@@ -20,6 +20,7 @@ from src.sequences import generate_sequences_and_probs, prune_sequences
 from src.mcmc import run_mcmc
 from src.eval import evaluate
 
+
 # Custom action to track if the argument was provided on the command line
 class NonDefaultAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):

@@ -11,9 +11,11 @@ def is_valid_sequence(text):
     # Check if the sequence is non-empty, non-printable, and has sufficient length.
     return text.strip() and not contains_only_nonprintable(text) and not contains_only_punctuation(text)
 
+
 def contains_only_punctuation(text):
     # Check if the text contains only punctuation characters
     return all(char in string.punctuation or char.isspace() for char in text.strip())
+
 
 def is_negative_inf(prop_prob):
     if prop_prob == float("-inf"):

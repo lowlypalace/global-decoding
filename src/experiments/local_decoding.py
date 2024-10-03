@@ -271,7 +271,12 @@ def main():
     max_length = None
 
     # Generate sequences and compute constants
-    (constants_products, constants_lists, sequence_lengths, decoded_sequences,) = generate_and_compute_constants(
+    (
+        constants_products,
+        constants_lists,
+        sequence_lengths,
+        decoded_sequences,
+    ) = generate_and_compute_constants(
         tokenizer=tokenizer,
         model=model,
         text=text,

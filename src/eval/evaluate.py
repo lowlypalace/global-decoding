@@ -74,12 +74,8 @@ def evaluate_mauve(
             seed=seed,
         )
 
-    logging.info(
-        f"MAUVE score for locally decoded strings: {mauve_results_local.mauve}"
-    )
-    logging.info(
-        f"MAUVE score for globally decoded strings: {mauve_results_global.mauve}"
-    )
+    logging.info(f"MAUVE score for locally decoded strings: {mauve_results_local.mauve}")
+    logging.info(f"MAUVE score for globally decoded strings: {mauve_results_global.mauve}")
 
     # Save the MAUVE results to a JSON file
     logging.info("Saving the MAUVE evaluation results...")
@@ -105,28 +101,20 @@ def evaluate_bleu(output_subdir, eval_local_decoding_texts, eval_global_decoding
             for j, reference in enumerate(texts):
                 if i != j:
                     # Compute BLEU score for this prediction-reference pair
-                    bleu_score = bleu.compute(
-                        predictions=[prediction], references=[[reference]]
-                    )["bleu"]
+                    bleu_score = bleu.compute(predictions=[prediction], references=[[reference]])["bleu"]
                     individual_bleu_scores.append(bleu_score)
             # Average BLEU scores for this prediction
-            self_bleu_scores.append(
-                sum(individual_bleu_scores) / len(individual_bleu_scores)
-            )
+            self_bleu_scores.append(sum(individual_bleu_scores) / len(individual_bleu_scores))
 
         # Return the average Self-BLEU score
         return sum(self_bleu_scores) / len(self_bleu_scores)
 
     # Compute Self-BLEU for local decoding texts
-    logging.info(
-        f"Evaluating Self-BLEU for {len(eval_local_decoding_texts)} locally decoded texts..."
-    )
+    logging.info(f"Evaluating Self-BLEU for {len(eval_local_decoding_texts)} locally decoded texts...")
     local_self_bleu = compute_self_bleu(eval_local_decoding_texts)
 
     # Compute Self-BLEU for global decoding texts
-    logging.info(
-        f"Evaluating Self-BLEU for {len(eval_global_decoding_texts)} globally decoded texts..."
-    )
+    logging.info(f"Evaluating Self-BLEU for {len(eval_global_decoding_texts)} globally decoded texts...")
     global_self_bleu = compute_self_bleu(eval_global_decoding_texts)
 
     logging.info(f"Self-BLEU score for locally decoded texts: {local_self_bleu}")
