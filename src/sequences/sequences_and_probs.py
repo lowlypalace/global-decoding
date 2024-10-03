@@ -114,7 +114,11 @@ def compute_probs(args, sequences_ids, output_subdir):
     input_ids = encode_input_text(tokenizer, args.text, args.device)
 
     with timer("Computing probabilities"):
-        target_logprobs, proposal_logprobs, _, _, _, _, _, _ = get_sequences_probs(
+        (
+            target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens,
+            target_normalize_constants, proposal_normalize_constants,
+            target_normalize_constants_products, proposal_normalize_constants_products
+        ) = get_sequences_probs(
             model=model,
             sequences_ids=sequences_ids,
             top_k=args.top_k,
@@ -124,5 +128,15 @@ def compute_probs(args, sequences_ids, output_subdir):
             batch_size=args.batch_size_prob,
         )
 
-    save_probs(output_subdir, target_logprobs, proposal_logprobs)
+    save_probs(
+        output_subdir,
+        target_logprobs,
+        proposal_logprobs,
+        target_logprobs_tokens,
+        proposal_logprobs_tokens,
+        target_normalize_constants,
+        proposal_normalize_constants,
+        target_normalize_constants_products,
+        proposal_normalize_constants_products
+    )
     return target_logprobs, proposal_logprobs
