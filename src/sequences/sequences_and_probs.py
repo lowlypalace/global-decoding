@@ -9,6 +9,7 @@ from src.utils.utils import timer, save_to_json, load_from_json, convert_tensor_
 from src.sequences.generate_sequences_util import generate_sequences_util
 from src.sequences.sequences_probs import get_sequences_probs
 
+
 class ModelHandler:
     def __init__(self, model_name, precision, device):
         self.model_name = model_name
@@ -64,7 +65,6 @@ def set_max_length(model, max_length):
     return min(max_length, max_model_length) if max_length else max_model_length
 
 
-
 def save_probs(
     output_subdir,
     target_logprobs,
@@ -84,6 +84,7 @@ def save_probs(
     save_to_json(proposal_normalize_constants, "proposal_normalize_constants", output_subdir)
     save_to_json(target_normalize_constants_products, "target_normalize_constants_products", output_subdir)
     save_to_json(proposal_normalize_constants_products, "proposal_normalize_constants_products", output_subdir)
+
 
 def generate_sequences(args, output_subdir):
     model_handler = ModelHandler(args.model_name, args.precision, args.device)
@@ -105,6 +106,7 @@ def generate_sequences(args, output_subdir):
 
     save_sequences(output_subdir, sequences_ids, sequences_decoded)
     return sequences_ids, sequences_decoded
+
 
 def compute_probs(args, sequences_ids, output_subdir):
     model_handler = ModelHandler(args.model_name, args.precision, args.device)

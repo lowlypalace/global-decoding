@@ -7,14 +7,7 @@ import random
 from scipy import stats
 import numpy as np
 
-from src.utils.utils import (
-    setup_logging,
-    save_args,
-    set_seed,
-    load_from_json,
-    save_to_json,
-    convert_tensor_to_list
-)
+from src.utils.utils import setup_logging, save_args, set_seed, load_from_json, save_to_json, convert_tensor_to_list
 from src.utils.validate import validate_args
 
 
@@ -244,10 +237,12 @@ def init_run(args, run_idx):
     logging.info(f"Starting run {run_idx + 1}/{args.eval_num_runs} with seed {seed}")
     return seed
 
+
 def load_sequences(output_subdir, device):
     sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
     sequences_decoded = load_from_json(os.path.join(output_subdir, "sequences_decoded"))
     return torch.tensor(sequences_ids).to(device), sequences_decoded
+
 
 def load_probs(output_subdir, device):
     return (
@@ -256,7 +251,6 @@ def load_probs(output_subdir, device):
         torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_target_tokens"))).to(device),
         torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_proposal_tokens"))).to(device),
     )
-
 
 
 def main():
@@ -303,7 +297,6 @@ def main():
     sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = prune_sequences(
         args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
     )
-
 
     for run_idx in range(args.eval_num_runs):
         seed = init_run(args, run_idx)
