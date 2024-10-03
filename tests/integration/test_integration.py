@@ -1,7 +1,7 @@
 import unittest
 import torch
 
-from src.sequences.generate_sequences_and_probs_hf import (
+from tests.integration.generate_sequences_and_probs_hf import (
     generate_sequences_and_probs_hf,
 )
 from src.sequences.generate_sequences_util import generate_sequences_util
