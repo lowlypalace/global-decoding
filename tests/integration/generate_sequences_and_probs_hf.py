@@ -98,7 +98,6 @@ def generate_sequences_and_probs_hf(
             del target_logprob_sum
             torch.cuda.empty_cache()
 
-
     # Decode sequences to text
     sequences_decoded = tokenizer.batch_decode(sequences_ids, skip_special_tokens=True)
 

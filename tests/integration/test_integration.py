@@ -12,6 +12,7 @@ from src.utils.utils import (
     set_seed,
 )
 
+
 # Utility function to set up the model and tokenizer
 def setup(model_name="pythia-70m", precision="fp64", seed=42):
     # Get device
@@ -26,6 +27,7 @@ def setup(model_name="pythia-70m", precision="fp64", seed=42):
     input_ids = tokenizer.encode(tokenizer.eos_token, return_tensors="pt").to(device)
 
     return tokenizer, model, input_ids
+
 
 class TestIntegration(unittest.TestCase):
     def test_top_k(self):
@@ -52,7 +54,7 @@ class TestIntegration(unittest.TestCase):
             _,
             _,
             _,
-            _
+            _,
         ) = get_sequences_probs(
             model=model,
             sequences_ids=sequences_ids_custom,
@@ -128,7 +130,7 @@ class TestIntegration(unittest.TestCase):
             _,
             _,
             _,
-            _
+            _,
         ) = get_sequences_probs(
             model=model,
             sequences_ids=sequences_ids_custom,
@@ -196,23 +198,16 @@ class TestIntegration(unittest.TestCase):
             sequence_count=100,
             batch_size=16,
         )
-        (
-            target_logprobs,
-            proposal_logprobs,
-            target_logprobs_tokens,
-            proposal_logprobs_tokens,
-            _,
-            _,
-            _,
-            _
-        ) = get_sequences_probs(
-            model=model,
-            sequences_ids=sequences_ids,
-            top_k=None,
-            top_p=None,
-            pad_token_id=tokenizer.pad_token_id,
-            input_ids=input_ids,
-            batch_size=16,
+        (target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens, _, _, _, _) = (
+            get_sequences_probs(
+                model=model,
+                sequences_ids=sequences_ids,
+                top_k=None,
+                top_p=None,
+                pad_token_id=tokenizer.pad_token_id,
+                input_ids=input_ids,
+                batch_size=16,
+            )
         )
 
         self.assertTrue(torch.allclose(target_logprobs, proposal_logprobs, rtol=1e-03, atol=1e-03))
