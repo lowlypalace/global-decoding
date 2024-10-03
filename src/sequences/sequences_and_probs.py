@@ -1,6 +1,4 @@
-import os
 import logging
-import torch
 from transformers import (
     GPT2Tokenizer,
     GPT2LMHeadModel,
