@@ -237,7 +237,11 @@ def calculate_statistics(scores):
     """Calculates the mean and confidence interval for a given list of scores."""
     mean = np.mean(scores)
     ci = stats.norm.interval(0.95, loc=mean, scale=stats.sem(scores))
-    return mean, ci
+    return {
+        "mean": mean,
+        "ci": ci,
+        "scores": scores
+    }
 
 
 def init_run(args, run_idx):
@@ -345,26 +349,10 @@ def main():
             bleu_scores_global.append(bleu_global)
 
         results = {
-            "mauve_local": {
-                "mean": calculate_statistics(mauve_scores_local)[0],
-                "ci": calculate_statistics(mauve_scores_local)[1],
-                "scores": mauve_scores_local,
-            },
-            "mauve_global": {
-                "mean": calculate_statistics(mauve_scores_global)[0],
-                "ci": calculate_statistics(mauve_scores_global)[1],
-                "scores": mauve_scores_global,
-            },
-            "bleu_local": {
-                "mean": calculate_statistics(bleu_scores_local)[0],
-                "ci": calculate_statistics(bleu_scores_local)[1],
-                "scores": bleu_scores_local,
-            },
-            "bleu_global": {
-                "mean": calculate_statistics(bleu_scores_global)[0],
-                "ci": calculate_statistics(bleu_scores_global)[1],
-                "scores": bleu_scores_global,
-            },
+            "mauve_local": calculate_statistics(mauve_scores_local),
+            "mauve_global": calculate_statistics(mauve_scores_global),
+            "bleu_local": calculate_statistics(bleu_scores_local),
+            "bleu_global": calculate_statistics(bleu_scores_global)
         }
 
         save_to_json(results, "results", os.path.join(output_subdir, "eval"))
