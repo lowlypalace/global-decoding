@@ -13,10 +13,12 @@ from src.utils.utils import (
     set_seed,
     load_from_json,
     save_to_json,
+    convert_tensor_to_list
 )
 from src.utils.validate import validate_args
 
-from src.sequences import generate_sequences_and_probs, prune_sequences
+
+from src.sequences import generate_sequences, compute_probs, prune_sequences
 from src.mcmc import run_mcmc
 from src.eval import evaluate
 
@@ -242,6 +244,20 @@ def init_run(args, run_idx):
     logging.info(f"Starting run {run_idx + 1}/{args.eval_num_runs} with seed {seed}")
     return seed
 
+def load_sequences(output_subdir, device):
+    sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
+    sequences_decoded = load_from_json(os.path.join(output_subdir, "sequences_decoded"))
+    return torch.tensor(sequences_ids).to(device), sequences_decoded
+
+def load_probs(output_subdir, device):
+    return (
+        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_target"))).to(device),
+        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_proposal"))).to(device),
+        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_target_tokens"))).to(device),
+        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_proposal_tokens"))).to(device),
+    )
+
+
 
 def main():
     args = parse_args()
@@ -261,19 +277,30 @@ def main():
 
     eval_num_sequences = args.eval_num_sequences or args.mcmc_num_samples
 
-    # Generate and prune sequences
-    (
-        sequences_ids,
-        sequences_decoded,
-        target_logprobs,
-        proposal_logprobs,
-    ) = generate_sequences_and_probs(args, output_subdir=os.path.join(output_subdir, "sequences"))
-    (
-        sequences_ids,
-        sequences_decoded,
-        target_logprobs,
-        proposal_logprobs,
-    ) = prune_sequences(args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs)
+
+    # Check if preloaded sequences exist
+    if args.preload_dir and os.path.exists(os.path.join(output_subdir, "sequences_ids.json")):
+        logging.info("Loading preloaded sequences...")
+        sequences_ids, sequences_decoded = load_sequences(output_subdir, args.device)
+    else:
+        # Generate sequences
+        sequences_ids, sequences_decoded = generate_sequences(args, output_subdir)
+
+    # Check if preloaded probabilities exist
+    if args.preload_dir and os.path.exists(os.path.join(output_subdir, "logprobs_target.json")):
+        logging.info("Loading precomputed probabilities...")
+        target_logprobs, proposal_logprobs, _, _ = load_probs(output_subdir, args.device)
+    else:
+        # Compute probabilities
+        target_logprobs, proposal_logprobs = compute_probs(args, sequences_ids, output_subdir)
+
+    sequences_ids = convert_tensor_to_list(sequences_ids)
+
+    # Prune sequences
+    sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = prune_sequences(
+        args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
+    )
+
 
     for run_idx in range(args.eval_num_runs):
         seed = init_run(args, run_idx)

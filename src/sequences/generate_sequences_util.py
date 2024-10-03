@@ -4,7 +4,7 @@ import logging
 import torch
 
 
-def generate_sequences(
+def generate_sequences_util(
     model,
     tokenizer,
     input_ids,

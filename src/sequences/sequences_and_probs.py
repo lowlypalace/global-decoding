@@ -8,11 +8,10 @@ from transformers import (
     GPTNeoXForCausalLM,
 )
 from src.utils.utils import timer, save_to_json, load_from_json, convert_tensor_to_list
+from src.sequences.generate_sequences_util import generate_sequences_util
 from src.sequences.sequences_probs import get_sequences_probs
-from src.sequences.generate_sequences import generate_sequences
 
 # from src.mcmc.plots import plot_distribution
-
 
 class ModelHandler:
     def __init__(self, model_name, precision, device):
@@ -59,12 +58,6 @@ def encode_input_text(tokenizer, text, device):
     return input_ids
 
 
-def load_sequences(output_subdir, device):
-    sequences_ids = load_from_json(os.path.join(output_subdir, "sequences_ids"))
-    sequences_decoded = load_from_json(os.path.join(output_subdir, "sequences_decoded"))
-    return torch.tensor(sequences_ids).to(device), sequences_decoded
-
-
 def save_sequences(output_subdir, sequences_ids, sequences_decoded):
     save_to_json(convert_tensor_to_list(sequences_ids), "sequences_ids", output_subdir)
     save_to_json(sequences_decoded, "sequences_decoded", output_subdir)
@@ -74,14 +67,6 @@ def set_max_length(model, max_length):
     max_model_length = model.config.max_position_embeddings
     return min(max_length, max_model_length) if max_length else max_model_length
 
-
-def load_probs(output_subdir, device):
-    return (
-        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_target"))).to(device),
-        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_proposal"))).to(device),
-        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_target_tokens"))).to(device),
-        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_proposal_tokens"))).to(device),
-    )
 
 
 def save_probs(
@@ -104,81 +89,120 @@ def save_probs(
     save_to_json(target_normalize_constants_products, "target_normalize_constants_products", output_subdir)
     save_to_json(proposal_normalize_constants_products, "proposal_normalize_constants_products", output_subdir)
 
+def generate_sequences(args, output_subdir):
+    model_handler = ModelHandler(args.model_name, args.precision, args.device)
+    model, tokenizer = model_handler.get_model_and_tokenizer()
+    input_ids = encode_input_text(tokenizer, args.text, args.device)
+    max_length = set_max_length(model, args.max_length)
 
-def generate_sequences_and_probs(args, output_subdir):
-    device = torch.device(args.device)
-    model_handler = ModelHandler(args.model_name, args.precision, device)
-
-    if args.preload_dir and os.path.exists(os.path.join(output_subdir, "sequences_ids.json")):
-        logging.info("Loading preloaded sequences...")
-        sequences_ids, sequences_decoded = load_sequences(output_subdir, device)
-    else:
-        with timer("Generating new sequences"):
-            model, tokenizer = model_handler.get_model_and_tokenizer()
-            input_ids = encode_input_text(tokenizer, args.text, device)
-            max_length = set_max_length(model, args.max_length)
-
-            sequences_ids, sequences_decoded = generate_sequences(
-                model=model,
-                tokenizer=tokenizer,
-                input_ids=input_ids,
-                max_length=max_length,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                sequence_count=int(args.sequence_count * 1.01),  # Generate 1% more sequences
-                batch_size=args.batch_size_seq,
-            )
-
-            logging.info("Saving the generated sequences...")
-            save_sequences(output_subdir, sequences_ids, sequences_decoded)
-
-    if args.preload_dir and os.path.exists(os.path.join(output_subdir, "logprobs_target.json")):
-        logging.info("Loading precomputed probabilities...")
-        target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens = load_probs(
-            output_subdir, device
+    with timer("Generating new sequences"):
+        sequences_ids, sequences_decoded = generate_sequences_util(
+            model=model,
+            tokenizer=tokenizer,
+            input_ids=input_ids,
+            max_length=max_length,
+            top_k=args.top_k,
+            top_p=args.top_p,
+            sequence_count=int(args.sequence_count * 1.01),  # Generate 1% more sequences
+            batch_size=args.batch_size_seq,
         )
-    else:
-        with timer("Computing probabilities"):
-            model, tokenizer = model_handler.get_model_and_tokenizer()
-            input_ids = encode_input_text(tokenizer, args.text, device)
 
-            (
-                target_logprobs,
-                proposal_logprobs,
-                target_logprobs_tokens,
-                proposal_logprobs_tokens,
-                target_normalize_constants,
-                proposal_normalize_constants,
-                target_normalize_constants_products,
-                proposal_normalize_constants_products,
-            ) = get_sequences_probs(
-                model=model,
-                sequences_ids=sequences_ids,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                pad_token_id=tokenizer.pad_token_id,
-                input_ids=input_ids,
-                batch_size=args.batch_size_prob,
-            )
+    save_sequences(output_subdir, sequences_ids, sequences_decoded)
+    return sequences_ids, sequences_decoded
 
-            logging.info("Saving the log probabilities...")
-            save_probs(
-                output_subdir,
-                target_logprobs,
-                proposal_logprobs,
-                target_logprobs_tokens,
-                proposal_logprobs_tokens,
-                target_normalize_constants,
-                proposal_normalize_constants,
-                target_normalize_constants_products,
-                proposal_normalize_constants_products,
-            )
+def compute_probs(args, sequences_ids, output_subdir):
+    model_handler = ModelHandler(args.model_name, args.precision, args.device)
+    model, tokenizer = model_handler.get_model_and_tokenizer()
+    input_ids = encode_input_text(tokenizer, args.text, args.device)
 
-            # logging.info("Plotting the log probabilities distributions...")
-            # plot_distribution(target_logprobs, plot_type="histogram", prefix="target_logprobs",
-            #                   show=False, output_dir=os.path.join(output_subdir, "plots"))
-            # plot_distribution(proposal_logprobs, plot_type="histogram", prefix="proposal_logprobs",
-            #                   show=False, output_dir=os.path.join(output_subdir, "plots"))
+    with timer("Computing probabilities"):
+        target_logprobs, proposal_logprobs, _, _, _, _, _, _ = get_sequences_probs(
+            model=model,
+            sequences_ids=sequences_ids,
+            top_k=args.top_k,
+            top_p=args.top_p,
+            pad_token_id=tokenizer.pad_token_id,
+            input_ids=input_ids,
+            batch_size=args.batch_size_prob,
+        )
 
-    sequences_ids = convert_tensor_to_list(sequences_ids)
-    return sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
+    save_probs(output_subdir, target_logprobs, proposal_logprobs)
+    return target_logprobs, proposal_logprobs
+
+# def generate_sequences_and_probs(args, output_subdir):
+#     device = torch.device(args.device)
+#     model_handler = ModelHandler(args.model_name, args.precision, device)
+
+#     if args.preload_dir and os.path.exists(os.path.join(output_subdir, "sequences_ids.json")):
+#         logging.info("Loading preloaded sequences...")
+#         sequences_ids, sequences_decoded = load_sequences(output_subdir, device)
+#     else:
+#         with timer("Generating new sequences"):
+#             model, tokenizer = model_handler.get_model_and_tokenizer()
+#             input_ids = encode_input_text(tokenizer, args.text, device)
+#             max_length = set_max_length(model, args.max_length)
+
+#             sequences_ids, sequences_decoded = generate_sequences(
+#                 model=model,
+#                 tokenizer=tokenizer,
+#                 input_ids=input_ids,
+#                 max_length=max_length,
+#                 top_k=args.top_k,
+#                 top_p=args.top_p,
+#                 sequence_count=int(args.sequence_count * 1.01),  # Generate 1% more sequences
+#                 batch_size=args.batch_size_seq,
+#             )
+
+#             logging.info("Saving the generated sequences...")
+#             save_sequences(output_subdir, sequences_ids, sequences_decoded)
+
+#     if args.preload_dir and os.path.exists(os.path.join(output_subdir, "logprobs_target.json")):
+#         logging.info("Loading precomputed probabilities...")
+#         target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens = load_probs(
+#             output_subdir, device
+#         )
+#     else:
+#         with timer("Computing probabilities"):
+#             model, tokenizer = model_handler.get_model_and_tokenizer()
+#             input_ids = encode_input_text(tokenizer, args.text, device)
+
+#             (
+#                 target_logprobs,
+#                 proposal_logprobs,
+#                 target_logprobs_tokens,
+#                 proposal_logprobs_tokens,
+#                 target_normalize_constants,
+#                 proposal_normalize_constants,
+#                 target_normalize_constants_products,
+#                 proposal_normalize_constants_products,
+#             ) = get_sequences_probs(
+#                 model=model,
+#                 sequences_ids=sequences_ids,
+#                 top_k=args.top_k,
+#                 top_p=args.top_p,
+#                 pad_token_id=tokenizer.pad_token_id,
+#                 input_ids=input_ids,
+#                 batch_size=args.batch_size_prob,
+#             )
+
+#             logging.info("Saving the log probabilities...")
+#             save_probs(
+#                 output_subdir,
+#                 target_logprobs,
+#                 proposal_logprobs,
+#                 target_logprobs_tokens,
+#                 proposal_logprobs_tokens,
+#                 target_normalize_constants,
+#                 proposal_normalize_constants,
+#                 target_normalize_constants_products,
+#                 proposal_normalize_constants_products,
+#             )
+
+#             # logging.info("Plotting the log probabilities distributions...")
+#             # plot_distribution(target_logprobs, plot_type="histogram", prefix="target_logprobs",
+#             #                   show=False, output_dir=os.path.join(output_subdir, "plots"))
+#             # plot_distribution(proposal_logprobs, plot_type="histogram", prefix="proposal_logprobs",
+#             #                   show=False, output_dir=os.path.join(output_subdir, "plots"))
+
+#     sequences_ids = convert_tensor_to_list(sequences_ids)
+#     return sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
