@@ -185,8 +185,8 @@ def parse_args():
     parser.add_argument(
         "--actions",
         nargs="+",
-        default=["generate_seqs", "compute_probs", "run_mcmc", "run_eval"],
-        choices=["generate_seqs", "compute_probs", "run_mcmc", "run_eval"],
+        default=["generate_seqs", "compute_probs", "run_mcmc_eval"],
+        choices=["generate_seqs", "compute_probs", "run_mcmc_eval"],
         action=NonDefaultAction,
         help="Specify which actions to perform. Defaults to all actions.",
     )
@@ -293,14 +293,14 @@ def main():
     else:
         target_logprobs, proposal_logprobs = load_probs(output_subdir_seqs, args.device)
 
-    sequences_ids = convert_tensor_to_list(sequences_ids)
+    if "run_mcmc_eval" in args.actions:
+        sequences_ids = convert_tensor_to_list(sequences_ids)
 
-    # Prune sequences
-    sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = prune_sequences(
-        args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
-    )
+        # Prune sequences
+        sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs = prune_sequences(
+            args, sequences_ids, sequences_decoded, target_logprobs, proposal_logprobs
+        )
 
-    if "run_mcmc" in args.actions:
         for run_idx in range(args.eval_num_runs):
             seed = init_run(args, run_idx)
 
@@ -320,11 +320,6 @@ def main():
                 target_logprobs=bootstrapped_target_logprobs,  # Probabilities sampled from the global unnormalized distribution
                 proposal_logprobs=bootstrapped_proposal_logprobs,  # Probabilities sampled from the local normalized distribution
             )
-    # TODO elif load sequences
-
-    if "run_eval" in args.actions:
-        for run_idx in range(args.eval_num_runs):
-            seed = init_run(args, run_idx)
 
             eval_local_decoding_texts = bootstrapped_sequences_decoded[:eval_num_sequences]
             eval_global_decoding_texts = sampled_sequences_decoded[:eval_num_sequences]
