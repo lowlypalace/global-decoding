@@ -226,6 +226,7 @@ def create_output_subdir(args):
 
 def load_metadata(args, output_subdir):
     """Loads metadata from a previously saved run and sets args from it."""
+    logging.info(f"Loading metadata from {output_subdir} as args...")
     metadata = load_from_json(os.path.join(output_subdir, "metadata"))
     for key, value in metadata.items():
         if not hasattr(args, f"{key}_nondefault"):
@@ -258,8 +259,6 @@ def load_probs(output_subdir, device):
     return (
         torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_target"))).to(device),
         torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_proposal"))).to(device),
-        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_target_tokens"))).to(device),
-        torch.tensor(load_from_json(os.path.join(output_subdir, "logprobs_proposal_tokens"))).to(device),
     )
 
 
@@ -269,7 +268,6 @@ def main():
     setup_logging(log_file=os.path.join(output_subdir, "log.txt"))
 
     if args.preload_dir:
-        logging.info(f"Loading metadata from {output_subdir} as args...")
         load_metadata(args, output_subdir)
 
     logging.info(f"Args: {args}")
@@ -287,17 +285,13 @@ def main():
 
     if "generate_seqs" in args.actions:
         sequences_ids, sequences_decoded = generate_sequences(args, output_subdir_seqs)
-    elif args.preload_dir and os.path.exists(os.path.join(output_subdir_seqs, "sequences_ids.json")):
-        sequences_ids, sequences_decoded = load_sequences(output_subdir_seqs, args.device)
     else:
-        raise RuntimeError("Sequences must be either loaded or generated.")
+        sequences_ids, sequences_decoded = load_sequences(output_subdir_seqs, args.device)
 
     if "compute_probs" in args.actions:
         target_logprobs, proposal_logprobs = compute_probs(args, sequences_ids, output_subdir_seqs)
-    elif args.preload_dir and os.path.exists(os.path.join(output_subdir_seqs, "logprobs_target.json")):
-        target_logprobs, proposal_logprobs, _, _ = load_probs(output_subdir_seqs, args.device)
     else:
-        raise RuntimeError("Probabilities must be either loaded or generated.")
+        target_logprobs, proposal_logprobs = load_probs(output_subdir_seqs, args.device)
 
     sequences_ids = convert_tensor_to_list(sequences_ids)
 
