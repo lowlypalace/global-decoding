@@ -233,7 +233,7 @@ def load_metadata(args, output_subdir):
             setattr(args, key, value)
 
 
-def calculate_statistics(scores):
+def calculate_stats(scores):
     """Calculates the mean and confidence interval for a given list of scores."""
     mean = np.mean(scores)
     ci = stats.norm.interval(0.95, loc=mean, scale=stats.sem(scores))
@@ -340,10 +340,10 @@ def main():
             bleu_scores_global.append(bleu_global)
 
         results = {
-            "mauve_local": calculate_statistics(mauve_scores_local),
-            "mauve_global": calculate_statistics(mauve_scores_global),
-            "bleu_local": calculate_statistics(bleu_scores_local),
-            "bleu_global": calculate_statistics(bleu_scores_global),
+            "mauve_local": calculate_stats(mauve_scores_local),
+            "mauve_global": calculate_stats(mauve_scores_global),
+            "bleu_local": calculate_stats(bleu_scores_local),
+            "bleu_global": calculate_stats(bleu_scores_global),
         }
 
         save_to_json(results, "results", os.path.join(output_subdir, "eval"))
