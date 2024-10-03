@@ -49,8 +49,8 @@ class TestIntegration(unittest.TestCase):
             proposal_logprobs_custom,
             target_logprobs_tokens_custom,
             proposal_logprobs_tokens_custom,
-            target_normalize_constants,
-            proposal_normalize_constants,
+            _,
+            _,
             _,
             _
         ) = get_sequences_probs(
@@ -68,7 +68,7 @@ class TestIntegration(unittest.TestCase):
 
         # Get sequences and their probabilities using Hugging Face implementation
         (
-            sequences_ids_hf,
+            _,
             sequences_decoded_hf,
             target_logprobs_hf,
             proposal_logprobs_hf,
@@ -125,8 +125,8 @@ class TestIntegration(unittest.TestCase):
             proposal_logprobs_custom,
             target_logprobs_tokens_custom,
             proposal_logprobs_tokens_custom,
-            target_normalize_constants,
-            proposal_normalize_constants,
+            _,
+            _,
             _,
             _
         ) = get_sequences_probs(
@@ -186,7 +186,7 @@ class TestIntegration(unittest.TestCase):
         tokenizer, model, input_ids = setup()
 
         # Get sequences and their probabilities using custom implementation
-        sequences_ids, sequences_decoded = generate_sequences_util(
+        sequences_ids, _ = generate_sequences_util(
             model=model,
             tokenizer=tokenizer,
             input_ids=input_ids,
@@ -201,8 +201,8 @@ class TestIntegration(unittest.TestCase):
             proposal_logprobs,
             target_logprobs_tokens,
             proposal_logprobs_tokens,
-            target_normalize_constants,
-            proposal_normalize_constants,
+            _,
+            _,
             _,
             _
         ) = get_sequences_probs(
