@@ -115,9 +115,14 @@ def compute_probs(args, sequences_ids, output_subdir):
 
     with timer("Computing probabilities"):
         (
-            target_logprobs, proposal_logprobs, target_logprobs_tokens, proposal_logprobs_tokens,
-            target_normalize_constants, proposal_normalize_constants,
-            target_normalize_constants_products, proposal_normalize_constants_products
+            target_logprobs,
+            proposal_logprobs,
+            target_logprobs_tokens,
+            proposal_logprobs_tokens,
+            target_normalize_constants,
+            proposal_normalize_constants,
+            target_normalize_constants_products,
+            proposal_normalize_constants_products,
         ) = get_sequences_probs(
             model=model,
             sequences_ids=sequences_ids,
@@ -137,6 +142,6 @@ def compute_probs(args, sequences_ids, output_subdir):
         target_normalize_constants,
         proposal_normalize_constants,
         target_normalize_constants_products,
-        proposal_normalize_constants_products
+        proposal_normalize_constants_products,
     )
     return target_logprobs, proposal_logprobs
