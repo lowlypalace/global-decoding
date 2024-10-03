@@ -185,18 +185,8 @@ def parse_args():
     parser.add_argument(
         "--actions",
         nargs="+",
-        default=[
-            "generate_seqs",
-            "compute_probs",
-            "run_mcmc",
-            "run_eval"
-        ],
-        choices=[
-            "generate_seqs",
-            "compute_probs",
-            "run_mcmc",
-            "run_eval"
-        ],
+        default=["generate_seqs", "compute_probs", "run_mcmc", "run_eval"],
+        choices=["generate_seqs", "compute_probs", "run_mcmc", "run_eval"],
         action=NonDefaultAction,
         help="Specify which actions to perform. Defaults to all actions.",
     )
