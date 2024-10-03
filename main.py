@@ -323,8 +323,8 @@ def main():
                 output_subdir=os.path.join(output_subdir_mcmc, str(seed)),
                 sequences_ids=bootstrapped_sequences_ids,
                 sequences_decoded=bootstrapped_sequences_decoded,
-                target_logprobs=bootstrapped_target_logprobs,  # target_logpropbs are probabilities sampled from the global unnormalized distribution
-                proposal_logprobs=bootstrapped_proposal_logprobs,  # proposal_logprobs are probabilities sampled from the local normalized distribution
+                target_logprobs=bootstrapped_target_logprobs, # Probabilities sampled from the global unnormalized distribution
+                proposal_logprobs=bootstrapped_proposal_logprobs, # Probabilities sampled from the local normalized distribution
             )
     # TODO elif load sequences
 
@@ -338,8 +338,8 @@ def main():
             mauve_results_local, mauve_results_global, bleu_local, bleu_global = evaluate(
                 args,
                 output_subdir=os.path.join(output_subdir_eval, str(seed)),
-                eval_local_decoding_texts=eval_local_decoding_texts,  # eval_local_decoding_texts are the sequences sampled from the local normalized distribution
-                eval_global_decoding_texts=eval_global_decoding_texts,  # eval_global_decoding_texts are the sequences sampled from the global unnormalized distribution
+                eval_local_decoding_texts=eval_local_decoding_texts,  # Sequences sampled from the local normalized distribution
+                eval_global_decoding_texts=eval_global_decoding_texts,  # Sequences sampled from the global unnormalized distribution
                 eval_num_sequences=eval_num_sequences,
                 seed=seed,
             )
