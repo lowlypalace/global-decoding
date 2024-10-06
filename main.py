@@ -18,6 +18,7 @@ from src.eval import evaluate
 
 class NonDefaultAction(argparse.Action):
     """Custom action to track if an argument was provided via command line."""
+
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, self.dest, values)
         setattr(namespace, f"{self.dest}_nondefault", True)
