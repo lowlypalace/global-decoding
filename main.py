@@ -289,6 +289,7 @@ def main():
         sequences_ids, sequences_decoded = load_sequences(output_subdir_seqs, args.device)
 
     if "compute_probs" in args.actions:
+        # TODO: Move probs to /probs
         target_logprobs, proposal_logprobs = compute_probs(args, sequences_ids, output_subdir_seqs)
     else:
         target_logprobs, proposal_logprobs = load_probs(output_subdir_seqs, args.device)
@@ -345,7 +346,7 @@ def main():
             "bleu_global": calculate_stats(bleu_scores_global),
         }
 
-        save_to_json(results, "results", os.path.join(output_subdir, "eval"))
+        save_to_json(results, "results", output_subdir_eval)
         logging.info(f"Results saved: {results}")
 
 
