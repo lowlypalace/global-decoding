@@ -12,6 +12,10 @@ def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
     logprobs_proposal = []
     proposal_normalize_constans = []
     target_normalize_constants = []
+    logprobs_proposal_tokens = []
+    logprobs_target_tokens = []
+    # proposal_normalize_constants_products = []
+    # target_normalize_constants_products = []
 
     input_dir = os.path.join(input_dir, model_name)
 
@@ -67,6 +71,27 @@ def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
             ) as f:
                 target_normalize_constants.extend(json.load(f))
 
+            with open(
+                os.path.join(input_dir, directory, "sequences", "logprobs_proposal_tokens.json"),
+                "r",
+            ) as f:
+                logprobs_proposal_tokens.extend(json.load(f))
+            with open(
+                os.path.join(input_dir, directory, "sequences", "logprobs_target_tokens.json"),
+                "r",
+            ) as f:
+                logprobs_target_tokens.extend(json.load(f))
+            # with open(
+            #     os.path.join(input_dir, directory, "sequences", "proposal_normalize_constants_products.json"),
+            #     "r",
+            # ) as f:
+            #     proposal_normalize_constants_products.extend(json.load(f))
+            # with open(
+            #     os.path.join(input_dir, directory, "sequences", "target_normalize_constants_products.json"),
+            #     "r",
+            # ) as f:
+            #     target_normalize_constants_products.extend(json.load(f))
+
     # For debugging
     print(f"Found {len(sequences_ids)} sequences ids")
     print(f"Found {len(sequences_decoded)} decoded sequences")
@@ -74,7 +99,6 @@ def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
     print(f"Found {len(logprobs_proposal)} proposal logprobs")
     print(f"Found {len(proposal_normalize_constans)} proposal normalize constants")
     print(f"Found {len(target_normalize_constants)} target normalize constants")
-    # TODO: Extend
 
     return (
         sequences_ids,
@@ -83,6 +107,10 @@ def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
         logprobs_target,
         proposal_normalize_constans,
         target_normalize_constants,
+        logprobs_proposal_tokens,
+        logprobs_target_tokens,
+        # proposal_normalize_constants_products,
+        # target_normalize_constants_products,
         metadata,
     )
 
@@ -96,6 +124,10 @@ def save_merged_sequences(
     logprobs_target,
     proposal_normalize_constants,
     target_normalize_constants,
+    logprobs_proposal_tokens,
+    logprobs_target_tokens,
+    # proposal_normalize_constants_products,
+    # target_normalize_constants_products,
     metadata,
 ):
     # Create the output directory
@@ -123,6 +155,13 @@ def save_merged_sequences(
 
     with open(os.path.join(sequences_dir, "target_normalize_constants.json"), "w") as f:
         json.dump(target_normalize_constants, f)
+
+    with open(os.path.join(sequences_dir, "logprobs_proposal_tokens.json"), "w") as f:
+        json.dump(logprobs_proposal_tokens, f)
+
+    with open(os.path.join(sequences_dir, "logprobs_target_tokens.json"), "w") as f:
+        json.dump(logprobs_target_tokens, f)
+
 
     with open(os.path.join(output_dir, "metadata.json"), "w") as f:
         json.dump(metadata, f, indent=4)
@@ -182,6 +221,10 @@ def main():
         logprobs_target,
         proposal_normalize_constants,
         target_normalize_constants,
+        logprobs_proposal_tokens,
+        logprobs_target_tokens,
+        # proposal_normalize_constants_products,
+        # target_normalize_constants_products,
         metadata,
     ) = find_sequences_and_probs(args.input_dir, args.top_k, args.top_p, args.model_name)
 
@@ -195,6 +238,10 @@ def main():
         logprobs_target,
         proposal_normalize_constants,
         target_normalize_constants,
+        logprobs_proposal_tokens,
+        logprobs_target_tokens,
+        # proposal_normalize_constants_products,
+        # target_normalize_constants_products,
         metadata,
     )
 
