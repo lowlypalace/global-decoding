@@ -281,6 +281,7 @@ def main():
 
     output_subdir_seqs = os.path.join(output_subdir, "sequences")
     output_subdir_mcmc = os.path.join(output_subdir, "mcmc")
+    output_subdir_probs = os.path.join(output_subdir, "probs")
     output_subdir_eval = os.path.join(output_subdir, "eval")
 
     if "generate_seqs" in args.actions:
@@ -289,10 +290,9 @@ def main():
         sequences_ids, sequences_decoded = load_sequences(output_subdir_seqs, args.device)
 
     if "compute_probs" in args.actions:
-        # TODO: Move probs to /probs
-        target_logprobs, proposal_logprobs = compute_probs(args, sequences_ids, output_subdir_seqs)
+        target_logprobs, proposal_logprobs = compute_probs(args, sequences_ids, output_subdir_probs)
     else:
-        target_logprobs, proposal_logprobs = load_probs(output_subdir_seqs, args.device)
+        target_logprobs, proposal_logprobs = load_probs(output_subdir_probs, args.device)
 
     if "run_mcmc_eval" in args.actions:
         sequences_ids = convert_tensor_to_list(sequences_ids)
