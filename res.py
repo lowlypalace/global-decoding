@@ -17,7 +17,6 @@ def save_results(top_k_df, top_p_df, model_name, results_dir):
     top_p_df.to_csv(os.path.join(results_dir, f"top_p_{model_name}.csv"), sep="\t")
 
 
-# Define the function to parse command-line arguments
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate results for the experiments.")
 
@@ -28,7 +27,7 @@ def parse_args():
             "pythia-70m",
             "pythia-410m",
             "pythia-1.4b",
-            # "pythia-2.8b",
+            "pythia-2.8b",
         ],
         choices=[
             "gpt2",
