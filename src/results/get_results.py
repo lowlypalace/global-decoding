@@ -18,7 +18,7 @@ def get_results(model_name):
 
     for sub_dir in os.listdir(base_dir):
         sequences_dir = os.path.join(base_dir, sub_dir, "sequences")
-        mcmc_dir = os.path.join(base_dir, sub_dir, "mcmc")
+        mcmc_dir = os.path.join(base_dir, sub_dir, "mcmc", "0")
         eval_dir = os.path.join(base_dir, sub_dir, "eval")
 
         if os.path.exists(sequences_dir) and os.path.exists(mcmc_dir):
@@ -35,26 +35,25 @@ def get_results(model_name):
                     top_p = 1.0
 
                 ##################
-                # MAUVE
+                # Eval Results (MAUVE, BLEU)
                 ##################
+                with open(os.path.join(eval_dir, "results.json"), "r") as f:
+                    eval_results = json.load(f)
 
-                with open(os.path.join(eval_dir, "mauve_results_global.json"), "r") as f:
-                    global_result = json.load(f)
-                global_mauve = global_result.get("mauve")
+                mauve_local_mean = eval_results["mauve_local"]["mean"]
+                mauve_global_mean = eval_results["mauve_global"]["mean"]
+                bleu_local_mean = eval_results["bleu_local"]["mean"]
+                bleu_global_mean = eval_results["bleu_global"]["mean"]
 
-                # Load local MAUVE result
-                with open(os.path.join(eval_dir, "mauve_results_local.json"), "r") as f:
-                    local_result = json.load(f)
-                local_mauve = local_result.get("mauve")
+                mauve_local_ci = eval_results["mauve_local"]["ci"]
+                mauve_global_ci = eval_results["mauve_global"]["ci"]
+                bleu_local_ci = eval_results["bleu_local"]["ci"]
+                bleu_global_ci = eval_results["bleu_global"]["ci"]
 
-                ##################
-                # BLEU
-                ##################
-
-                with open(os.path.join(eval_dir, "self_bleu_results.json"), "r") as f:
-                    bleu = json.load(f)
-                local_bleu = bleu.get("local_self_bleu")
-                global_bleu = bleu.get("global_self_bleu")
+                mauve_local_scores = eval_results["mauve_local"]["scores"]
+                mauve_global_scores = eval_results["mauve_global"]["scores"]
+                bleu_local_scores = eval_results["bleu_local"]["scores"]
+                bleu_global_scores = eval_results["bleu_global"]["scores"]
 
                 ##################
                 # Sequences Lengths
@@ -108,21 +107,29 @@ def get_results(model_name):
                 ###################
                 # Decoding constants:
                 ###################
-                with open(
-                    os.path.join(sequences_dir, "proposal_normalize_constants_products.json"),
-                    "r",
-                ) as f:
-                    constants_products = json.load(f)
+                constants_products = ""
+                constants_file_path = os.path.join(sequences_dir, "proposal_normalize_constants_products.json")
+                if os.path.exists(constants_file_path):
+                    with open(constants_file_path, "r") as f:
+                        constants_products = json.load(f)
 
                 results.append(
                     {
                         "sub_dir": sub_dir,
                         "top_k": top_k,
                         "top_p": top_p,
-                        "mauve_local": local_mauve,
-                        "mauve_global": global_mauve,
-                        "bleu_local": local_bleu,
-                        "bleu_global": global_bleu,
+                        "mauve_local_mean": mauve_local_mean,
+                        "mauve_global_mean": mauve_global_mean,
+                        "bleu_local_mean": bleu_local_mean,
+                        "bleu_global_mean": bleu_global_mean,
+                        "mauve_local_ci": mauve_local_ci,
+                        "mauve_global_ci": mauve_global_ci,
+                        "bleu_local_ci": bleu_local_ci,
+                        "bleu_global_ci": bleu_global_ci,
+                        "mauve_local_scores": mauve_local_scores,
+                        "mauve_global_scores": mauve_global_scores,
+                        "bleu_local_scores": bleu_local_scores,
+                        "bleu_global_scores": bleu_global_scores,
                         "log_likelihood_local": log_likelihood_local,
                         "log_likelihood_global": log_likelihood_global,
                         "avg_length_local": avg_length_sequences,

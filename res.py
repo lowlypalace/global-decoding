@@ -89,7 +89,7 @@ def main():
     # Plot the results
     logging.info("Plotting results...")
     plot_sequences_lengths(results, results_dir)
-    plot_average_log_likelihood(results, results_dir)
+    # plot_average_log_likelihood(results, results_dir)
     plot_mauve_evaluation_metrics(results, model_names, results_dir)
     plot_bleu_evaluation_metrics(results, model_names, results_dir)
 

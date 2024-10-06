@@ -248,8 +248,8 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
         add_traces(
             fig_top_k,
             top_k_values,
-            top_k_df["bleu_local"].tolist(),
-            top_k_df["bleu_global"].tolist(),
+            top_k_df["bleu_local_mean"].tolist(),
+            top_k_df["bleu_global_mean"].tolist(),
             local_color,
             global_color,
             1,
@@ -258,8 +258,8 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
         add_traces(
             fig_top_p,
             top_p_values,
-            top_p_df["bleu_local"].tolist(),
-            top_p_df["bleu_global"].tolist(),
+            top_p_df["bleu_local_mean"].tolist(),
+            top_p_df["bleu_global_mean"].tolist(),
             local_color,
             global_color,
             1,
@@ -269,12 +269,12 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
     max_top_k_score = max(
         score
         for model in results.values()
-        for score in model["top_k"]["bleu_local"].tolist() + model["top_k"]["bleu_global"].tolist()
+        for score in model["top_k"]["bleu_local_mean"].tolist() + model["top_k"]["bleu_global_mean"].tolist()
     )
     max_top_p_score = max(
         score
         for model in results.values()
-        for score in model["top_p"]["bleu_local"].tolist() + model["top_p"]["bleu_global"].tolist()
+        for score in model["top_p"]["bleu_local_mean"].tolist() + model["top_p"]["bleu_global_mean"].tolist()
     )
 
     # Add 10% padding to the maximum score
@@ -321,8 +321,8 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
         add_traces(
             fig_top_k,
             top_k_values,
-            top_k_df["mauve_local"].tolist(),
-            top_k_df["mauve_global"].tolist(),
+            top_k_df["mauve_local_mean"].tolist(),
+            top_k_df["mauve_global_mean"].tolist(),
             local_color,
             global_color,
             1,
@@ -331,8 +331,8 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
         add_traces(
             fig_top_p,
             top_p_values,
-            top_p_df["mauve_local"].tolist(),
-            top_p_df["mauve_global"].tolist(),
+            top_p_df["mauve_local_mean"].tolist(),
+            top_p_df["mauve_global_mean"].tolist(),
             local_color,
             global_color,
             1,
@@ -342,12 +342,12 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
     max_top_k_score = max(
         score
         for model in results.values()
-        for score in model["top_k"]["mauve_local"].tolist() + model["top_k"]["mauve_global"].tolist()
+        for score in model["top_k"]["mauve_local_mean"].tolist() + model["top_k"]["mauve_global_mean"].tolist()
     )
     max_top_p_score = max(
         score
         for model in results.values()
-        for score in model["top_p"]["mauve_local"].tolist() + model["top_p"]["mauve_global"].tolist()
+        for score in model["top_p"]["mauve_local_mean"].tolist() + model["top_p"]["mauve_global_mean"].tolist()
     )
 
     update_fig(fig_top_k, max_top_k_score, "Top-k values", "MAUVE Score")
