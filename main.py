@@ -274,15 +274,15 @@ def main():
     save_args(args, output_subdir)
     set_seed(args.seed)
 
-    mauve_scores_local, mauve_scores_global = [], []
-    bleu_scores_local, bleu_scores_global = [], []
-
-    eval_num_sequences = args.eval_num_sequences or args.mcmc_num_samples
-
     output_subdir_seqs = os.path.join(output_subdir, "sequences")
     output_subdir_mcmc = os.path.join(output_subdir, "mcmc")
     output_subdir_probs = os.path.join(output_subdir, "probs")
     output_subdir_eval = os.path.join(output_subdir, "eval")
+
+    mauve_scores_local, mauve_scores_global = [], []
+    bleu_scores_local, bleu_scores_global = [], []
+
+    eval_num_sequences = args.eval_num_sequences or args.mcmc_num_samples
 
     if "generate_seqs" in args.actions:
         sequences_ids, sequences_decoded = generate_sequences(args, output_subdir_seqs)
