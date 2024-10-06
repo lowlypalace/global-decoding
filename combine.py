@@ -99,7 +99,7 @@ def save_merged_sequences(
     metadata,
 ):
     # Create the output directory
-    output_dir = os.path.join(input_dir, "merged", model_name, get_unique_name)
+    output_dir = os.path.join(input_dir, "merged", model_name, get_unique_name())
     os.makedirs(output_dir, exist_ok=True)
 
     sequences_dir = os.path.join(output_dir, "sequences")
