@@ -8,6 +8,7 @@ def get_unique_name(length=3):
     """Generates a unique hex alphanumeric string."""
     return secrets.token_hex(length)
 
+
 def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
     sequences_ids = []
     sequences_decoded = []
@@ -19,9 +20,7 @@ def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
     input_dir = os.path.join(input_dir, model_name)
 
     # List all directories in the input directory
-    directories = [
-        d for d in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, d))
-    ]
+    directories = [d for d in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, d))]
 
     print(f"Top-k: {top_k}, Top-p: {top_p}")
 
@@ -32,11 +31,7 @@ def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
         with open(metadata_file, "r") as f:
             metadata = json.load(f)
 
-        if (
-            metadata["top_k"] == top_k
-            and metadata["top_p"] == top_p
-            and metadata["model_name"] == model_name
-        ):
+        if metadata["top_k"] == top_k and metadata["top_p"] == top_p and metadata["model_name"] == model_name:
             # For debugging
             print(f"Found matching directory: {directory}")
 
@@ -46,9 +41,7 @@ def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
             ) as f:
                 sequences_ids.extend(json.load(f))
             with open(
-                os.path.join(
-                    input_dir, directory, "sequences", "sequences_decoded.json"
-                ),
+                os.path.join(input_dir, directory, "sequences", "sequences_decoded.json"),
                 "r",
             ) as f:
                 sequences_decoded.extend(json.load(f))
@@ -58,9 +51,7 @@ def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
             ) as f:
                 logprobs_target.extend(json.load(f))
             with open(
-                os.path.join(
-                    input_dir, directory, "sequences", "logprobs_proposal.json"
-                ),
+                os.path.join(input_dir, directory, "sequences", "logprobs_proposal.json"),
                 "r",
             ) as f:
                 logprobs_proposal.extend(json.load(f))
@@ -75,9 +66,7 @@ def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
             ) as f:
                 proposal_normalize_constans.extend(json.load(f))
             with open(
-                os.path.join(
-                    input_dir, directory, "sequences", "target_normalize_constants.json"
-                ),
+                os.path.join(input_dir, directory, "sequences", "target_normalize_constants.json"),
                 "r",
             ) as f:
                 target_normalize_constants.extend(json.load(f))
@@ -98,7 +87,7 @@ def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
         logprobs_target,
         proposal_normalize_constans,
         target_normalize_constants,
-        metadata
+        metadata,
     )
 
 
@@ -111,10 +100,10 @@ def save_merged_sequences(
     logprobs_target,
     proposal_normalize_constants,
     target_normalize_constants,
-    metadata
+    metadata,
 ):
     # Create the output directory
-    output_dir = os.path.join(input_dir, model_name, "merged", model_name)
+    output_dir = os.path.join(input_dir, "merged", model_name)
     os.makedirs(output_dir, exist_ok=True)
 
     sequences_dir = os.path.join(output_dir, "sequences")
@@ -139,16 +128,8 @@ def save_merged_sequences(
     with open(os.path.join(sequences_dir, "target_normalize_constants.json"), "w") as f:
         json.dump(target_normalize_constants, f)
 
-    # Save metadata
-    # metadata = {
-    #     "model_name": model_name,
-    #     "num_sequences": len(sequences_ids),
-    # }
-
-    # Save the metadata from the last directory
     with open(os.path.join(output_dir, "metadata.json"), "w") as f:
-        json.dump(metadata, f)
-
+        json.dump(metadata, f, indent=4)
 
     print(f"Saved merged sequences and metadata to {output_dir}")
 
@@ -198,9 +179,15 @@ def main():
     args = parser.parse_args()
 
     # Find and merge sequences
-    sequences_ids, sequences_decoded, logprobs_proposal, logprobs_target, proposal_normalize_constants, target_normalize_constants, metadata = find_sequences_and_probs(
-        args.input_dir, args.top_k, args.top_p, args.model_name
-    )
+    (
+        sequences_ids,
+        sequences_decoded,
+        logprobs_proposal,
+        logprobs_target,
+        proposal_normalize_constants,
+        target_normalize_constants,
+        metadata,
+    ) = find_sequences_and_probs(args.input_dir, args.top_k, args.top_p, args.model_name)
 
     # Save the merged sequences and metadata
     save_merged_sequences(
@@ -211,8 +198,8 @@ def main():
         logprobs_proposal,
         logprobs_target,
         proposal_normalize_constants,
-        metadata,
         target_normalize_constants,
+        metadata,
     )
 
 
