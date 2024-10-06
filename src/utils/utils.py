@@ -6,6 +6,7 @@ import time
 import logging.handlers
 from datetime import datetime
 import random
+import secrets
 
 import torch
 import numpy as np
@@ -130,3 +131,7 @@ def convert_tensor_to_list(data):
         return [convert_tensor_to_list(item) for item in data]
     else:
         raise TypeError("Input must be a torch.Tensor or a list of torch.Tensors")
+
+def get_unique_name(length=3):
+    """Generates a unique hex alphanumeric string."""
+    return secrets.token_hex(length)

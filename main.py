@@ -7,7 +7,7 @@ import random
 from scipy import stats
 import numpy as np
 
-from src.utils.utils import setup_logging, save_args, set_seed, load_from_json, save_to_json, convert_tensor_to_list
+from src.utils.utils import setup_logging, save_args, set_seed, load_from_json, save_to_json, convert_tensor_to_list, get_unique_name
 from src.utils.validate import validate_args
 
 
@@ -211,10 +211,6 @@ def parse_args():
 
     return args
 
-
-def get_unique_name(length=3):
-    """Generates a unique hex alphanumeric string."""
-    return secrets.token_hex(length)
 
 
 def create_output_subdir(args):

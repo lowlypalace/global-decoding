@@ -1,12 +1,8 @@
 import os
 import json
-import secrets
 import argparse
 
-
-def get_unique_name(length=3):
-    """Generates a unique hex alphanumeric string."""
-    return secrets.token_hex(length)
+from src.utils.utils import get_unique_name
 
 
 def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
@@ -103,7 +99,7 @@ def save_merged_sequences(
     metadata,
 ):
     # Create the output directory
-    output_dir = os.path.join(input_dir, "merged", model_name)
+    output_dir = os.path.join(input_dir, "merged", model_name, get_unique_name)
     os.makedirs(output_dir, exist_ok=True)
 
     sequences_dir = os.path.join(output_dir, "sequences")
