@@ -218,7 +218,6 @@ def add_traces(fig, values, local_scores, global_scores, local_color, global_col
     )
 
 
-
 def plot_mauve_evaluation_metrics(results, model_names, results_dir):
     local_color = "#006795"
     global_color = "#009B55"
@@ -363,7 +362,9 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
     fig_top_p.write_html(os.path.join(results_dir, "bleu_top_p.html"), "html")
 
 
-def add_traces_with_ci(fig, x_values, y_mean_local, y_mean_global, ci_local, ci_global, local_color, global_color, row, col):
+def add_traces_with_ci(
+    fig, x_values, y_mean_local, y_mean_global, ci_local, ci_global, local_color, global_color, row, col
+):
     # Add mean traces
     fig.add_trace(
         go.Scatter(
@@ -372,7 +373,7 @@ def add_traces_with_ci(fig, x_values, y_mean_local, y_mean_global, ci_local, ci_
             mode="lines",
             line=dict(color=local_color),
             name="Local Decoding",
-            showlegend=True if col == 1 else False  # Only show legend once
+            showlegend=True if col == 1 else False,  # Only show legend once
         ),
         row=row,
         col=col,
@@ -385,7 +386,7 @@ def add_traces_with_ci(fig, x_values, y_mean_local, y_mean_global, ci_local, ci_
             mode="lines",
             line=dict(color=global_color),
             name="Global Decoding",
-            showlegend=True if col == 1 else False  # Only show legend once
+            showlegend=True if col == 1 else False,  # Only show legend once
         ),
         row=row,
         col=col,
@@ -426,7 +427,6 @@ def add_traces_with_ci(fig, x_values, y_mean_local, y_mean_global, ci_local, ci_
         row=row,
         col=col,
     )
-
 
 
 def plot_histograms(results, results_dir):

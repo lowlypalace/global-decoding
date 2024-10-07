@@ -165,7 +165,6 @@ def save_merged_sequences(
     with open(os.path.join(sequences_dir, "logprobs_target_tokens.json"), "w") as f:
         json.dump(logprobs_target_tokens, f)
 
-
     with open(os.path.join(output_dir, "metadata.json"), "w") as f:
         json.dump(metadata, f, indent=4)
 
