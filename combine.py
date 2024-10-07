@@ -81,6 +81,9 @@ def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
                 "r",
             ) as f:
                 logprobs_target_tokens.extend(json.load(f))
+
+            metadata_to_save = metadata
+
             # with open(
             #     os.path.join(input_dir, directory, "sequences", "proposal_normalize_constants_products.json"),
             #     "r",
@@ -111,7 +114,7 @@ def find_sequences_and_probs(input_dir, top_k, top_p, model_name):
         logprobs_target_tokens,
         # proposal_normalize_constants_products,
         # target_normalize_constants_products,
-        metadata,
+        metadata_to_save,
     )
 
 
