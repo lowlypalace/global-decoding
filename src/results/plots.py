@@ -218,81 +218,8 @@ def add_traces(fig, values, local_scores, global_scores, local_color, global_col
     )
 
 
-def plot_bleu_evaluation_metrics(results, model_names, results_dir):
-
-    local_color = "#006795"
-    global_color = "#009B55"
-
-    top_k_values = results[model_names[0]]["top_k"]["top_k"].tolist()
-    top_p_values = results[model_names[0]]["top_p"]["top_p"].tolist()
-
-    fig_top_k = make_subplots(
-        rows=1,
-        cols=4,
-        shared_xaxes=True,
-        horizontal_spacing=0.035,
-        subplot_titles=tuple(model_names),
-    )
-    fig_top_p = make_subplots(
-        rows=1,
-        cols=4,
-        shared_xaxes=True,
-        horizontal_spacing=0.035,
-        subplot_titles=tuple(model_names),
-    )
-
-    for idx, model_name in enumerate(results.keys(), start=1):
-        top_k_df = results[model_name]["top_k"]
-        top_p_df = results[model_name]["top_p"]
-
-        add_traces(
-            fig_top_k,
-            top_k_values,
-            top_k_df["bleu_local_mean"].tolist(),
-            top_k_df["bleu_global_mean"].tolist(),
-            local_color,
-            global_color,
-            1,
-            idx,
-        )
-        add_traces(
-            fig_top_p,
-            top_p_values,
-            top_p_df["bleu_local_mean"].tolist(),
-            top_p_df["bleu_global_mean"].tolist(),
-            local_color,
-            global_color,
-            1,
-            idx,
-        )
-
-    max_top_k_score = max(
-        score
-        for model in results.values()
-        for score in model["top_k"]["bleu_local_mean"].tolist() + model["top_k"]["bleu_global_mean"].tolist()
-    )
-    max_top_p_score = max(
-        score
-        for model in results.values()
-        for score in model["top_p"]["bleu_local_mean"].tolist() + model["top_p"]["bleu_global_mean"].tolist()
-    )
-
-    # Add 10% padding to the maximum score
-    max_top_k_score = max_top_k_score + 0.1 * max_top_k_score
-    max_top_p_score = max_top_p_score + 0.1 * max_top_p_score
-
-    update_fig(fig_top_k, max_top_k_score, "Top-k values", "Self-BLEU Score")
-    update_fig(fig_top_p, max_top_p_score, "Top-p values", "Self-BLEU Score")
-
-    fig_top_k.write_image(os.path.join(results_dir, "bleu_top_k.pdf"), "pdf")
-    fig_top_k.write_html(os.path.join(results_dir, "bleu_top_k.html"), "html")
-
-    fig_top_p.write_image(os.path.join(results_dir, "bleu_top_p.pdf"), "pdf")
-    fig_top_p.write_html(os.path.join(results_dir, "bleu_top_p.html"), "html")
-
 
 def plot_mauve_evaluation_metrics(results, model_names, results_dir):
-
     local_color = "#006795"
     global_color = "#009B55"
 
@@ -318,21 +245,25 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
         top_k_df = results[model_name]["top_k"]
         top_p_df = results[model_name]["top_p"]
 
-        add_traces(
+        add_traces_with_ci(
             fig_top_k,
             top_k_values,
             top_k_df["mauve_local_mean"].tolist(),
             top_k_df["mauve_global_mean"].tolist(),
+            top_k_df["mauve_local_ci"].tolist(),
+            top_k_df["mauve_global_ci"].tolist(),
             local_color,
             global_color,
             1,
             idx,
         )
-        add_traces(
+        add_traces_with_ci(
             fig_top_p,
             top_p_values,
             top_p_df["mauve_local_mean"].tolist(),
             top_p_df["mauve_global_mean"].tolist(),
+            top_p_df["mauve_local_ci"].tolist(),
+            top_p_df["mauve_global_ci"].tolist(),
             local_color,
             global_color,
             1,
@@ -340,12 +271,12 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
         )
 
     max_top_k_score = max(
-        score
+        score + 0.1 * score  # Adding 10% padding for the upper bound
         for model in results.values()
         for score in model["top_k"]["mauve_local_mean"].tolist() + model["top_k"]["mauve_global_mean"].tolist()
     )
     max_top_p_score = max(
-        score
+        score + 0.1 * score  # Adding 10% padding for the upper bound
         for model in results.values()
         for score in model["top_p"]["mauve_local_mean"].tolist() + model["top_p"]["mauve_global_mean"].tolist()
     )
@@ -358,6 +289,144 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
 
     fig_top_p.write_image(os.path.join(results_dir, "mauve_top_p.pdf"), "pdf")
     fig_top_p.write_html(os.path.join(results_dir, "mauve_top_p.html"), "html")
+
+
+def plot_bleu_evaluation_metrics(results, model_names, results_dir):
+    local_color = "#006795"
+    global_color = "#009B55"
+
+    top_k_values = results[model_names[0]]["top_k"]["top_k"].tolist()
+    top_p_values = results[model_names[0]]["top_p"]["top_p"].tolist()
+
+    fig_top_k = make_subplots(
+        rows=1,
+        cols=4,
+        shared_xaxes=True,
+        horizontal_spacing=0.035,
+        subplot_titles=tuple(model_names),
+    )
+    fig_top_p = make_subplots(
+        rows=1,
+        cols=4,
+        shared_xaxes=True,
+        horizontal_spacing=0.035,
+        subplot_titles=tuple(model_names),
+    )
+
+    for idx, model_name in enumerate(results.keys(), start=1):
+        top_k_df = results[model_name]["top_k"]
+        top_p_df = results[model_name]["top_p"]
+
+        add_traces_with_ci(
+            fig_top_k,
+            top_k_values,
+            top_k_df["bleu_local_mean"].tolist(),
+            top_k_df["bleu_global_mean"].tolist(),
+            top_k_df["bleu_local_ci"].tolist(),
+            top_k_df["bleu_global_ci"].tolist(),
+            local_color,
+            global_color,
+            1,
+            idx,
+        )
+        add_traces_with_ci(
+            fig_top_p,
+            top_p_values,
+            top_p_df["bleu_local_mean"].tolist(),
+            top_p_df["bleu_global_mean"].tolist(),
+            top_p_df["bleu_local_ci"].tolist(),
+            top_p_df["bleu_global_ci"].tolist(),
+            local_color,
+            global_color,
+            1,
+            idx,
+        )
+
+    max_top_k_score = max(
+        score + 0.1 * score  # Adding 10% padding for the upper bound
+        for model in results.values()
+        for score in model["top_k"]["bleu_local_mean"].tolist() + model["top_k"]["bleu_global_mean"].tolist()
+    )
+    max_top_p_score = max(
+        score + 0.1 * score  # Adding 10% padding for the upper bound
+        for model in results.values()
+        for score in model["top_p"]["bleu_local_mean"].tolist() + model["top_p"]["bleu_global_mean"].tolist()
+    )
+
+    update_fig(fig_top_k, max_top_k_score, "Top-k values", "Self-BLEU Score")
+    update_fig(fig_top_p, max_top_p_score, "Top-p values", "Self-BLEU Score")
+
+    fig_top_k.write_image(os.path.join(results_dir, "bleu_top_k.pdf"), "pdf")
+    fig_top_k.write_html(os.path.join(results_dir, "bleu_top_k.html"), "html")
+
+    fig_top_p.write_image(os.path.join(results_dir, "bleu_top_p.pdf"), "pdf")
+    fig_top_p.write_html(os.path.join(results_dir, "bleu_top_p.html"), "html")
+
+
+def add_traces_with_ci(fig, x_values, y_mean_local, y_mean_global, ci_local, ci_global, local_color, global_color, row, col):
+    # Add mean traces
+    fig.add_trace(
+        go.Scatter(
+            x=x_values,
+            y=y_mean_local,
+            mode="lines",
+            line=dict(color=local_color),
+            name="Local Decoding",
+            showlegend=True if col == 1 else False  # Only show legend once
+        ),
+        row=row,
+        col=col,
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=x_values,
+            y=y_mean_global,
+            mode="lines",
+            line=dict(color=global_color),
+            name="Global Decoding",
+            showlegend=True if col == 1 else False  # Only show legend once
+        ),
+        row=row,
+        col=col,
+    )
+
+    # Add confidence interval traces
+    y_local_upper = [ci[1] for ci in ci_local]
+    y_local_lower = [ci[0] for ci in ci_local]
+    y_global_upper = [ci[1] for ci in ci_global]
+    y_global_lower = [ci[0] for ci in ci_global]
+
+    # Fill for local mean
+    fig.add_trace(
+        go.Scatter(
+            x=x_values + x_values[::-1],
+            y=y_local_upper + y_local_lower[::-1],
+            fill="toself",
+            fillcolor="rgba(0, 103, 149, 0.2)",
+            line=dict(color="rgba(255, 255, 255, 0)"),
+            hoverinfo="skip",
+            showlegend=False,
+        ),
+        row=row,
+        col=col,
+    )
+
+    # Fill for global mean
+    fig.add_trace(
+        go.Scatter(
+            x=x_values + x_values[::-1],
+            y=y_global_upper + y_global_lower[::-1],
+            fill="toself",
+            fillcolor="rgba(0, 155, 85, 0.2)",
+            line=dict(color="rgba(255, 255, 255, 0)"),
+            hoverinfo="skip",
+            showlegend=False,
+        ),
+        row=row,
+        col=col,
+    )
+
 
 
 def plot_histograms(results, results_dir):
