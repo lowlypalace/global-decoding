@@ -3,12 +3,18 @@ import os
 import random
 import logging
 import pandas as pd
-
+import numpy as np
+from scipy import stats
 
 def filter_padding_tokens(sequence):
     """Helper function to filter out padding tokens (tokens with value 0)."""
     return [token for token in sequence if token != 0]
 
+def compute_95ci(data):
+    """Compute the 95% confidence interval for a list of numbers."""
+    mean = np.mean(data)
+    ci = stats.norm.interval(0.95, loc=mean, scale=stats.sem(data)) if len(data) > 1 else (mean, mean)
+    return mean, ci
 
 def get_results(model_name):
     base_dir = os.path.join("output", model_name)
@@ -18,7 +24,7 @@ def get_results(model_name):
 
     for sub_dir in os.listdir(base_dir):
         sequences_dir = os.path.join(base_dir, sub_dir, "sequences")
-        mcmc_dir = os.path.join(base_dir, sub_dir, "mcmc", "0")
+        mcmc_dir = os.path.join(base_dir, sub_dir, "mcmc")
         eval_dir = os.path.join(base_dir, sub_dir, "eval")
 
         if os.path.exists(sequences_dir) and os.path.exists(mcmc_dir):
@@ -37,6 +43,7 @@ def get_results(model_name):
                 ##################
                 # Eval Results (MAUVE, BLEU)
                 ##################
+
                 with open(os.path.join(eval_dir, "results.json"), "r") as f:
                     eval_results = json.load(f)
 
@@ -59,23 +66,35 @@ def get_results(model_name):
                 # Sequences Lengths
                 ##################
 
-                with open(os.path.join(sequences_dir, "sequences_ids.json"), "r") as f:
-                    sequences_data = json.load(f)
+                avg_lengths_sequences = []
+                avg_lengths_mcmc = []
 
-                with open(os.path.join(mcmc_dir, "sampled_sequences_ids.json"), "r") as f:
-                    mcmc_data = json.load(f)
+                for run_dir in os.listdir(mcmc_dir):
+                    if run_dir.isdigit():
 
-                # Sample first 200 random sequences
-                random_sequences = random.sample(sequences_data, min(len(sequences_data), 200))
+                        with open(os.path.join(os.path.join(mcmc_dir, run_dir), "sampled_sequences_ids.json"), "r") as f:
+                            mcmc_data = json.load(f)
 
-                # Filter padding tokens and compute average lengths
-                filtered_sequences = [filter_padding_tokens(seq) for seq in random_sequences]
-                filtered_mcmc = [filter_padding_tokens(seq) for seq in mcmc_data]
+                        with open(os.path.join(sequences_dir, "sequences_ids.json"), "r") as f:
+                            sequences_data = json.load(f)
 
-                avg_length_sequences = (
-                    sum(len(seq) for seq in filtered_sequences) / len(filtered_sequences) if filtered_sequences else 0
-                )
-                avg_length_mcmc = sum(len(seq) for seq in filtered_mcmc) / len(filtered_mcmc) if filtered_mcmc else 0
+                        # Sample random sequences
+                        random_sequences = random.sample(sequences_data, min(len(sequences_data), 200))
+
+                        # Filter padding tokens and compute average lengths
+                        filtered_sequences = [filter_padding_tokens(seq) for seq in random_sequences]
+                        filtered_mcmc = [filter_padding_tokens(seq) for seq in mcmc_data]
+
+                        avg_lengths_sequences.append(
+                            sum(len(seq) for seq in filtered_sequences) / len(filtered_sequences) if filtered_sequences else 0
+                        )
+                        avg_lengths_mcmc.append(
+                            sum(len(seq) for seq in filtered_mcmc) / len(filtered_mcmc) if filtered_mcmc else 0
+                        )
+
+                # Compute means and 95% confidence intervals
+                avg_length_sequences_mean, avg_length_sequences_ci = compute_95ci(avg_lengths_sequences)
+                avg_length_mcmc_mean, avg_length_mcmc_ci = compute_95ci(avg_lengths_mcmc)
 
                 ##################
                 # Example Sequences
@@ -94,12 +113,12 @@ def get_results(model_name):
                 ###################
                 # Log likelihood
                 ###################
-                with open(os.path.join(mcmc_dir, "sampled_target_logprobs.json"), "r") as f:
+                with open(os.path.join(mcmc_dir,"0", "sampled_target_logprobs.json"), "r") as f:
                     sampled_target_logprobs = json.load(f)
 
                 log_likelihood_global = sum(sampled_target_logprobs) / len(sampled_target_logprobs)
 
-                with open(os.path.join(mcmc_dir, "sampled_proposal_logprobs.json"), "r") as f:
+                with open(os.path.join(mcmc_dir, "0", "sampled_proposal_logprobs.json"), "r") as f:
                     sampled_proposal_logprobs = json.load(f)
 
                 log_likelihood_local = sum(sampled_proposal_logprobs) / len(sampled_proposal_logprobs)
@@ -133,8 +152,10 @@ def get_results(model_name):
                         "bleu_global_scores": bleu_global_scores,
                         "log_likelihood_local": log_likelihood_local,
                         "log_likelihood_global": log_likelihood_global,
-                        "avg_length_local": avg_length_sequences,
-                        "avg_length_global": avg_length_mcmc,
+                        "avg_length_local_mean": avg_length_sequences_mean,
+                        "avg_length_local_ci": avg_length_sequences_ci,
+                        "avg_length_global_mean": avg_length_mcmc_mean,
+                        "avg_length_global_ci": avg_length_mcmc_ci,
                         "sequence_local": sequence_decoded,
                         "sequence_global": sequence_decoded_sampled,
                         "constants_products": constants_products,
