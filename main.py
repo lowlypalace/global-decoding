@@ -223,8 +223,7 @@ def parse_args():
 def create_output_subdir(args):
     """Creates the output directory."""
     subdir = args.preload_dir or get_unique_name()
-    # TODO: REMOVE "merged"
-    output_subdir = os.path.join(args.output_dir, "merged", args.model_name, subdir)
+    output_subdir = os.path.join(args.output_dir, args.model_name, subdir)
     os.makedirs(output_subdir, exist_ok=True)
     return output_subdir
 
@@ -284,8 +283,7 @@ def main():
 
     output_subdir_seqs = os.path.join(output_subdir, "sequences")
     output_subdir_mcmc = os.path.join(output_subdir, "mcmc")
-    # TODO: Rename to probs
-    output_subdir_probs = os.path.join(output_subdir, "sequences")
+    output_subdir_probs = os.path.join(output_subdir, "probs")
     output_subdir_eval = os.path.join(output_subdir, "eval")
 
     mauve_scores_local, mauve_scores_global = [], []
