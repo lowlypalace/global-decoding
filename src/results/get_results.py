@@ -108,6 +108,7 @@ def get_results(model_name):
                 # Decoding constants:
                 ###################
                 constants_products = ""
+                # TODO: Undo this check post submission
                 constants_file_path = os.path.join(sequences_dir, "proposal_normalize_constants_products.json")
                 if os.path.exists(constants_file_path):
                     with open(constants_file_path, "r") as f:

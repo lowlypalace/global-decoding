@@ -2,6 +2,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.io as pio
 import os
+import numpy as np
 
 # To avoid bug in graphs
 pio.kaleido.scope.mathjax = None
@@ -251,6 +252,8 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
             top_k_df["mauve_global_mean"].tolist(),
             top_k_df["mauve_local_ci"].tolist(),
             top_k_df["mauve_global_ci"].tolist(),
+            # top_k_local_ci,
+            # top_k_global_ci,
             local_color,
             global_color,
             1,
@@ -263,6 +266,8 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
             top_p_df["mauve_global_mean"].tolist(),
             top_p_df["mauve_local_ci"].tolist(),
             top_p_df["mauve_global_ci"].tolist(),
+            # top_p_local_ci,
+            # top_p_global_ci,
             local_color,
             global_color,
             1,
@@ -316,13 +321,21 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
         top_k_df = results[model_name]["top_k"]
         top_p_df = results[model_name]["top_p"]
 
+        # Preprocess CI values to replace NaN with [1.0, 1.0]
+        top_k_local_ci = replace_nan_ci(top_k_df["bleu_local_ci"].tolist())
+        top_k_global_ci = replace_nan_ci(top_k_df["bleu_global_ci"].tolist())
+        top_p_local_ci = replace_nan_ci(top_p_df["bleu_local_ci"].tolist())
+        top_p_global_ci = replace_nan_ci(top_p_df["bleu_global_ci"].tolist())
+
         add_traces_with_ci(
             fig_top_k,
             top_k_values,
             top_k_df["bleu_local_mean"].tolist(),
             top_k_df["bleu_global_mean"].tolist(),
-            top_k_df["bleu_local_ci"].tolist(),
-            top_k_df["bleu_global_ci"].tolist(),
+            # top_k_df["bleu_local_ci"].tolist(),
+            # top_k_df["bleu_global_ci"].tolist(),
+            top_k_local_ci,
+            top_k_global_ci,
             local_color,
             global_color,
             1,
@@ -333,8 +346,10 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
             top_p_values,
             top_p_df["bleu_local_mean"].tolist(),
             top_p_df["bleu_global_mean"].tolist(),
-            top_p_df["bleu_local_ci"].tolist(),
-            top_p_df["bleu_global_ci"].tolist(),
+            # top_p_df["bleu_local_ci"].tolist(),
+            # top_p_df["bleu_global_ci"].tolist(),
+            top_p_local_ci,
+            top_p_global_ci,
             local_color,
             global_color,
             1,
@@ -361,10 +376,18 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
     fig_top_p.write_image(os.path.join(results_dir, "bleu_top_p.pdf"), "pdf")
     fig_top_p.write_html(os.path.join(results_dir, "bleu_top_p.html"), "html")
 
+def replace_nan_ci(ci_list):
+    """Replace NaN confidence intervals with [1.0, 1.0]."""
+    return [[1.0, 1.0] if np.isnan(ci[0]) or np.isnan(ci[1]) else ci for ci in ci_list]
+
 
 def add_traces_with_ci(
     fig, x_values, y_mean_local, y_mean_global, ci_local, ci_global, local_color, global_color, row, col
 ):
+
+
+
+
     # Add mean traces
     fig.add_trace(
         go.Scatter(
