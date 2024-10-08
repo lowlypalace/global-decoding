@@ -7,7 +7,15 @@ import random
 from scipy import stats
 import numpy as np
 
-from src.utils.utils import setup_logging, save_args, set_seed, load_from_json, save_to_json, convert_tensor_to_list, get_unique_name
+from src.utils.utils import (
+    setup_logging,
+    save_args,
+    set_seed,
+    load_from_json,
+    save_to_json,
+    convert_tensor_to_list,
+    get_unique_name,
+)
 from src.utils.validate import validate_args
 
 
@@ -129,7 +137,7 @@ def parse_args():
     parser.add_argument(
         "--mcmc_num_samples",
         type=int,
-        default=100,
+        default=200,
         help="Number of MCMC samples to generate.",
     )
     parser.add_argument(
@@ -177,7 +185,7 @@ def parse_args():
     parser.add_argument(
         "--eval_num_runs",
         type=int,
-        default=1,
+        default=10,
         action=NonDefaultAction,
         help="Number of runs for MAUVE and BLEU evaluations.",
     )
@@ -194,7 +202,7 @@ def parse_args():
     parser.add_argument(
         "--seed",
         type=int,
-        default=42,
+        default=0,
         action=NonDefaultAction,
         help="Random seed for reproducibility.",
     )
@@ -212,11 +220,11 @@ def parse_args():
     return args
 
 
-
 def create_output_subdir(args):
     """Creates the output directory."""
     subdir = args.preload_dir or get_unique_name()
-    output_subdir = os.path.join(args.output_dir, args.model_name, subdir)
+    # TODO: REMOVE "merged"
+    output_subdir = os.path.join(args.output_dir, "merged", args.model_name, subdir)
     os.makedirs(output_subdir, exist_ok=True)
     return output_subdir
 
@@ -276,7 +284,8 @@ def main():
 
     output_subdir_seqs = os.path.join(output_subdir, "sequences")
     output_subdir_mcmc = os.path.join(output_subdir, "mcmc")
-    output_subdir_probs = os.path.join(output_subdir, "probs")
+    # TODO: Rename to probs
+    output_subdir_probs = os.path.join(output_subdir, "sequences")
     output_subdir_eval = os.path.join(output_subdir, "eval")
 
     mauve_scores_local, mauve_scores_global = [], []
