@@ -3,10 +3,19 @@ from plotly.subplots import make_subplots
 import plotly.io as pio
 import os
 import numpy as np
+import pandas as pd
+from plotly.colors import qualitative
+
 
 # To avoid bug in graphs
 pio.kaleido.scope.mathjax = None
 
+# local_color = "#006795"
+# global_color = "#009B55"
+local_color = "#19D3F3"
+global_color = "#00CC96"
+
+title_font = 14
 
 def plot_sequences_lengths(results, results_dir):
     for model_name, data in results.items():
@@ -15,44 +24,57 @@ def plot_sequences_lengths(results, results_dir):
 
         # Create subplots for top-k and top-p
         fig = make_subplots(rows=1, cols=2, shared_xaxes=False, horizontal_spacing=0.07)
-        # subplot_titles=('Average Lengths by top-k', 'Average Lengths by Top-p')
 
-        # Define colors
-        local_color = "#006795"
-        global_color = "#009B55"
-
-        # Add bar traces for top-k
+        # Add bar traces for top-k with confidence intervals
         fig.add_trace(
             go.Bar(
+                name='Local Normalisation',
                 x=top_k_df["top_k"],
-                width=0.2,
-                y=top_k_df["avg_length_local"],
-                name="Local Normalisation",
+                y=top_k_df["avg_length_local_mean"],
                 marker_color=local_color,
+                width=0.2,
+                error_y=dict(
+                    type="data",
+                    array=[(ci[1] - ci[0]) / 2 for ci in top_k_df["avg_length_local_ci"]],
+                    visible=True,
+                    thickness=0.5
+                )
             ),
             row=1,
             col=1,
         )
         fig.add_trace(
             go.Bar(
+                name='Global Normalisation',
                 x=top_k_df["top_k"],
-                width=0.2,
-                y=top_k_df["avg_length_global"],
-                name="Global Normalisation",
+                y=top_k_df["avg_length_global_mean"],
                 marker_color=global_color,
+                width=0.2,
+                error_y=dict(
+                    type="data",
+                    array=[(ci[1] - ci[0]) / 2 for ci in top_k_df["avg_length_global_ci"]],
+                    visible=True,
+                    thickness=0.5
+                )
             ),
             row=1,
             col=1,
         )
 
-        # Add bar traces for top-p
+        # Add bar traces for top-p with confidence intervals
         fig.add_trace(
             go.Bar(
+                name='Local Normalisation',
                 x=top_p_df["top_p"],
-                width=0.2,
-                y=top_p_df["avg_length_local"],
-                name="Local Normalisation",
+                y=top_p_df["avg_length_local_mean"],
                 marker_color=local_color,
+                width=0.2,
+                error_y=dict(
+                    type="data",
+                    array=[(ci[1] - ci[0]) / 2 for ci in top_p_df["avg_length_local_ci"]],
+                    visible=True,
+                    thickness=0.5
+                ),
                 showlegend=False,
             ),
             row=1,
@@ -60,11 +82,17 @@ def plot_sequences_lengths(results, results_dir):
         )
         fig.add_trace(
             go.Bar(
+                name='Global Normalisation',
                 x=top_p_df["top_p"],
-                width=0.2,
-                y=top_p_df["avg_length_global"],
-                name="Global Normalisation",
+                y=top_p_df["avg_length_global_mean"],
                 marker_color=global_color,
+                width=0.2,
+                error_y=dict(
+                    type="data",
+                    array=[(ci[1] - ci[0]) / 2 for ci in top_p_df["avg_length_global_ci"]],
+                    visible=True,
+                    thickness=0.5
+                ),
                 showlegend=False,
             ),
             row=1,
@@ -77,19 +105,19 @@ def plot_sequences_lengths(results, results_dir):
 
         # Update y-axis properties
         fig.update_yaxes(title_text="Average Length", row=1, col=1)
-        # fig.update_yaxes(title_text="Average Length", row=1, col=2)
 
-        # Update x-axes properties
+
+        # Add gridlines back on x and y axes
         fig.update_xaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
-
-        # Update y-axes properties
         fig.update_yaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
 
-        # Update layout background color
-        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-
-        # Update layout
+        # Update layout to include font styles
         fig.update_layout(
+            font=dict(
+                family="Arial, sans-serif",
+                size=12,
+                color="black"
+            ),
             height=360,
             width=1400,
             paper_bgcolor="rgba(0,0,0,0)",
@@ -103,14 +131,13 @@ def plot_sequences_lengths(results, results_dir):
 
 
 def plot_average_log_likelihood(results, results_dir):
-    # Create subplots for top-k and top-p
     fig = make_subplots(rows=1, cols=2, shared_xaxes=False, horizontal_spacing=0.07)
 
-    # Define colors for each model (adjust as needed)
     colors = {
-        "pythia-70m": "#92268F",
-        "pythia-410m": "#FBB982",
-        "pythia-1.4b": "#41B0E4",
+        "pythia-70m": qualitative.Plotly[0],
+        "pythia-410m": qualitative.Plotly[1],
+        "pythia-1.4b": qualitative.Plotly[2],
+        "pythia-2.8b": qualitative.Plotly[3],
     }
 
     for model_name, data in results.items():
@@ -122,9 +149,9 @@ def plot_average_log_likelihood(results, results_dir):
         fig.add_trace(
             go.Scatter(
                 x=top_k_df["top_k"],
-                y=top_k_df["average_log_likelihood"],
+                y=top_k_df["log_likelihood_global"],
                 mode="lines+markers",
-                name=f"{model_name} (top-k)",
+                name=f"{model_name}",
                 marker_color=color,
             ),
             row=1,
@@ -135,9 +162,9 @@ def plot_average_log_likelihood(results, results_dir):
         fig.add_trace(
             go.Scatter(
                 x=top_p_df["top_p"],
-                y=top_p_df["average_log_likelihood"],
+                y=top_p_df["log_likelihood_global"],
                 mode="lines+markers",
-                name=f"{model_name} (top-p)",
+                name=f"{model_name}",
                 marker_color=color,
                 showlegend=False,
             ),
@@ -171,8 +198,8 @@ def plot_average_log_likelihood(results, results_dir):
     )
 
     # Save the figure as a PDF file
-    fig.write_image(os.path.join(results_dir, "average_log_likelihood.pdf"), "pdf")
-    fig.write_html(os.path.join(results_dir, "average_log_likelihood.html"), "html")
+    fig.write_image(os.path.join(results_dir, "average_log_likelihood_global.pdf"), "pdf")
+    fig.write_html(os.path.join(results_dir, "average_log_likelihood_global.html"), "html")
 
 
 def update_fig(fig, max_score, xaxis_title_text, y_axis_title_text):
@@ -191,6 +218,18 @@ def update_fig(fig, max_score, xaxis_title_text, y_axis_title_text):
     fig.update_xaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
     fig.update_yaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
 
+    fig.update_yaxes(
+        title_font=dict(size=title_font),
+    )
+
+    fig.update_xaxes(
+        title_font=dict(size=title_font),
+    )
+
+    # Update layout to set legend font size
+    fig.update_layout(
+        legend=dict(font=dict(size=title_font))
+    )
 
 def add_traces(fig, values, local_scores, global_scores, local_color, global_color, row, col):
     fig.add_trace(
@@ -220,9 +259,6 @@ def add_traces(fig, values, local_scores, global_scores, local_color, global_col
 
 
 def plot_mauve_evaluation_metrics(results, model_names, results_dir):
-    local_color = "#006795"
-    global_color = "#009B55"
-
     top_k_values = results[model_names[0]]["top_k"]["top_k"].tolist()
     top_p_values = results[model_names[0]]["top_p"]["top_p"].tolist()
 
@@ -252,8 +288,6 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
             top_k_df["mauve_global_mean"].tolist(),
             top_k_df["mauve_local_ci"].tolist(),
             top_k_df["mauve_global_ci"].tolist(),
-            # top_k_local_ci,
-            # top_k_global_ci,
             local_color,
             global_color,
             1,
@@ -266,8 +300,6 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
             top_p_df["mauve_global_mean"].tolist(),
             top_p_df["mauve_local_ci"].tolist(),
             top_p_df["mauve_global_ci"].tolist(),
-            # top_p_local_ci,
-            # top_p_global_ci,
             local_color,
             global_color,
             1,
@@ -296,9 +328,6 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
 
 
 def plot_bleu_evaluation_metrics(results, model_names, results_dir):
-    local_color = "#006795"
-    global_color = "#009B55"
-
     top_k_values = results[model_names[0]]["top_k"]["top_k"].tolist()
     top_p_values = results[model_names[0]]["top_p"]["top_p"].tolist()
 
@@ -321,21 +350,13 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
         top_k_df = results[model_name]["top_k"]
         top_p_df = results[model_name]["top_p"]
 
-        # Preprocess CI values to replace NaN with [1.0, 1.0]
-        top_k_local_ci = replace_nan_ci(top_k_df["bleu_local_ci"].tolist())
-        top_k_global_ci = replace_nan_ci(top_k_df["bleu_global_ci"].tolist())
-        top_p_local_ci = replace_nan_ci(top_p_df["bleu_local_ci"].tolist())
-        top_p_global_ci = replace_nan_ci(top_p_df["bleu_global_ci"].tolist())
-
         add_traces_with_ci(
             fig_top_k,
             top_k_values,
             top_k_df["bleu_local_mean"].tolist(),
             top_k_df["bleu_global_mean"].tolist(),
-            # top_k_df["bleu_local_ci"].tolist(),
-            # top_k_df["bleu_global_ci"].tolist(),
-            top_k_local_ci,
-            top_k_global_ci,
+            top_k_df["bleu_local_ci"].tolist(),
+            top_k_df["bleu_global_ci"].tolist(),
             local_color,
             global_color,
             1,
@@ -346,10 +367,8 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
             top_p_values,
             top_p_df["bleu_local_mean"].tolist(),
             top_p_df["bleu_global_mean"].tolist(),
-            # top_p_df["bleu_local_ci"].tolist(),
-            # top_p_df["bleu_global_ci"].tolist(),
-            top_p_local_ci,
-            top_p_global_ci,
+            top_p_df["bleu_local_ci"].tolist(),
+            top_p_df["bleu_global_ci"].tolist(),
             local_color,
             global_color,
             1,
@@ -385,9 +404,6 @@ def add_traces_with_ci(
     fig, x_values, y_mean_local, y_mean_global, ci_local, ci_global, local_color, global_color, row, col
 ):
 
-
-
-
     # Add mean traces
     fig.add_trace(
         go.Scatter(
@@ -396,7 +412,7 @@ def add_traces_with_ci(
             mode="lines",
             line=dict(color=local_color),
             name="Local Decoding",
-            showlegend=True if col == 1 else False,  # Only show legend once
+            showlegend=True if col == 1 else False,
         ),
         row=row,
         col=col,
@@ -409,7 +425,7 @@ def add_traces_with_ci(
             mode="lines",
             line=dict(color=global_color),
             name="Global Decoding",
-            showlegend=True if col == 1 else False,  # Only show legend once
+            showlegend=True if col == 1 else False,
         ),
         row=row,
         col=col,
@@ -503,7 +519,7 @@ def plot_histograms(results, results_dir):
             fig.update_xaxes(
                 title_text=r"Local decoding constant $\log \mathcal{c}_{\alpha}$",
                 title_font=dict(family="Times New Roman", size=18),
-                tickfont=dict(family="Times New Roman", size=14),
+                tickfont=dict(family="Times New Roman", size=title_font),
                 mirror=True,
                 ticks="outside",
                 showline=True,
@@ -521,7 +537,7 @@ def plot_histograms(results, results_dir):
             fig.update_yaxes(
                 title_text=title_text,
                 title_font=dict(family="Times New Roman", size=18),
-                tickfont=dict(family="Times New Roman", size=14),
+                tickfont=dict(family="Times New Roman", size=title_font),
                 mirror=True,
                 ticks="outside",
                 showline=True,
@@ -533,3 +549,81 @@ def plot_histograms(results, results_dir):
         # Save the figure as a PDF file
         fig.write_image(os.path.join(results_dir, f"histogram_{model_name}.pdf"), "pdf")
         fig.write_html(os.path.join(results_dir, f"histogram_{model_name}.html"), "html")
+
+
+def generate_latex_table(results, model_names, results_dir, table_type="mauve"):
+    assert table_type in ["mauve", "bleu"], "Invalid table type. Choose 'mauve' or 'bleu'."
+
+    if table_type == "mauve":
+        rounding_value = 3
+    else:
+        rounding_value = 4
+
+    table_header = r"""
+    \begin{tabular}{l""" + "c" * (len(model_names) * 2) + r"""}
+    \toprule
+    & """ + "".join([f"\multicolumn{{2}}{{c}}{{{model}}} & " for model in model_names]).rstrip(" & ") + r""" \\
+    \cmidrule(lr){2-3}""" + "".join([f"\cmidrule(lr){{{4 + 2 * i}-{5 + 2 * i}}}" for i in range(len(model_names))]) + r"""
+    & """ + "".join([r"$\mauvelocal$  & $\mauveglobal$ & " if table_type == "mauve" else r"$\bleulocal$  & $\bleuglobal$ & " for _ in model_names]).rstrip(" & ") + r""" \\\midrule
+    """
+
+    table_body = ""
+
+    # Retrieve top_k values and corresponding evaluation metrics for each model
+    top_k_values = results[model_names[0]]["top_k"]["top_k"].unique()  # Assuming top_k values are the same for all models
+
+    for top_k in top_k_values:
+        row = f"$\\alphabetkeeptopkwithval{{{top_k}}}$    "
+        for model in model_names:
+            model_data = results[model]["top_k"].loc[results[model]["top_k"]["top_k"] == top_k]
+            if not model_data.empty:
+                local_mean = round(model_data[f"{table_type}_local_mean"].values[0], rounding_value)
+                local_ci_low, local_ci_high = model_data[f"{table_type}_local_ci"].values[0]
+                local_ci = round(local_ci_high - local_ci_low, rounding_value)
+
+                global_mean = round(model_data[f"{table_type}_global_mean"].values[0], rounding_value)
+                global_ci_low, global_ci_high = model_data[f"{table_type}_global_ci"].values[0]
+                global_ci = round(global_ci_high - global_ci_low, rounding_value)
+
+                row += f" & {local_mean} ± {local_ci} & {global_mean} ± {global_ci}"
+            else:
+                row += " & - & -"
+        row += r" \\ \midrule" + "\n"
+        table_body += row
+
+    # Add top_p values (similar to top_k)
+    top_p_values = results[model_names[0]]["top_p"]["top_p"].unique()
+
+    for top_p in top_p_values:
+        row = f"$\\alphabetkeeptoppwithval{{{top_p}}}$    "
+        for model in model_names:
+            model_data = results[model]["top_p"].loc[results[model]["top_p"]["top_p"] == top_p]
+            if not model_data.empty:
+                local_mean = round(model_data[f"{table_type}_local_mean"].values[0], rounding_value)
+                local_ci_low, local_ci_high = model_data[f"{table_type}_local_ci"].values[0]
+                local_ci = round(local_ci_high - local_ci_low, rounding_value)
+
+                global_mean = round(model_data[f"{table_type}_global_mean"].values[0], rounding_value)
+                global_ci_low, global_ci_high = model_data[f"{table_type}_global_ci"].values[0]
+                global_ci = round(global_ci_high - global_ci_low, rounding_value)
+
+                row += f" & {local_mean} ± {local_ci} & {global_mean} ± {global_ci}"
+            else:
+                row += " & - & -"
+        row += r" \\ \midrule" + "\n"
+        table_body += row
+
+
+    table_footer = r"""\bottomrule
+    \end{tabular}
+    """
+
+    # Combine header, body, and footer
+    table_content = table_header + table_body + table_footer
+
+    # Save the LaTeX table to a file
+    output_file = os.path.join(results_dir, f"{table_type}_latex_table.tex")
+    with open(output_file, "w") as f:
+        f.write(table_content)
+
+    print(f"Latex table saved to {output_file}")
