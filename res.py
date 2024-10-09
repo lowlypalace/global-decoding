@@ -9,7 +9,7 @@ from src.results.plots import (
     plot_average_log_likelihood,
     plot_bleu_evaluation_metrics,
     plot_mauve_evaluation_metrics,
-    generate_latex_table
+    generate_latex_table,
 )
 
 
@@ -88,11 +88,9 @@ def main():
 
     # Plot the results
     logging.info("Plotting results...")
-    #TODO: Pass model names to plot_sequences_lengths
     plot_sequences_lengths(results, results_dir)
-    # TODO: Fix the graph below
-    # TODO: Pass model names to plot_average_log_likelihood
-    # plot_average_log_likelihood(results, results_dir)
+    plot_average_log_likelihood(results, results_dir, "global")
+    plot_average_log_likelihood(results, results_dir, "local")
     plot_mauve_evaluation_metrics(results, model_names, results_dir)
     plot_bleu_evaluation_metrics(results, model_names, results_dir)
     generate_latex_table(results, model_names, results_dir, table_type="mauve")

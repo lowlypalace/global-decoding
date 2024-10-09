@@ -6,19 +6,18 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 
-from src.utils.utils import (
-    load_from_json,
-)
 
 def filter_padding_tokens(sequence):
     """Helper function to filter out padding tokens (tokens with value 0)."""
     return [token for token in sequence if token != 0]
+
 
 def compute_95ci(data):
     """Compute the 95% confidence interval for a list of numbers."""
     mean = np.mean(data)
     ci = stats.norm.interval(0.95, loc=mean, scale=stats.sem(data)) if len(data) > 1 else (mean, mean)
     return mean, ci
+
 
 def get_results(model_name):
     base_dir = os.path.join("output", model_name)
@@ -94,7 +93,9 @@ def get_results(model_name):
                         filtered_mcmc = [filter_padding_tokens(seq) for seq in mcmc_data]
 
                         avg_lengths_sequences.append(
-                            sum(len(seq) for seq in filtered_sequences) / len(filtered_sequences) if filtered_sequences else 0
+                            sum(len(seq) for seq in filtered_sequences) / len(filtered_sequences)
+                            if filtered_sequences
+                            else 0
                         )
                         avg_lengths_mcmc.append(
                             sum(len(seq) for seq in filtered_mcmc) / len(filtered_mcmc) if filtered_mcmc else 0
@@ -141,7 +142,6 @@ def get_results(model_name):
                     sampled_sequences_decoded = json.load(f)
                 sequence_decoded_sampled = random.sample(sampled_sequences_decoded, 1)[0][:100]
                 sequence_decoded_sampled = sequence_decoded_sampled.replace("\n", "\\n")
-
 
                 ###################
                 # Decoding constants:
