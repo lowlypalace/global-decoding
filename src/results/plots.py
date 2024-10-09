@@ -15,7 +15,9 @@ pio.kaleido.scope.mathjax = None
 local_color = "#19D3F3"
 global_color = "#00CC96"
 
-title_font = 14
+title_font = 16
+tick_font = 14
+
 
 def plot_sequences_lengths(results, results_dir):
     for model_name, data in results.items():
@@ -28,7 +30,7 @@ def plot_sequences_lengths(results, results_dir):
         # Add bar traces for top-k with confidence intervals
         fig.add_trace(
             go.Bar(
-                name='Local Normalisation',
+                name="Local Decoding",
                 x=top_k_df["top_k"],
                 y=top_k_df["avg_length_local_mean"],
                 marker_color=local_color,
@@ -37,15 +39,15 @@ def plot_sequences_lengths(results, results_dir):
                     type="data",
                     array=[(ci[1] - ci[0]) / 2 for ci in top_k_df["avg_length_local_ci"]],
                     visible=True,
-                    thickness=0.5
-                )
+                    thickness=0.5,
+                ),
             ),
             row=1,
             col=1,
         )
         fig.add_trace(
             go.Bar(
-                name='Global Normalisation',
+                name="Global Decoding",
                 x=top_k_df["top_k"],
                 y=top_k_df["avg_length_global_mean"],
                 marker_color=global_color,
@@ -54,8 +56,8 @@ def plot_sequences_lengths(results, results_dir):
                     type="data",
                     array=[(ci[1] - ci[0]) / 2 for ci in top_k_df["avg_length_global_ci"]],
                     visible=True,
-                    thickness=0.5
-                )
+                    thickness=0.5,
+                ),
             ),
             row=1,
             col=1,
@@ -64,7 +66,7 @@ def plot_sequences_lengths(results, results_dir):
         # Add bar traces for top-p with confidence intervals
         fig.add_trace(
             go.Bar(
-                name='Local Normalisation',
+                name="Local Decoding",
                 x=top_p_df["top_p"],
                 y=top_p_df["avg_length_local_mean"],
                 marker_color=local_color,
@@ -73,7 +75,7 @@ def plot_sequences_lengths(results, results_dir):
                     type="data",
                     array=[(ci[1] - ci[0]) / 2 for ci in top_p_df["avg_length_local_ci"]],
                     visible=True,
-                    thickness=0.5
+                    thickness=0.5,
                 ),
                 showlegend=False,
             ),
@@ -82,7 +84,7 @@ def plot_sequences_lengths(results, results_dir):
         )
         fig.add_trace(
             go.Bar(
-                name='Global Normalisation',
+                name="Global Decoding",
                 x=top_p_df["top_p"],
                 y=top_p_df["avg_length_global_mean"],
                 marker_color=global_color,
@@ -91,7 +93,7 @@ def plot_sequences_lengths(results, results_dir):
                     type="data",
                     array=[(ci[1] - ci[0]) / 2 for ci in top_p_df["avg_length_global_ci"]],
                     visible=True,
-                    thickness=0.5
+                    thickness=0.5,
                 ),
                 showlegend=False,
             ),
@@ -101,11 +103,10 @@ def plot_sequences_lengths(results, results_dir):
 
         # Update x-axis properties
         fig.update_xaxes(title_text="Top-k values", row=1, col=1, type="category")
-        fig.update_xaxes(title_text="Top-p values", row=1, col=2, type="category")
+        fig.update_xaxes(title_text="Top-π values", row=1, col=2, type="category")
 
         # Update y-axis properties
         fig.update_yaxes(title_text="Average Length", row=1, col=1)
-
 
         # Add gridlines back on x and y axes
         fig.update_xaxes(mirror=True, ticks="outside", showline=True, gridcolor="lightgrey")
@@ -113,11 +114,7 @@ def plot_sequences_lengths(results, results_dir):
 
         # Update layout to include font styles
         fig.update_layout(
-            font=dict(
-                family="Arial, sans-serif",
-                size=12,
-                color="black"
-            ),
+            font=dict(family="Arial, sans-serif", size=12, color="black"),
             height=360,
             width=1400,
             paper_bgcolor="rgba(0,0,0,0)",
@@ -125,19 +122,30 @@ def plot_sequences_lengths(results, results_dir):
             legend=dict(orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5),
         )
 
+        fig.update_yaxes(
+            title_font=dict(size=title_font),
+        )
+
+        fig.update_xaxes(
+            title_font=dict(size=title_font),
+        )
+
+        # Update layout to set legend font size
+        fig.update_layout(legend=dict(font=dict(size=title_font)))
+
         # Save the figure
         fig.write_image(os.path.join(results_dir, f"average_lengths_{model_name}.pdf"), "pdf")
         fig.write_html(os.path.join(results_dir, f"average_lengths_{model_name}.html"), "html")
 
 
-def plot_average_log_likelihood(results, results_dir):
+def plot_average_log_likelihood(results, results_dir, type):
     fig = make_subplots(rows=1, cols=2, shared_xaxes=False, horizontal_spacing=0.07)
 
     colors = {
-        "pythia-70m": qualitative.Plotly[0],
+        "pythia-70m": qualitative.Plotly[9],
         "pythia-410m": qualitative.Plotly[1],
         "pythia-1.4b": qualitative.Plotly[2],
-        "pythia-2.8b": qualitative.Plotly[3],
+        "pythia-2.8b": qualitative.Plotly[7],
     }
 
     for model_name, data in results.items():
@@ -149,7 +157,7 @@ def plot_average_log_likelihood(results, results_dir):
         fig.add_trace(
             go.Scatter(
                 x=top_k_df["top_k"],
-                y=top_k_df["log_likelihood_global"],
+                y=top_k_df[f"log_likelihoods_{type}_mean"],
                 mode="lines+markers",
                 name=f"{model_name}",
                 marker_color=color,
@@ -162,7 +170,7 @@ def plot_average_log_likelihood(results, results_dir):
         fig.add_trace(
             go.Scatter(
                 x=top_p_df["top_p"],
-                y=top_p_df["log_likelihood_global"],
+                y=top_p_df[f"log_likelihoods_{type}_mean"],
                 mode="lines+markers",
                 name=f"{model_name}",
                 marker_color=color,
@@ -174,7 +182,7 @@ def plot_average_log_likelihood(results, results_dir):
 
     # Update x-axis properties
     fig.update_xaxes(title_text="Top-k values", row=1, col=1, type="category")
-    fig.update_xaxes(title_text="Top-p values", row=1, col=2, type="category")
+    fig.update_xaxes(title_text="Top-π values", row=1, col=2, type="category")
 
     # Update y-axis properties
     fig.update_yaxes(title_text="Average Log Likelihood", row=1, col=1)
@@ -197,9 +205,20 @@ def plot_average_log_likelihood(results, results_dir):
         legend=dict(orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5),
     )
 
+    fig.update_yaxes(
+        title_font=dict(size=title_font),
+    )
+
+    fig.update_xaxes(
+        title_font=dict(size=title_font),
+    )
+
+    # Update layout to set legend font size
+    fig.update_layout(legend=dict(font=dict(size=title_font)))
+
     # Save the figure as a PDF file
-    fig.write_image(os.path.join(results_dir, "average_log_likelihood_global.pdf"), "pdf")
-    fig.write_html(os.path.join(results_dir, "average_log_likelihood_global.html"), "html")
+    fig.write_image(os.path.join(results_dir, "average_log_likelihood_{type}.pdf"), "pdf")
+    fig.write_html(os.path.join(results_dir, "average_log_likelihood_{type}.html"), "html")
 
 
 def update_fig(fig, max_score, xaxis_title_text, y_axis_title_text):
@@ -227,9 +246,8 @@ def update_fig(fig, max_score, xaxis_title_text, y_axis_title_text):
     )
 
     # Update layout to set legend font size
-    fig.update_layout(
-        legend=dict(font=dict(size=title_font))
-    )
+    fig.update_layout(legend=dict(font=dict(size=title_font)))
+
 
 def add_traces(fig, values, local_scores, global_scores, local_color, global_color, row, col):
     fig.add_trace(
@@ -318,7 +336,7 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
     )
 
     update_fig(fig_top_k, max_top_k_score, "Top-k values", "MAUVE Score")
-    update_fig(fig_top_p, max_top_p_score, "Top-p values", "MAUVE Score")
+    update_fig(fig_top_p, max_top_p_score, "Top-π values", "MAUVE Score")
 
     fig_top_k.write_image(os.path.join(results_dir, "mauve_top_k.pdf"), "pdf")
     fig_top_k.write_html(os.path.join(results_dir, "mauve_top_k.html"), "html")
@@ -387,13 +405,14 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
     )
 
     update_fig(fig_top_k, max_top_k_score, "Top-k values", "Self-BLEU Score")
-    update_fig(fig_top_p, max_top_p_score, "Top-p values", "Self-BLEU Score")
+    update_fig(fig_top_p, max_top_p_score, "Top-π values", "Self-BLEU Score")
 
     fig_top_k.write_image(os.path.join(results_dir, "bleu_top_k.pdf"), "pdf")
     fig_top_k.write_html(os.path.join(results_dir, "bleu_top_k.html"), "html")
 
     fig_top_p.write_image(os.path.join(results_dir, "bleu_top_p.pdf"), "pdf")
     fig_top_p.write_html(os.path.join(results_dir, "bleu_top_p.html"), "html")
+
 
 def replace_nan_ci(ci_list):
     """Replace NaN confidence intervals with [1.0, 1.0]."""
@@ -518,8 +537,8 @@ def plot_histograms(results, results_dir):
         for i in range(num_subplots):
             fig.update_xaxes(
                 title_text=r"Local decoding constant $\log \mathcal{c}_{\alpha}$",
-                title_font=dict(family="Times New Roman", size=18),
-                tickfont=dict(family="Times New Roman", size=title_font),
+                title_font=dict(family="Times New Roman", size=title_font),
+                tickfont=dict(family="Times New Roman", size=tick_font),
                 mirror=True,
                 ticks="outside",
                 showline=True,
@@ -537,7 +556,7 @@ def plot_histograms(results, results_dir):
             fig.update_yaxes(
                 title_text=title_text,
                 title_font=dict(family="Times New Roman", size=18),
-                tickfont=dict(family="Times New Roman", size=title_font),
+                tickfont=dict(family="Times New Roman", size=tick_font),
                 mirror=True,
                 ticks="outside",
                 showline=True,
@@ -559,18 +578,35 @@ def generate_latex_table(results, model_names, results_dir, table_type="mauve"):
     else:
         rounding_value = 4
 
-    table_header = r"""
-    \begin{tabular}{l""" + "c" * (len(model_names) * 2) + r"""}
+    table_header = (
+        r"""
+    \begin{tabular}{l"""
+        + "c" * (len(model_names) * 2)
+        + r"""}
     \toprule
-    & """ + "".join([f"\multicolumn{{2}}{{c}}{{{model}}} & " for model in model_names]).rstrip(" & ") + r""" \\
-    \cmidrule(lr){2-3}""" + "".join([f"\cmidrule(lr){{{4 + 2 * i}-{5 + 2 * i}}}" for i in range(len(model_names))]) + r"""
-    & """ + "".join([r"$\mauvelocal$  & $\mauveglobal$ & " if table_type == "mauve" else r"$\bleulocal$  & $\bleuglobal$ & " for _ in model_names]).rstrip(" & ") + r""" \\\midrule
+    & """
+        + "".join([f"\multicolumn{{2}}{{c}}{{{model}}} & " for model in model_names]).rstrip(" & ")
+        + r""" \\
+    \cmidrule(lr){2-3}"""
+        + "".join([f"\cmidrule(lr){{{4 + 2 * i}-{5 + 2 * i}}}" for i in range(len(model_names))])
+        + r"""
+    & """
+        + "".join(
+            [
+                r"$\mauvelocal$  & $\mauveglobal$ & " if table_type == "mauve" else r"$\bleulocal$  & $\bleuglobal$ & "
+                for _ in model_names
+            ]
+        ).rstrip(" & ")
+        + r""" \\\midrule
     """
+    )
 
     table_body = ""
 
     # Retrieve top_k values and corresponding evaluation metrics for each model
-    top_k_values = results[model_names[0]]["top_k"]["top_k"].unique()  # Assuming top_k values are the same for all models
+    top_k_values = results[model_names[0]]["top_k"][
+        "top_k"
+    ].unique()  # Assuming top_k values are the same for all models
 
     for top_k in top_k_values:
         row = f"$\\alphabetkeeptopkwithval{{{top_k}}}$    "
@@ -612,7 +648,6 @@ def generate_latex_table(results, model_names, results_dir, table_type="mauve"):
                 row += " & - & -"
         row += r" \\ \midrule" + "\n"
         table_body += row
-
 
     table_footer = r"""\bottomrule
     \end{tabular}
