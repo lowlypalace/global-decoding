@@ -6,6 +6,10 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 
+from src.utils.utils import (
+    load_from_json,
+)
+
 def filter_padding_tokens(sequence):
     """Helper function to filter out padding tokens (tokens with value 0)."""
     return [token for token in sequence if token != 0]
@@ -23,6 +27,7 @@ def get_results(model_name):
     logging.info(f"Generating {model_name} results...")
 
     for sub_dir in os.listdir(base_dir):
+
         sequences_dir = os.path.join(base_dir, sub_dir, "sequences")
         mcmc_dir = os.path.join(base_dir, sub_dir, "mcmc")
         eval_dir = os.path.join(base_dir, sub_dir, "eval")
@@ -34,6 +39,9 @@ def get_results(model_name):
                     metadata = json.load(f)
                 top_k = metadata.get("top_k")
                 top_p = metadata.get("top_p")
+
+                logging.info(f"Model: {model_name}, Sub-directory: {sub_dir}")
+                logging.info(f"Top-k: {top_k}, Top-p: {top_p}")
 
                 # when top_k and top_p are equal to None
                 if top_k is None and top_p is None:
@@ -72,7 +80,7 @@ def get_results(model_name):
                 for run_dir in os.listdir(mcmc_dir):
                     if run_dir.isdigit():
 
-                        with open(os.path.join(os.path.join(mcmc_dir, run_dir), "sampled_sequences_ids.json"), "r") as f:
+                        with open(os.path.join(mcmc_dir, run_dir, "sampled_sequences_ids.json"), "r") as f:
                             mcmc_data = json.load(f)
 
                         with open(os.path.join(sequences_dir, "sequences_ids.json"), "r") as f:
@@ -96,36 +104,49 @@ def get_results(model_name):
                 avg_length_sequences_mean, avg_length_sequences_ci = compute_95ci(avg_lengths_sequences)
                 avg_length_mcmc_mean, avg_length_mcmc_ci = compute_95ci(avg_lengths_mcmc)
 
-                ##################
+                ###################
+                # Log likelihood
+                ###################
+                # TODO: Compute confidence intervals
+                log_likelihoods_global = []
+                log_likelihoods_local = []
+
+                for run_dir in os.listdir(mcmc_dir):
+                    if run_dir.isdigit():
+
+                        with open(os.path.join(mcmc_dir, run_dir, "sampled_target_logprobs.json"), "r") as f:
+                            sampled_target_logprobs = json.load(f)
+
+                        log_likelihood_global = sum(sampled_target_logprobs) / len(sampled_target_logprobs)
+
+                        with open(os.path.join(mcmc_dir, run_dir, "sampled_proposal_logprobs.json"), "r") as f:
+                            sampled_proposal_logprobs = json.load(f)
+
+                        log_likelihood_local = sum(sampled_proposal_logprobs) / len(sampled_proposal_logprobs)
+
+                # Compute means and 95% confidence intervals
+                log_likelihoods_global_mean, log_likelihoods_global_ci = compute_95ci(log_likelihoods_global)
+                log_likelihoods_local_mean, log_likelihoods_local_ci = compute_95ci(log_likelihoods_local)
+
+                #################
                 # Example Sequences
-                ##################
+                #################
 
                 with open(os.path.join(sequences_dir, "sequences_decoded.json"), "r") as f:
                     sequences_decoded = json.load(f)
                 sequence_decoded = random.sample(sequences_decoded, 1)[0][:100]
                 sequence_decoded = sequence_decoded.replace("\n", "\\n")
 
-                with open(os.path.join(mcmc_dir, "sampled_sequences_decoded.json"), "r") as f:
+                with open(os.path.join(mcmc_dir, "0", "sampled_sequences_decoded.json"), "r") as f:
                     sampled_sequences_decoded = json.load(f)
                 sequence_decoded_sampled = random.sample(sampled_sequences_decoded, 1)[0][:100]
                 sequence_decoded_sampled = sequence_decoded_sampled.replace("\n", "\\n")
 
-                ###################
-                # Log likelihood
-                ###################
-                with open(os.path.join(mcmc_dir,"0", "sampled_target_logprobs.json"), "r") as f:
-                    sampled_target_logprobs = json.load(f)
-
-                log_likelihood_global = sum(sampled_target_logprobs) / len(sampled_target_logprobs)
-
-                with open(os.path.join(mcmc_dir, "0", "sampled_proposal_logprobs.json"), "r") as f:
-                    sampled_proposal_logprobs = json.load(f)
-
-                log_likelihood_local = sum(sampled_proposal_logprobs) / len(sampled_proposal_logprobs)
 
                 ###################
                 # Decoding constants:
                 ###################
+
                 constants_products = ""
                 # TODO: Undo this check post submission
                 constants_file_path = os.path.join(sequences_dir, "proposal_normalize_constants_products.json")
@@ -156,6 +177,10 @@ def get_results(model_name):
                         "avg_length_local_ci": avg_length_sequences_ci,
                         "avg_length_global_mean": avg_length_mcmc_mean,
                         "avg_length_global_ci": avg_length_mcmc_ci,
+                        "log_likelihoods_global_mean": log_likelihoods_global_mean,
+                        "log_likelihoods_global_ci": log_likelihoods_global_ci,
+                        "log_likelihoods_local_mean": log_likelihoods_local_mean,
+                        "log_likelihoods_local_ci": log_likelihoods_local_ci,
                         "sequence_local": sequence_decoded,
                         "sequence_global": sequence_decoded_sampled,
                         "constants_products": constants_products,
