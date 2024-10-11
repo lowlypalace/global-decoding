@@ -12,8 +12,8 @@ pio.kaleido.scope.mathjax = None
 
 # local_color = "#006795"
 # global_color = "#009B55"
-local_color = "#19D3F3"
-global_color = "#00CC96"
+local_color = "#377EB8"
+global_color = "#4DAF4A"
 
 title_font = 16
 tick_font = 14
@@ -142,10 +142,10 @@ def plot_average_log_likelihood(results, results_dir, type):
     fig = make_subplots(rows=1, cols=2, shared_xaxes=False, horizontal_spacing=0.07)
 
     colors = {
-        "pythia-70m": qualitative.Plotly[9],
+        "pythia-70m": qualitative.Plotly[0],
         "pythia-410m": qualitative.Plotly[1],
         "pythia-1.4b": qualitative.Plotly[2],
-        "pythia-2.8b": qualitative.Plotly[7],
+        "pythia-2.8b": qualitative.Plotly[9],
     }
 
     for model_name, data in results.items():
@@ -217,8 +217,8 @@ def plot_average_log_likelihood(results, results_dir, type):
     fig.update_layout(legend=dict(font=dict(size=title_font)))
 
     # Save the figure as a PDF file
-    fig.write_image(os.path.join(results_dir, "average_log_likelihood_{type}.pdf"), "pdf")
-    fig.write_html(os.path.join(results_dir, "average_log_likelihood_{type}.html"), "html")
+    fig.write_image(os.path.join(results_dir, f"average_log_likelihood_{type}.pdf"), "pdf")
+    fig.write_html(os.path.join(results_dir, f"average_log_likelihood_{type}.html"), "html")
 
 
 def update_fig(fig, max_score, xaxis_title_text, y_axis_title_text):
@@ -286,13 +286,15 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
         shared_xaxes=True,
         horizontal_spacing=0.035,
         subplot_titles=tuple(model_names),
+
     )
     fig_top_p = make_subplots(
         rows=1,
         cols=4,
         shared_xaxes=True,
         horizontal_spacing=0.035,
-        subplot_titles=tuple(model_names),
+        # subplot_titles=tuple(model_names),
+        subplot_titles=(None,) * len(model_names),
     )
 
     for idx, model_name in enumerate(results.keys(), start=1):
@@ -310,6 +312,7 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
             global_color,
             1,
             idx,
+            False,
         )
         add_traces_with_ci(
             fig_top_p,
@@ -322,6 +325,7 @@ def plot_mauve_evaluation_metrics(results, model_names, results_dir):
             global_color,
             1,
             idx,
+            True
         )
 
     max_top_k_score = max(
@@ -355,13 +359,15 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
         shared_xaxes=True,
         horizontal_spacing=0.035,
         subplot_titles=tuple(model_names),
+        # subplot_titles=(None,) * len(model_names),
     )
     fig_top_p = make_subplots(
         rows=1,
         cols=4,
         shared_xaxes=True,
         horizontal_spacing=0.035,
-        subplot_titles=tuple(model_names),
+        # subplot_titles=tuple(model_names),
+        subplot_titles=(None,) * len(model_names),
     )
 
     for idx, model_name in enumerate(results.keys(), start=1):
@@ -379,6 +385,7 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
             global_color,
             1,
             idx,
+            False
         )
         add_traces_with_ci(
             fig_top_p,
@@ -391,6 +398,7 @@ def plot_bleu_evaluation_metrics(results, model_names, results_dir):
             global_color,
             1,
             idx,
+            True
         )
 
     max_top_k_score = max(
@@ -420,7 +428,7 @@ def replace_nan_ci(ci_list):
 
 
 def add_traces_with_ci(
-    fig, x_values, y_mean_local, y_mean_global, ci_local, ci_global, local_color, global_color, row, col
+    fig, x_values, y_mean_local, y_mean_global, ci_local, ci_global, local_color, global_color, row, col, show_legend
 ):
 
     # Add mean traces
@@ -431,7 +439,7 @@ def add_traces_with_ci(
             mode="lines",
             line=dict(color=local_color),
             name="Local Decoding",
-            showlegend=True if col == 1 else False,
+            showlegend=True if col == 1 and show_legend else False,
         ),
         row=row,
         col=col,
@@ -444,7 +452,7 @@ def add_traces_with_ci(
             mode="lines",
             line=dict(color=global_color),
             name="Global Decoding",
-            showlegend=True if col == 1 else False,
+            showlegend=True if col == 1 and show_legend else False,
         ),
         row=row,
         col=col,
@@ -555,7 +563,7 @@ def plot_histograms(results, results_dir):
                 title_text = ""
             fig.update_yaxes(
                 title_text=title_text,
-                title_font=dict(family="Times New Roman", size=18),
+                title_font=dict(family="Times New Roman", size=title_font),
                 tickfont=dict(family="Times New Roman", size=tick_font),
                 mirror=True,
                 ticks="outside",
@@ -660,5 +668,3 @@ def generate_latex_table(results, model_names, results_dir, table_type="mauve"):
     output_file = os.path.join(results_dir, f"{table_type}_latex_table.tex")
     with open(output_file, "w") as f:
         f.write(table_content)
-
-    print(f"Latex table saved to {output_file}")

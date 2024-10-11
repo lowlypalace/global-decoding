@@ -96,20 +96,23 @@ def process_sub_directory(base_dir, sub_dir, model_name):
 
     # Load metadata and results
     metadata = load_json_file(os.path.join(base_dir, sub_dir, "metadata.json"))
-    top_k, top_p = metadata.get("top_k", 50432), metadata.get("top_p", 1.0)
+    top_k, top_p = metadata.get("top_k"), metadata.get("top_p")
 
-    logging.info(f"Model: {model_name}, Sub-directory: {sub_dir}, Top-k: {top_k}, Top-p: {top_p}")
+    if top_k is None and top_p is None:
+        top_k, top_p = 50432, 1.0
+
+    logging.info(f"Dir: {sub_dir}, Top-k: {top_k}, Top-p: {top_p}")
 
     eval_results = load_json_file(os.path.join(eval_dir, "results.json"))
 
     # Process sequences and log likelihoods
-    # avg_lengths_sequences, avg_lengths_mcmc = process_sequences(mcmc_dir, sequences_dir)
-    # avg_length_sequences_mean, avg_length_sequences_ci = compute_95ci(avg_lengths_sequences)
-    # avg_length_mcmc_mean, avg_length_mcmc_ci = compute_95ci(avg_lengths_mcmc)
+    avg_lengths_sequences, avg_lengths_mcmc = process_sequences(mcmc_dir, sequences_dir)
+    avg_length_sequences_mean, avg_length_sequences_ci = compute_95ci(avg_lengths_sequences)
+    avg_length_mcmc_mean, avg_length_mcmc_ci = compute_95ci(avg_lengths_mcmc)
 
-    # log_likelihoods_global, log_likelihoods_local = process_log_likelihoods(mcmc_dir)
-    # log_likelihoods_global_mean, log_likelihoods_global_ci = compute_95ci(log_likelihoods_global)
-    # log_likelihoods_local_mean, log_likelihoods_local_ci = compute_95ci(log_likelihoods_local)
+    log_likelihoods_global, log_likelihoods_local = process_log_likelihoods(mcmc_dir)
+    log_likelihoods_global_mean, log_likelihoods_global_ci = compute_95ci(log_likelihoods_global)
+    log_likelihoods_local_mean, log_likelihoods_local_ci = compute_95ci(log_likelihoods_local)
 
     # Process example sequences and constants
     sequence_decoded, sequence_decoded_sampled = process_example_sequences(sequences_dir, mcmc_dir)
@@ -127,14 +130,14 @@ def process_sub_directory(base_dir, sub_dir, model_name):
         "mauve_global_ci": eval_results["mauve_global"]["ci"],
         "bleu_local_ci": eval_results["bleu_local"]["ci"],
         "bleu_global_ci": eval_results["bleu_global"]["ci"],
-        # "avg_length_local_mean": avg_length_sequences_mean,
-        # "avg_length_local_ci": avg_length_sequences_ci,
-        # "avg_length_global_mean": avg_length_mcmc_mean,
-        # "avg_length_global_ci": avg_length_mcmc_ci,
-        # "log_likelihoods_global_mean": log_likelihoods_global_mean,
-        # "log_likelihoods_global_ci": log_likelihoods_global_ci,
-        # "log_likelihoods_local_mean": log_likelihoods_local_mean,
-        # "log_likelihoods_local_ci": log_likelihoods_local_ci,
+        "avg_length_local_mean": avg_length_sequences_mean,
+        "avg_length_local_ci": avg_length_sequences_ci,
+        "avg_length_global_mean": avg_length_mcmc_mean,
+        "avg_length_global_ci": avg_length_mcmc_ci,
+        "log_likelihoods_global_mean": log_likelihoods_global_mean,
+        "log_likelihoods_global_ci": log_likelihoods_global_ci,
+        "log_likelihoods_local_mean": log_likelihoods_local_mean,
+        "log_likelihoods_local_ci": log_likelihoods_local_ci,
         "sequence_local": sequence_decoded,
         "sequence_global": sequence_decoded_sampled,
         "constants_products": constants_products,
